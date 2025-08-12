@@ -1,0 +1,219 @@
+### .gitignore
+
+# ================================
+# MICROSERVICES ARCHITECTURE
+# ================================
+
+# Service-specific build outputs
+Backend/*/target/
+Backend/*/build/
+Backend/*/out/
+Frontend/*/build/
+Frontend/*/dist/
+
+# Service-specific logs
+Backend/*/logs/
+Frontend/*/logs/
+**/logs/
+**/*.log
+
+# ================================
+# SPRING BOOT & MAVEN (All Backend Services)
+# ================================
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Spring Boot artifacts
+*.jar
+!**/wrapper/*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+HELP.md
+
+# ================================
+# REACT & NODE.JS (Frontend)
+# ================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+build/
+dist/
+out/
+.next/
+.cache/
+.parcel-cache/
+
+# Vite specific
+.vite/
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Package managers
+package-lock.json
+pnpm-lock.yaml
+
+# ================================
+# ENVIRONMENT & SECRETS
+# ================================
+
+# Environment files (all services)
+*.env
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Configuration files with secrets
+**/application-secrets.properties
+**/application-secrets.yml
+**/application-local.properties
+**/application-local.yml
+
+# Security files
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+*.truststore
+secrets/
+
+# ================================
+# IDE & EDITORS
+# ================================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+# ================================
+# OPERATING SYSTEMS
+# ================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+*.tmp
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ================================
+# DOCKER & DEPLOYMENT
+# ================================
+
+# Docker
+docker-compose.override.yml
+Dockerfile.dev
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Cloud
+.aws/
+.gcloud/
+.azure/
+
+# ================================
+# TESTING & COVERAGE
+# ================================
+
+# Test reports
+test-results/
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+
+# ================================
+# DATABASES & CACHE
+# ================================
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# ================================
+# MICROSERVICES SPECIFIC
+# ================================
+
+# API documentation generated files
+**/api-docs/
+**/swagger-ui/
+
+# Service mesh configs (if using)
+istio-config/
+consul-config/
+
+# Load balancer configs
+nginx-temp/
+haproxy-temp/
