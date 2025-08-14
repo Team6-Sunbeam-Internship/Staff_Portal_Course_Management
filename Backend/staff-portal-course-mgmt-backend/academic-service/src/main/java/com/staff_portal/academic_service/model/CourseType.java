@@ -11,24 +11,28 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class CourseType {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int course_type_id;
+	private int courseTypeId;
 	
 	 @ManyToOne
-	    @JoinColumn(name = "batch_cycle_id", nullable = false)
+	    @JoinColumn(name = "batchCycleId", nullable = false)
 	    private BatchCycle batchCycle;
 	
 	 @ManyToOne
-	    @JoinColumn(name = "premises_id", nullable = false)
+	    @JoinColumn(name = "premisesId", nullable = false)
 	    private Premises premises;
 	 
 	 @Column(nullable = false)
@@ -37,10 +41,6 @@ public class CourseType {
 	 @OneToMany(mappedBy = "courseType", cascade = CascadeType.ALL)
 	    private List<Course> courses;
 
-	
-	
-	public CourseType() {
-		
-	}
+
 
 }
