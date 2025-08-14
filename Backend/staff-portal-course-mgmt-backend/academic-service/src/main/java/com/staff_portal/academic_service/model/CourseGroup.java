@@ -13,13 +13,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"course_id", "group_name"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"courseId", "groupName"})})
 public class CourseGroup {
 	
 	 @Id
@@ -27,7 +31,7 @@ public class CourseGroup {
 	    private int groupId;
 	
 	 @ManyToOne
-	    @JoinColumn(name = "course_id", nullable = false)
+	    @JoinColumn(name = "courseId", nullable = false)
 	    private Course course;
 	 
 	 @Column(nullable = false)
@@ -40,8 +44,5 @@ public class CourseGroup {
 	    private List<StudentGroup> studentGroups;
 	
 
-	public CourseGroup() {
-		
-	}
-
+	
 }
