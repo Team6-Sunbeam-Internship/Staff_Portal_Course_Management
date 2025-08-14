@@ -11,30 +11,30 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Subject {
 	
 	@Id
 	@GeneratedValue(strategy =GenerationType.IDENTITY)
-	private int subject_id;
+	private int subjectId;
 
 	 @ManyToOne
-	    @JoinColumn(name = "module_id", nullable = false)
+	    @JoinColumn(name = "moduleId", nullable = false)
 	    private Module module;
 	
 	  @Column(nullable = false)
-	    private String subject_name;
+	    private String subjectName;
 	
 	  @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
 	    private List<Section> sections;
 	
-	public Subject() {
-		
-	}
-
 }
