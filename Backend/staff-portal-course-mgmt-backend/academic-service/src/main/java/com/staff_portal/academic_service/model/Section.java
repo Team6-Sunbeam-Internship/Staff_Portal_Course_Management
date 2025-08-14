@@ -13,21 +13,25 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"subject_id", "section_name"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"subjectId", "sectionName"})})
 public class Section {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer section_Id;
+    private Integer sectionId;
 	
 	 @ManyToOne
-	    @JoinColumn(name = "subject_id", nullable = false)
+	    @JoinColumn(name = "subjectId", nullable = false)
 	    private Subject subject;
 
 	 @Column(nullable = false)
@@ -36,8 +40,5 @@ public class Section {
 	 @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
 	    private List<Topic> topics;
 
-	public Section() {
-		
-	}
 
 }
