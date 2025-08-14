@@ -7,11 +7,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Infrastructure {
 
@@ -23,13 +27,9 @@ public class Infrastructure {
 	private String roomName;
 	
 	@ManyToOne
-	@JoinColumn(name="premises_id",nullable=false)
+	@JoinColumn(name="premisesId",nullable=false)
 	private Premises premises;
 
 	
-	public Infrastructure() {
-			
-	}
 	
-
 }
