@@ -9,12 +9,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class Student {
 	
 	@Id
@@ -37,8 +41,5 @@ public class Student {
 	 @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
 	    private List<StudentGroup> studentGroups;
 	 
-	public Student() {
-		// TODO Auto-generated constructor stub
-	}
 
 }
