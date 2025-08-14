@@ -9,11 +9,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Premises {
 
@@ -33,11 +37,6 @@ public class Premises {
 	@Column(nullable = false)
 	private String state;
 	
-	public Premises() {}
-	
-	public Premises(int premises_id,String name,String address,String city,String state) {
-		
-	}
 	
 	@OneToMany(mappedBy = "premises", cascade = CascadeType.ALL)
 	private List<Infrastructure> infrastructure;
