@@ -8,13 +8,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"student_id", "group_id"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"studentId", "groupId"})})
 public class StudentGroup {
 	
 	 @Id
@@ -22,17 +26,12 @@ public class StudentGroup {
 	    private int studentGroupId;
 
 	    @ManyToOne
-	    @JoinColumn(name = "student_id", nullable = false)
+	    @JoinColumn(name = "studentId", nullable = false)
 	    private Student student;
 
 	    @ManyToOne
-	    @JoinColumn(name = "group_id", nullable = false)
+	    @JoinColumn(name = "groupId", nullable = false)
 	    private CourseGroup courseGroup;
 	
-	
-
-	public StudentGroup() {
-		// TODO Auto-generated constructor stub
-	}
 
 }
