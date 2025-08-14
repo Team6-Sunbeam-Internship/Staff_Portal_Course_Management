@@ -24,17 +24,17 @@ public class Module {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int module_id;
+	private int moduleId;
 	
 	 @ManyToOne
-	    @JoinColumn(name = "course_id", nullable = false)
+	    @JoinColumn(name = "courseId", nullable = false)
 	    private Course course;
  
-	 @Column(name = "staff_id", nullable = false)
-	    private int staff_id; 
+	 @Column(name = "staffId", nullable = false)
+	    private int staffId; 
 	 
 	 @Column(nullable = false)
-	    private String module_name;
+	    private String moduleName;
 	
 	 @Column(columnDefinition = "TEXT")
 	    private String description;
@@ -43,7 +43,7 @@ public class Module {
 	 private int theoryHours;
 	 
 	 @Column(nullable=false)
-	    private Integer practical_hours;
+	    private Integer practicalHours;
 	 
 	 @OneToMany(mappedBy = "module", cascade = CascadeType.ALL)
 	    private List<Subject> subjects;
