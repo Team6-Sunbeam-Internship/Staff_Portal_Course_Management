@@ -52,7 +52,12 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	        .toList();
 	}
 		
-		 
+	 @Override
+	    public BatchCycleResponse findById(int id) {
+	        BatchCycle batch = repository.findById(id)
+	                .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
+	        return new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName());
+	    }
 	
 	
 	
