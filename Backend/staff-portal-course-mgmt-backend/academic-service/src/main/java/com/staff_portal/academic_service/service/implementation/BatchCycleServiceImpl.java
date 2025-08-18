@@ -3,6 +3,7 @@ package com.staff_portal.academic_service.service.implementation;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
@@ -39,8 +40,16 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 
 	@Override
 	public List<BatchCycleResponse> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		List<BatchCycle> entities = repository.findAll(Sort.by("batchCycleId").ascending());
+
+	    return entities.stream()
+	        .map(entity -> {
+	            BatchCycleResponse response = new BatchCycleResponse();
+	            response.setBatchCycleId(entity.getBatchCycleId());
+	            response.setCycleName(entity.getCycleName());
+	            return response;
+	        })
+	        .toList();
 	}
 		
 		 
