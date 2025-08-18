@@ -70,6 +70,15 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	     return new BatchCycleResponse(updated.getBatchCycleId(), updated.getCycleName());
 	 }
 	 
+	 @Override
+	 public void deleteBatchCycle(int id) {
+	   
+	     if (!repository.existsById(id)) {
+	         throw new RuntimeException("BatchCycle not found with id " + id);
+	     }
+	     
+	     repository.deleteById(id);
+	 }
 	 
 	
 	 }
