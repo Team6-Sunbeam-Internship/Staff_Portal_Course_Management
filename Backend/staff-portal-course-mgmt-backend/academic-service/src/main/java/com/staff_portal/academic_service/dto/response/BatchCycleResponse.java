@@ -1,9 +1,11 @@
 package com.staff_portal.academic_service.dto.response;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class BatchCycleResponse {
-
-	public BatchCycleResponse() {
-		// TODO Auto-generated constructor stub
-	}
-
+	 private int batchCycleId;
+	    private String cycleName;
 }
