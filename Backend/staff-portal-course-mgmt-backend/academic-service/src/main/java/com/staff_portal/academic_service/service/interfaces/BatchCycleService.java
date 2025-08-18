@@ -12,5 +12,7 @@ public interface BatchCycleService {
 	    BatchCycleResponse createBatchCycle(BatchCycleRequest request);
 	    BatchCycleResponse findById(int id);
 	    BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request);
+	    void deleteBatchCycle(int id);
+
 
 }
