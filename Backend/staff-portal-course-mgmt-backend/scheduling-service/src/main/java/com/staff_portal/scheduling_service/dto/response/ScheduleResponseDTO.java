@@ -1,0 +1,27 @@
+package com.staff_portal.scheduling_service.dto.response;
+
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@ToString
+public class ScheduleResponseDTO {
+
+	private Long id;
+
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private LocalDate scheduleDate;
+
+	private String activity;
+	private Long staffId;
+	private Long courseId;
+	private Long moduleId;
+	private Long infrastructureId;
+	private TimeSlotSimpleDTO timeSlot;
+}
