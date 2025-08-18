@@ -40,7 +40,8 @@ public class CourseController {
         CourseResponseDTO response = courseService.updateCourse(id, requestDTO);
         return ResponseEntity.ok(new CustomResponse<>(false, "Course Updated Successfully!", response));
     }
-
+    
+ //delete course
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteCourse(@PathVariable int id) {
         courseService.deleteCourse(id);
