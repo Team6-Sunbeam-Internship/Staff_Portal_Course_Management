@@ -59,7 +59,18 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	        return new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName());
 	    }
 	
-	
+	 @Override
+	 public BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request) {
+	     BatchCycle batch = repository.findById(id)
+	             .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
+
+	     batch.setCycleName(request.getCycleName());
+	     BatchCycle updated = repository.save(batch);
+
+	     return new BatchCycleResponse(updated.getBatchCycleId(), updated.getCycleName());
+	 }
+	 
+	 
 	
 	 }
 
