@@ -3,7 +3,9 @@ package com.staff_portal.academic_service.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +32,16 @@ public class BatchCycleController {
 	 @GetMapping
 	 public List<BatchCycleResponse> getAllBatchCycles() {
 	     return service.findAll();
+	 }
+	 
+	 @GetMapping("/{id}")
+	    public BatchCycleResponse getById(@PathVariable int id) {
+	        return service.findById(id);
+	    }
+	 
+	 @PutMapping("/{id}")
+	 public BatchCycleResponse update(@PathVariable int id, @RequestBody BatchCycleRequest request) {
+	     return service.updateBatchCycle(id, request);
 	 }
 	
 }
