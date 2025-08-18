@@ -7,5 +7,5 @@ import com.staff_portal.academic_service.model.BatchCycle;
 
 @Repository
 public interface BatchCycleRepository extends JpaRepository<BatchCycle, Integer> {
-
+	 boolean existsByCycleName(String cycleName);
 }
