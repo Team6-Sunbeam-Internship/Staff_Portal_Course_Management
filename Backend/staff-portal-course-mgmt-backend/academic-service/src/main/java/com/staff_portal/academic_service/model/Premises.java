@@ -21,22 +21,31 @@ import lombok.Setter;
 @Entity
 public class Premises {
 
-	@Id
-	@GeneratedValue(strategy =GenerationType.IDENTITY)
-	private int premisesId;
-	
-	@Column(nullable = false)
-	private String name;
-	
-	@Column(nullable = false)
-	private String address;
-	
-	@Column(nullable = false)
-	private String city;
-	
-	@Column(nullable = false)
-	private String state;
-	
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int premisesId;
+
+    @Column(name = "name", nullable = false)  // explicitly set column name
+    private String name;
+
+    @Column(name = "type", nullable = false)
+    private String type;
+
+    @Column(name = "address", nullable = false)
+    private String address;
+
+    @Column(name = "city", nullable = false)
+    private String city;
+
+    @Column(name = "state", nullable = false)
+    private String state;
+
+    @Column(name = "postal_code")  // name consistent with DB
+    private String postalCode;
+
+    @Column(name = "status", nullable = false)
+    private boolean isActive = true;
+
 	
 	@OneToMany(mappedBy = "premises", cascade = CascadeType.ALL)
 	private List<Infrastructure> infrastructure;
@@ -46,8 +55,13 @@ public class Premises {
 	
 	@Override
 	public String toString() {
-		
-		return "Premise [Id="+ premisesId +",Premises name="+ name +",Premises address="+address+",City="+city+",State="+state+"]" ;
+	    return "Premises [Id=" + premisesId +
+	           ", Name=" + name +
+	           ", Type=" + type +
+	           ", Address=" + address +
+	           ", City=" + city +
+	           ", State=" + state +
+	           ", PostalCode=" + postalCode + "]";
 	}
 	
 }
