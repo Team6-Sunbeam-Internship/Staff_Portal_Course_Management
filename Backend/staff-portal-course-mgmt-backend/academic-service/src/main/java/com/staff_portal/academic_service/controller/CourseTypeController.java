@@ -51,3 +51,4 @@ public class CourseTypeController {
         return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Found", response));
     }
 }
+
