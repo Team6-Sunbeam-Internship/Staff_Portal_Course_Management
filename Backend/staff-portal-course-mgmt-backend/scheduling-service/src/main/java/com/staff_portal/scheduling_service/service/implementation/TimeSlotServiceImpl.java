@@ -44,6 +44,11 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
 
         return TimeSlotMapper.toTimeSlotResponseDTO(optional.get());
     }
-
+       
+    @Override
+    public TimeSlotResponseDTO createTimeSlot(TimeSlotRequestDTO dto) {
+        TimeSlot entity = TimeSlotMapper.fromTimeSlotRequestDTO(dto);
+        TimeSlot saved = timeSlotRepository.save(entity);
+        return TimeSlotMapper.toTimeSlotResponseDTO(saved);
 }
 
