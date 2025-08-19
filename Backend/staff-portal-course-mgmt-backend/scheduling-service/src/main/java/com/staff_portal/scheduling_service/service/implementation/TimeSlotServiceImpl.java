@@ -30,8 +30,8 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
 
         for (TimeSlot slot : slots) {
             dtoList.add(TimeSlotMapper.toTimeSlotResponseDTO(slot));
+        
         }
-
         return dtoList;
     }
 
