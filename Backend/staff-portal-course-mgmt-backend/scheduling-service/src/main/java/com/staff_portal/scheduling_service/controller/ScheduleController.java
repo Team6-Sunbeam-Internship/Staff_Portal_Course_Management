@@ -50,6 +50,11 @@ public class ScheduleController {
 		ScheduleResponseDTO updated = scheduleService.updateSchedule(id, dto);
 		return ResponseEntity.ok(updated);
 	}
-	
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteSchedule(@PathVariable Long id) {
+		scheduleService.deleteSchedule(id);
+		return ResponseEntity.noContent().build();
+	}
+ 	
 	
 }
