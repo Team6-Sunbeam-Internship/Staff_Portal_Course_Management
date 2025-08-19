@@ -35,5 +35,15 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
         return dtoList;
     }
 
+    @Override
+    public TimeSlotResponseDTO getTimeSlotById(Long id) {
+        Optional<TimeSlot> optional = timeSlotRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new RuntimeException("TimeSlot not found with ID: " + id);
+        }
+
+        return TimeSlotMapper.toTimeSlotResponseDTO(optional.get());
+    }
+
 }
 
