@@ -10,4 +10,4 @@ public interface IRoleMenuAccessService {
 	RoleMenuAccessDTO updateRoleMenuAccessStatus(Long accessId, String newStatus);
 	String deleteRoleMenuAccess(Long accessId);
 	List<RoleMenuAccessDTO> getAllRoleMenuAccessData();
-}
+	List<RoleMenuAccessDTO> getAccessByRole(String roleName);}
