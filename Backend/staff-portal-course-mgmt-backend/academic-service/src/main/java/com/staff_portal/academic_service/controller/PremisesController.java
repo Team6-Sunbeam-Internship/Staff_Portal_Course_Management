@@ -2,7 +2,9 @@ package com.staff_portal.academic_service.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,5 +27,10 @@ public class PremisesController {
         PremisesResponse response = premisesService.createPremises(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+	
+	@PutMapping("/{id}")
+	public PremisesResponse updatePremises(@PathVariable int id, @RequestBody PremisesRequest request) {
+	    return premisesService.updatePremises(id, request);
+	}
 	
 }
