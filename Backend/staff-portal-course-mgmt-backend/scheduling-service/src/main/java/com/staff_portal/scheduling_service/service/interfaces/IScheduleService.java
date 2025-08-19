@@ -15,5 +15,6 @@ public interface IScheduleService {
 
 	ScheduleResponseDTO updateSchedule(Long id, ScheduleRequestDTO dto);
 	
+	void deleteSchedule(Long id);
 	
 }
