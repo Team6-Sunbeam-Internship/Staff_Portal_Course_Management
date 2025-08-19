@@ -43,8 +43,34 @@ public class PremisesServiceImpl implements PremisesService {
 
 	@Override
 	public PremisesResponse updatePremises(int id, PremisesRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		 Premises existingPremises = premisesRepository.findById(id)
+		            .orElseThrow(() -> new RuntimeException("Premises with id " + id + " not found"));
+
+		    // Update fields from request
+		    existingPremises.setName(request.getName());
+		    existingPremises.setType(request.getType());
+		    existingPremises.setAddress(request.getAddress());
+		    existingPremises.setCity(request.getCity());
+		    existingPremises.setState(request.getState());
+		    existingPremises.setPostalCode(request.getPostalCode());
+
+		    // Avoid NullPointerException for boolean
+		    if (request.getIsActive() != null) {
+		        existingPremises.setActive(request.getIsActive());
+		    }
+
+		    Premises updated = premisesRepository.save(existingPremises);
+
+		    return new PremisesResponse(
+		            updated.getPremisesId(),
+		            updated.getName(),
+		            updated.getType(),
+		            updated.getAddress(),
+		            updated.getCity(),
+		            updated.getState(),
+		            updated.getPostalCode(),
+		            updated.isActive()
+		    );
 	}
 
 	@Override
