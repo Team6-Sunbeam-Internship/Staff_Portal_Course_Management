@@ -82,8 +82,19 @@ public class PremisesServiceImpl implements PremisesService {
 
 	@Override
 	public List<PremisesResponse> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+	    List<Premises> premisesList = premisesRepository.findAll();
+	    return premisesList.stream()
+	            .map(p -> new PremisesResponse(
+	                    p.getPremisesId(),
+	                    p.getName(),
+	                    p.getType(),
+	                    p.getAddress(),
+	                    p.getCity(),
+	                    p.getState(),
+	                    p.getPostalCode(),
+	                    p.isActive()
+	            ))
+	            .toList();
 	}
 
 
