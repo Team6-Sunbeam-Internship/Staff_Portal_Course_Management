@@ -68,4 +68,12 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
         TimeSlot updated = timeSlotRepository.save(existing);
         return TimeSlotMapper.toTimeSlotResponseDTO(updated);
     }
+	
+	@Override
+    public void deleteTimeSlot(Long id) {
+        if (!timeSlotRepository.existsById(id)) {
+            throw new RuntimeException("TimeSlot not found with ID: " + id);
+        }
+        timeSlotRepository.deleteById(id);
+    }
 }
