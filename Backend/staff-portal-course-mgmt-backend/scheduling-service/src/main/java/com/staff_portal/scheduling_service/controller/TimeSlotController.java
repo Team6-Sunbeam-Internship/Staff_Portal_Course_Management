@@ -20,7 +20,6 @@ import com.staff_portal.scheduling_service.service.interfaces.ITimeSlotService;
 
 import jakarta.validation.Valid;
 
-
 @RestController
 @RequestMapping("/timeslot")
 public class TimeSlotController {
@@ -38,4 +37,10 @@ public class TimeSlotController {
 	public ResponseEntity<TimeSlotResponseDTO> getById(@PathVariable Long id) {
 		return ResponseEntity.ok(timeSlotService.getTimeSlotById(id));
 	}
+
+	@PostMapping
+	public ResponseEntity<TimeSlotResponseDTO> create(@Valid @RequestBody TimeSlotRequestDTO dto) {
+		return ResponseEntity.ok(timeSlotService.createTimeSlot(dto));
+	}
+
 }
