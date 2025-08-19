@@ -13,4 +13,7 @@ public interface IScheduleService {
 	
 	ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto);
 
+	ScheduleResponseDTO updateSchedule(Long id, ScheduleRequestDTO dto);
+	
+	
 }
