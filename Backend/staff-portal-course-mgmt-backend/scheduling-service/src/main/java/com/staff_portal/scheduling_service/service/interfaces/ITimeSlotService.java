@@ -9,10 +9,11 @@ import jakarta.validation.Valid;
 
 public interface ITimeSlotService  {
 
+	
 	List<TimeSlotResponseDTO> getAllTimeSlots();
 
-	
-
-	
-
 }
+
+	
+
+
