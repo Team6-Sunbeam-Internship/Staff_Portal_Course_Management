@@ -13,6 +13,8 @@ public interface ITimeSlotService  {
 	List<TimeSlotResponseDTO> getAllTimeSlots();
 	
 	TimeSlotResponseDTO getTimeSlotById(Long id);
+	
+	TimeSlotResponseDTO createTimeSlot(@Valid TimeSlotRequestDTO dto);
 
 }
 
