@@ -9,5 +9,5 @@ public interface IScheduleService {
 
 	List<ScheduleResponseDTO> getAllSchedules();
 
-	
+	ScheduleResponseDTO getScheduleById(Long id);
 }
