@@ -19,17 +19,31 @@ import lombok.Setter;
 @Entity
 public class Infrastructure {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int infrastructureId;
-	
-	@Column(nullable=false)
-	private String roomName;
-	
-	@ManyToOne
-	@JoinColumn(name="premisesId",nullable=false)
-	private Premises premises;
+	 @Id
+	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	    @Column(name = "infrastructure_id")
+	    private int infrastructureId;
 
+	    @Column(name = "room_name", nullable = false)
+	    private String roomName;
+
+	    @Column(name = "type", nullable = false)
+	    private String type;
+
+	    @Column(name = "location", nullable = false)
+	    private String location;
+
+	    @Column(name = "capacity", nullable = false)
+	    private int capacity;
+
+	    @Column(name = "description", length = 500)
+	    private String description;
+	    
+	    @ManyToOne
+	    @JoinColumn(name = "premises_id", nullable = false)
+	    private Premises premises;
+
+	  
 	
 	
 }
