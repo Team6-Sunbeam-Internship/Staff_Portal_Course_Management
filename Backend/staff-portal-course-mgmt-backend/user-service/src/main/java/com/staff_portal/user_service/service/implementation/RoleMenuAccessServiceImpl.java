@@ -1,6 +1,7 @@
 package com.staff_portal.user_service.service.implementation;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +39,7 @@ public class RoleMenuAccessServiceImpl implements IRoleMenuAccessService {
 		
 		RoleMenuAccess saved = roleMenuAccessRepository.save(roleMenuAccess);
 		
-		return RoleMenuAccessDTO.builder()
-				.accessId(saved.getAccessId())
-				.roleName(saved.getRoleName())
-				.menuItemId(saved.getMenuItem().getMenuItemId())
-				.status(saved.getStatus())
-				.build();
+		 return mapToDTO(saved);
 	}
 
 	@Override
@@ -55,12 +51,7 @@ public class RoleMenuAccessServiceImpl implements IRoleMenuAccessService {
 		roleMenuAccess.setStatus(AccessStatus.valueOf(newStatus.toUpperCase()));
 		RoleMenuAccess updated = roleMenuAccessRepository.save(roleMenuAccess);
 		
-		return RoleMenuAccessDTO.builder()
-				.accessId(accessId)
-				.roleName(updated.getRoleName())
-				.menuItemId(accessId)
-				.status(updated.getStatus())
-				.build();
+		return mapToDTO(updated);
 		
 	}
 	
@@ -83,13 +74,34 @@ public class RoleMenuAccessServiceImpl implements IRoleMenuAccessService {
 		}
 		
 		return roleMenuAccessData.stream()
-				.map(item -> RoleMenuAccessDTO.builder()
-						.accessId(item.getAccessId())
-						.roleName(item.getRoleName())
-						.menuItemId(item.getMenuItem().getMenuItemId())
-						.status(item.getStatus())
-						.build()
-						)
-				.collect(Collectors.toList());
+		 .map(this::mapToDTO)
+		 .toList();
 	 }
+
+	    @Override
+	    public List<RoleMenuAccessDTO> getAccessByRole(String roleName) {
+	        List<RoleMenuAccess> roleMenuAccessData = Optional
+	                .of(roleMenuAccessRepository.findByRoleNameIgnoreCase(roleName))
+	                .filter(list -> !list.isEmpty())
+	                .orElseThrow(() -> new ResourceNotFoundException(
+	                        "No menu access found for role: " + roleName));
+
+	        return roleMenuAccessData.stream()
+	                .map(this::mapToDTO)
+	                .toList();
+	    }
+
+	 // Private helper method
+	 private RoleMenuAccessDTO mapToDTO(RoleMenuAccess entity) {
+		    return RoleMenuAccessDTO.builder()
+		            .accessId(entity.getAccessId())
+		            .roleName(entity.getRoleName())
+		            .menuItemId(entity.getMenuItem().getMenuItemId()) 
+		            .status(entity.getStatus())
+		            .build();
+		}
+
+
+
+	 
 }
