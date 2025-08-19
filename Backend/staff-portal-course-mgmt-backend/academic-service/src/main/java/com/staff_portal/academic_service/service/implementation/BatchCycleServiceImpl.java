@@ -1,11 +1,8 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
 import com.staff_portal.academic_service.dto.response.BatchCycleResponse;
 import com.staff_portal.academic_service.model.BatchCycle;
@@ -26,49 +23,71 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 
 	@Override
 	public BatchCycleResponse createBatchCycle(BatchCycleRequest request) {
-		BatchCycle entity=new BatchCycle();
-		entity.setCycleName(request.getCycleName());
-        BatchCycle saved = repository.save(entity);
+	    BatchCycle entity = new BatchCycle();
+	    entity.setCycleName(request.getCycleName());
+	    entity.setDescription(request.getDescription());
+	    entity.setStartDate(request.getStartDate());
+	    entity.setEndDate(request.getEndDate());
 
-        BatchCycleResponse response = new BatchCycleResponse();
-        response.setBatchCycleId(saved.getBatchCycleId());
-        response.setCycleName(saved.getCycleName());
+	    BatchCycle saved = repository.save(entity);
 
-        return response;
-	
+	    return new BatchCycleResponse(
+	        saved.getBatchCycleId(),
+	        saved.getCycleName(),
+	        saved.getDescription(),
+	        saved.getStartDate(),
+	        saved.getEndDate()
+	    );
 	}
 
 	@Override
 	public List<BatchCycleResponse> findAll() {
-		List<BatchCycle> entities = repository.findAll(Sort.by("batchCycleId").ascending());
-
-	    return entities.stream()
-	        .map(entity -> {
-	            BatchCycleResponse response = new BatchCycleResponse();
-	            response.setBatchCycleId(entity.getBatchCycleId());
-	            response.setCycleName(entity.getCycleName());
-	            return response;
-	        })
-	        .toList();
+	    return repository.findAll(Sort.by("batchCycleId").ascending())
+	            .stream()
+	            .map(batch -> new BatchCycleResponse(
+	                    batch.getBatchCycleId(),
+	                    batch.getCycleName(),
+	                    batch.getDescription(),
+	                    batch.getStartDate(),
+	                    batch.getEndDate()
+	            ))
+	            .toList();
 	}
 		
-	 @Override
-	    public BatchCycleResponse findById(int id) {
-	        BatchCycle batch = repository.findById(id)
-	                .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
-	        return new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName());
-	    }
+	@Override
+	public BatchCycleResponse findById(int id) {
+	    BatchCycle batch = repository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
+	    return new BatchCycleResponse(
+	            batch.getBatchCycleId(),
+	            batch.getCycleName(),
+	            batch.getDescription(),
+	            batch.getStartDate(),
+	            batch.getEndDate()
+	    );
+	}
 	
-	 @Override
-	 public BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request) {
-	     BatchCycle batch = repository.findById(id)
-	             .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
+	@Override
+	public BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request) {
+	    BatchCycle batch = repository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
 
-	     batch.setCycleName(request.getCycleName());
-	     BatchCycle updated = repository.save(batch);
+	    batch.setCycleName(request.getCycleName());
+	    batch.setDescription(request.getDescription());
+	    batch.setStartDate(request.getStartDate());
+	    batch.setEndDate(request.getEndDate());
 
-	     return new BatchCycleResponse(updated.getBatchCycleId(), updated.getCycleName());
-	 }
+	    BatchCycle updated = repository.save(batch);
+
+	    return new BatchCycleResponse(
+	            updated.getBatchCycleId(),
+	            updated.getCycleName(),
+	            updated.getDescription(),
+	            updated.getStartDate(),
+	            updated.getEndDate()
+	    );
+	}
+
 	 
 	 @Override
 	 public void deleteBatchCycle(int id) {
