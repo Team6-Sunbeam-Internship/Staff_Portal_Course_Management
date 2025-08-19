@@ -42,6 +42,13 @@ public class ScheduleServiceImpl implements IScheduleService {
 		return dtoList;
 	}
 
-	
+	@Override
+	public ScheduleResponseDTO getScheduleById(Long id) {
+		Optional<Schedule> optionalSchedule = scheduleRepository.findById(id);
+		if (optionalSchedule.isEmpty()) {
+			throw new RuntimeException("Schedule not found with ID: " + id);
+		}
+		return ScheduleMapper.toScheduleResponseDTO(optionalSchedule.get());
+	}
 
 }
