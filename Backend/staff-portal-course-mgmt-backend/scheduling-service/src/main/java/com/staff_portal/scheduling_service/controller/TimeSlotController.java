@@ -48,4 +48,10 @@ public class TimeSlotController {
 			@Valid @RequestBody TimeSlotRequestDTO dto) {
 		return ResponseEntity.ok(timeSlotService.updateTimeSlot(id, dto));
 	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> delete(@PathVariable Long id) {
+		timeSlotService.deleteTimeSlot(id);
+		return ResponseEntity.noContent().build();
+	}
 }
