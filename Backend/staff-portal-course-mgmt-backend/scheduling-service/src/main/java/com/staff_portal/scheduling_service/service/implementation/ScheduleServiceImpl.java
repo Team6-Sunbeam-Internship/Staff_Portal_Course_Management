@@ -87,8 +87,15 @@ public class ScheduleServiceImpl implements IScheduleService {
 		return ScheduleMapper.toScheduleResponseDTO(updated);
 	}
 	
-	
+
+	@Override
+	public void deleteSchedule(Long id) {
+		if (!scheduleRepository.existsById(id)) {
+			throw new RuntimeException("Schedule not found with ID: " + id);
+		}
+		scheduleRepository.deleteById(id);
+	}
 	}
 
 
-}
+
