@@ -43,4 +43,9 @@ public class TimeSlotController {
 		return ResponseEntity.ok(timeSlotService.createTimeSlot(dto));
 	}
 
+	@PutMapping("/{id}")
+	public ResponseEntity<TimeSlotResponseDTO> update(@PathVariable Long id,
+			@Valid @RequestBody TimeSlotRequestDTO dto) {
+		return ResponseEntity.ok(timeSlotService.updateTimeSlot(id, dto));
+	}
 }
