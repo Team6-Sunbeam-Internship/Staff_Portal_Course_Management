@@ -60,5 +60,35 @@ public class ScheduleServiceImpl implements IScheduleService {
 		Schedule saved = scheduleRepository.save(schedule);
 		return ScheduleMapper.toScheduleResponseDTO(saved);
 	}
+	
+	@Transactional
+	@Override
+	public ScheduleResponseDTO updateSchedule(Long id, ScheduleRequestDTO dto) {
+		Optional<Schedule> optional = scheduleRepository.findById(id);
+		if (optional.isEmpty()) {
+			throw new RuntimeException("Schedule not found with ID: " + id);
+		}
+		Schedule schedule = optional.get();
+		TimeSlot timeSlot = timeSlotRepository.findById(schedule.getTimeSlot().getId())
+				.orElseThrow(() -> new RuntimeException("TimeSlot not found"));
+		schedule.setScheduleDate(dto.getScheduleDate());
+		schedule.setActivity(dto.getActivity());
+		schedule.setCourseId(dto.getCourseId());
+		schedule.setStaffId(dto.getStaffId());
+		schedule.setModuleId(dto.getModuleId());
+		schedule.setInfrastructureId(dto.getInfrastructureId());
+		TimeSlotRequestDTO dto1 = dto.getTimeSlot();
+		timeSlot.setStartTime(dto1.getStartTime());
+		timeSlot.setEndTime(dto1.getEndTime());
+		timeSlot.setSlotName(dto1.getSlotName());
+		schedule.setTimeSlot(timeSlot);
+
+		Schedule updated = scheduleRepository.save(schedule);
+		return ScheduleMapper.toScheduleResponseDTO(updated);
+	}
+	
+	
+	}
+
 
 }
