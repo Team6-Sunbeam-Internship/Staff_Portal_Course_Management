@@ -39,4 +39,9 @@ public class ScheduleController {
 		return ResponseEntity.ok(dto);
 	}
 
+	@PostMapping
+	public ResponseEntity<ScheduleResponseDTO> createSchedules(@Valid @RequestBody ScheduleRequestDTO dto) {
+		ScheduleResponseDTO created = scheduleService.createSchedule(dto);
+		return ResponseEntity.ok(created);
+	}
 }
