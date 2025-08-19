@@ -14,10 +14,6 @@ import com.staff_portal.scheduling_service.model.TimeSlot;
 public interface TimeSlotRepository extends JpaRepository<TimeSlot, Long> {
 
 
-	List<TimeSlot> findAll();
-
-	Optional<TimeSlot> findById(TimeSlot timeSlot);
-
 	
 
 }

@@ -11,15 +11,6 @@ import com.staff_portal.scheduling_service.model.Schedule;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-	List<Schedule> findAll();
-
-	Optional<Schedule> findById(Long id);
 	
-	Schedule save(Schedule schedule);
-	
-	boolean existsById(Long id);
-
-	void deleteById(Long id);
-
 
 }
