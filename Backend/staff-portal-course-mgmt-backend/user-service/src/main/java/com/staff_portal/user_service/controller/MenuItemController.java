@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.staff_portal.user_service.model.MenuItem;
 import com.staff_portal.user_service.service.interfaces.IMenuItemService;
 
