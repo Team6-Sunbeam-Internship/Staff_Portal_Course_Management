@@ -2,6 +2,7 @@ package com.staff_portal.academic_service.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,6 +32,12 @@ public class PremisesController {
 	@PutMapping("/{id}")
 	public PremisesResponse updatePremises(@PathVariable int id, @RequestBody PremisesRequest request) {
 	    return premisesService.updatePremises(id, request);
+	}
+	
+	@DeleteMapping("/{id}")
+	public ResponseEntity<String> deletePremises(@PathVariable int id) {
+	    premisesService.deletePremises(id);
+	    return ResponseEntity.ok("Premises with id " + id + " deleted successfully");
 	}
 	
 }
