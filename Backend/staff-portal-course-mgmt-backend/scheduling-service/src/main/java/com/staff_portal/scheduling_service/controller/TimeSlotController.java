@@ -34,5 +34,8 @@ public class TimeSlotController {
 		return ResponseEntity.ok(list);
 	}
 
-	
+	@GetMapping("/{id}")
+	public ResponseEntity<TimeSlotResponseDTO> getById(@PathVariable Long id) {
+		return ResponseEntity.ok(timeSlotService.getTimeSlotById(id));
+	}
 }
