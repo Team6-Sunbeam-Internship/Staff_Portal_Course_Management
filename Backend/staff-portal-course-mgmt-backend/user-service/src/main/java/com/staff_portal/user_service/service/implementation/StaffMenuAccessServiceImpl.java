@@ -37,11 +37,7 @@ public class StaffMenuAccessServiceImpl implements IStaffMenuAccessService {
 
         StaffMenuAccess saved = staffMenuAccessRepository.save(access);
 
-        return StaffMenuAccessDTO.builder()
-                .staffId(saved.getStaffId())
-                .menuItemId(saved.getMenuItem().getMenuItemId())
-                .status(saved.getStatus())
-                .build();
+        return mapToDTO(saved);
 
 	}
 
@@ -49,11 +45,7 @@ public class StaffMenuAccessServiceImpl implements IStaffMenuAccessService {
 	public List<StaffMenuAccessDTO> getAllAccess() {
 		List<StaffMenuAccess> accessList = staffMenuAccessRepository.findAll();
         return accessList.stream()
-                .map(item -> StaffMenuAccessDTO.builder()
-                        .staffId(item.getStaffId())
-                        .menuItemId(item.getMenuItem().getMenuItemId())
-                        .status(item.getStatus())
-                        .build())
+        		.map(this::mapToDTO)
                 .collect(Collectors.toList());
 	}
 
@@ -64,12 +56,8 @@ public class StaffMenuAccessServiceImpl implements IStaffMenuAccessService {
 	          throw new ResourceNotFoundException("No access records found for staff ID: " + staffId);
 	     }
 	     return accessList.stream()
-	            .map(item -> StaffMenuAccessDTO.builder()
-	                   .staffId(item.getStaffId())
-	                   .menuItemId(item.getMenuItem().getMenuItemId())
-	                   .status(item.getStatus())
-	                   .build())
-	                   .collect(Collectors.toList());
+	    		 .map(this::mapToDTO)
+	             .collect(Collectors.toList());
 	}
 
 	@Override
@@ -80,11 +68,8 @@ public class StaffMenuAccessServiceImpl implements IStaffMenuAccessService {
         access.setStatus(AccessStatus.valueOf(newStatus.toUpperCase()));
         StaffMenuAccess updated =staffMenuAccessRepository.save(access);
 
-        return StaffMenuAccessDTO.builder()
-                .staffId(updated.getStaffId())
-                .menuItemId(updated.getMenuItem().getMenuItemId())
-                .status(updated.getStatus())
-                .build();
+        return mapToDTO(updated);	
+        
 	}
 
 	@Override
@@ -96,5 +81,14 @@ public class StaffMenuAccessServiceImpl implements IStaffMenuAccessService {
         
 		return "Menu item deleted successfully with ID: " + id;		
 	}
+	
+	// Private helper method
+	private StaffMenuAccessDTO mapToDTO(StaffMenuAccess entity) {
+        return StaffMenuAccessDTO.builder()
+                .staffId(entity.getStaffId())
+                .menuItemId(entity.getMenuItem().getMenuItemId())
+                .status(entity.getStatus())
+                .build();
+    }
 
 }
