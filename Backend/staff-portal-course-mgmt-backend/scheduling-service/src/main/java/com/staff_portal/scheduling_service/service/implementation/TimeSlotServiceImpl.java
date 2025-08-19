@@ -21,34 +21,51 @@ import jakarta.transaction.Transactional;
 public class TimeSlotServiceImpl implements ITimeSlotService {
 
 	@Autowired
-    private TimeSlotRepository timeSlotRepository;
+	private TimeSlotRepository timeSlotRepository;
 
+	@Override
+	public List<TimeSlotResponseDTO> getAllTimeSlots() {
+		List<TimeSlot> slots = timeSlotRepository.findAll();
+		List<TimeSlotResponseDTO> dtoList = new ArrayList<>();
+
+		for (TimeSlot slot : slots) {
+			dtoList.add(TimeSlotMapper.toTimeSlotResponseDTO(slot));
+
+		}
+		return dtoList;
+	}
+
+	@Override
+	public TimeSlotResponseDTO getTimeSlotById(Long id) {
+		Optional<TimeSlot> optional = timeSlotRepository.findById(id);
+		if (optional.isEmpty()) {
+			throw new RuntimeException("TimeSlot not found with ID: " + id);
+		}
+
+		return TimeSlotMapper.toTimeSlotResponseDTO(optional.get());
+	}
+
+	@Override
+	public TimeSlotResponseDTO createTimeSlot(TimeSlotRequestDTO dto) {
+		TimeSlot entity = TimeSlotMapper.fromTimeSlotRequestDTO(dto);
+		TimeSlot saved = timeSlotRepository.save(entity);
+		return TimeSlotMapper.toTimeSlotResponseDTO(saved);
+	}
+	
+	@Transactional
     @Override
-    public List<TimeSlotResponseDTO> getAllTimeSlots() {
-        List<TimeSlot> slots = timeSlotRepository.findAll();
-        List<TimeSlotResponseDTO> dtoList = new ArrayList<>();
-
-        for (TimeSlot slot : slots) {
-            dtoList.add(TimeSlotMapper.toTimeSlotResponseDTO(slot));
-        
-        }
-        return dtoList;
-    }
-
-    @Override
-    public TimeSlotResponseDTO getTimeSlotById(Long id) {
+    public TimeSlotResponseDTO updateTimeSlot(Long id, TimeSlotRequestDTO dto) {
         Optional<TimeSlot> optional = timeSlotRepository.findById(id);
         if (optional.isEmpty()) {
             throw new RuntimeException("TimeSlot not found with ID: " + id);
         }
 
-        return TimeSlotMapper.toTimeSlotResponseDTO(optional.get());
-    }
-       
-    @Override
-    public TimeSlotResponseDTO createTimeSlot(TimeSlotRequestDTO dto) {
-        TimeSlot entity = TimeSlotMapper.fromTimeSlotRequestDTO(dto);
-        TimeSlot saved = timeSlotRepository.save(entity);
-        return TimeSlotMapper.toTimeSlotResponseDTO(saved);
-}
+        TimeSlot existing = optional.get();
+        existing.setStartTime(dto.getStartTime());
+        existing.setEndTime(dto.getEndTime());
+        existing.setSlotName(dto.getSlotName());
 
+        TimeSlot updated = timeSlotRepository.save(existing);
+        return TimeSlotMapper.toTimeSlotResponseDTO(updated);
+    }
+}
