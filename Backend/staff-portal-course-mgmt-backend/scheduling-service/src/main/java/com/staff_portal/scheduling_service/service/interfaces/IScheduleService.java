@@ -1,0 +1,13 @@
+package com.staff_portal.scheduling_service.service.interfaces;
+
+import java.util.List;
+
+import com.staff_portal.scheduling_service.dto.request.ScheduleRequestDTO;
+import com.staff_portal.scheduling_service.dto.response.ScheduleResponseDTO;
+
+public interface IScheduleService {
+
+	List<ScheduleResponseDTO> getAllSchedules();
+
+	
+}
