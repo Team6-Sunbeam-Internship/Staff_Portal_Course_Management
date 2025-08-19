@@ -42,4 +42,9 @@ public class RoleMenuAccessController {
 		return ResponseEntity.ok(roleMenuAccessService.getAllRoleMenuAccessData());
 	}
 
+	@GetMapping("/role/{roleName}")
+	public ResponseEntity<List<RoleMenuAccessDTO>> getByRole(@PathVariable String roleName) {
+		return ResponseEntity.ok(roleMenuAccessService.getAccessByRole(roleName));
+	}
+
 }
