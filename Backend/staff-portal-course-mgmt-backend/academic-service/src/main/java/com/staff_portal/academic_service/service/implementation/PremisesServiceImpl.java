@@ -54,7 +54,7 @@ public class PremisesServiceImpl implements PremisesService {
 		    existingPremises.setState(request.getState());
 		    existingPremises.setPostalCode(request.getPostalCode());
 
-		    // Avoid NullPointerException for boolean
+		   
 		    if (request.getIsActive() != null) {
 		        existingPremises.setActive(request.getIsActive());
 		    }
@@ -75,8 +75,9 @@ public class PremisesServiceImpl implements PremisesService {
 
 	@Override
 	public void deletePremises(int id) {
-		// TODO Auto-generated method stub
-		
+	    Premises premises = premisesRepository.findById(id)
+	        .orElseThrow(() -> new RuntimeException("Premises with id " + id + " not found"));
+	    premisesRepository.delete(premises);
 	}
 
 	@Override
@@ -85,10 +86,5 @@ public class PremisesServiceImpl implements PremisesService {
 		return null;
 	}
 
-	@Override
-	public PremisesResponse findById(int id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }
