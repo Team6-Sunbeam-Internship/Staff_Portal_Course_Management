@@ -10,4 +10,7 @@ public interface IScheduleService {
 	List<ScheduleResponseDTO> getAllSchedules();
 
 	ScheduleResponseDTO getScheduleById(Long id);
+	
+	ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto);
+
 }
