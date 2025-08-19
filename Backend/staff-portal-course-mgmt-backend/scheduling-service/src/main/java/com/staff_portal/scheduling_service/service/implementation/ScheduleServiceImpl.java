@@ -50,5 +50,15 @@ public class ScheduleServiceImpl implements IScheduleService {
 		}
 		return ScheduleMapper.toScheduleResponseDTO(optionalSchedule.get());
 	}
+	
+	@Override
+	public ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto) {
+		TimeSlotRequestDTO timeSlotRequest = dto.getTimeSlot();
+		TimeSlot timeSlot = TimeSlotMapper.fromTimeSlotRequestDTO(timeSlotRequest);
+		Schedule schedule = ScheduleMapper.fromScheduleRequestDTO(dto, timeSlot);
+		timeSlotRepository.save(timeSlot);
+		Schedule saved = scheduleRepository.save(schedule);
+		return ScheduleMapper.toScheduleResponseDTO(saved);
+	}
 
 }
