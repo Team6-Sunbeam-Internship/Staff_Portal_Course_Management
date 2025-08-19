@@ -17,6 +17,8 @@ public interface ITimeSlotService  {
 	TimeSlotResponseDTO createTimeSlot(@Valid TimeSlotRequestDTO dto);
 
 	TimeSlotResponseDTO updateTimeSlot(Long id, @Valid TimeSlotRequestDTO dto);
+	
+	void deleteTimeSlot(Long id);
 }
 
 	
