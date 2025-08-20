@@ -44,6 +44,26 @@ public class InfrastructureServiceImpl implements InfrastructureService {
                 saved.getPremises().getName()
         );
     }
+
+    
+    @Override
+    public InfrastructureResponse getInfrastructureById(int id) {
+        Infrastructure infra = infrastructureRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Infrastructure not found with id: " + id));
+
+        return new InfrastructureResponse(
+                infra.getInfrastructureId(),
+                infra.getRoomName(),
+                infra.getType(),
+                infra.getLocation(),
+                infra.getCapacity(),
+                infra.getDescription(),
+                infra.getPremises().getPremisesId(),
+                infra.getPremises().getName()
+        );
+    }
+	
+   
 	
 
 }
