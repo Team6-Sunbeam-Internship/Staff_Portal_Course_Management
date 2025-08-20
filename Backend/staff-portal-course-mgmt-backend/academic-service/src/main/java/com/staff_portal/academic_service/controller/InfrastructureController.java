@@ -2,6 +2,7 @@ package com.staff_portal.academic_service.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +44,13 @@ public class InfrastructureController {
 	            @PathVariable int id,
 	            @RequestBody InfrastructureRequest request) {
 	        return ResponseEntity.ok(infrastructureService.updateInfrastructure(id, request));
+	    }
+	    
+	    // deleting the infrastructure
+	    @DeleteMapping("/{id}")
+	    public ResponseEntity<String> deleteInfrastructure(@PathVariable int id) {
+	        infrastructureService.deleteInfrastructure(id);
+	        return ResponseEntity.ok("Infrastructure deleted successfully with id: " + id);
 	    }
 
 }
