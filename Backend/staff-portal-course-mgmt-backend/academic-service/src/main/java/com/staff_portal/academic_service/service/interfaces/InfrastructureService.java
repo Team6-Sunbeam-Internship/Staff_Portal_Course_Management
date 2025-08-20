@@ -9,7 +9,8 @@ public interface InfrastructureService {
 
 	InfrastructureResponse getInfrastructureById(int id);
 	 
-	
+	InfrastructureResponse updateInfrastructure(int id, InfrastructureRequest request);
+
 	 
 
 }
