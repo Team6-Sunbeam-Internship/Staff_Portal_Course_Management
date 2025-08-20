@@ -11,6 +11,7 @@ public interface InfrastructureService {
 	 
 	InfrastructureResponse updateInfrastructure(int id, InfrastructureRequest request);
 
-	 
+	void deleteInfrastructure(int id);
+
 
 }
