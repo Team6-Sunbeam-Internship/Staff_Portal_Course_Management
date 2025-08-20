@@ -95,6 +95,16 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 		            updated.getPremises().getName()
 		    );
 		}
+
+
+	@Override
+	public void deleteInfrastructure(int id) {
+		 Infrastructure infra = infrastructureRepository.findById(id)
+		            .orElseThrow(() -> new RuntimeException("Infrastructure not found with id: " + id));
+
+		    infrastructureRepository.delete(infra);
+		
+	}
 	
     
    
