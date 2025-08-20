@@ -7,4 +7,9 @@ public interface InfrastructureService {
 	
 	 InfrastructureResponse createInfrastructure(InfrastructureRequest request);
 
+	InfrastructureResponse getInfrastructureById(int id);
+	 
+	
+	 
+
 }
