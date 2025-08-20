@@ -1,5 +1,6 @@
 package com.staff_portal.academic_service.service.implementation;
 
+
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.InfrastructureRequest;
 import com.staff_portal.academic_service.dto.response.InfrastructureResponse;
@@ -62,8 +63,42 @@ public class InfrastructureServiceImpl implements InfrastructureService {
                 infra.getPremises().getName()
         );
     }
+
+
+	@Override
+	public InfrastructureResponse updateInfrastructure(int id, InfrastructureRequest request) {
+		
+		   Infrastructure infra = infrastructureRepository.findById(id)
+		            .orElseThrow(() -> new RuntimeException("Infrastructure not found with id: " + id));
+
+		    Premises premises = premisesRepository.findById(request.getPremisesId())
+		            .orElseThrow(() -> new RuntimeException("Premises not found with id: " + request.getPremisesId()));
+
+		    // update fields
+		    infra.setRoomName(request.getRoomName());
+		    infra.setType(request.getType());
+		    infra.setLocation(request.getLocation());
+		    infra.setCapacity(request.getCapacity());
+		    infra.setDescription(request.getDescription());
+		    infra.setPremises(premises);
+
+		    Infrastructure updated = infrastructureRepository.save(infra);
+
+		    return new InfrastructureResponse(
+		            updated.getInfrastructureId(),
+		            updated.getRoomName(),
+		            updated.getType(),
+		            updated.getLocation(),
+		            updated.getCapacity(),
+		            updated.getDescription(),
+		            updated.getPremises().getPremisesId(),
+		            updated.getPremises().getName()
+		    );
+		}
 	
+    
    
 	
+  	
 
 }
