@@ -99,7 +99,6 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	     repository.deleteById(id);
 	 }
 	 
-	
 	 }
 
 
