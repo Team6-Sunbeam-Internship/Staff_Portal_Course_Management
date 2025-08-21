@@ -4,6 +4,7 @@ package com.staff_portal.scheduling_service.service.implementation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,13 @@ public class SessionServiceImpl implements ISessionService {
 
 	        return dtoList;
 	}
-
-	
+		
+		@Override
+	    public SessionReqRespDTO getSessionById(Long id) {
+	        Optional<Session> sessionOpt = sessionRepository.findById(id);
+	        if (sessionOpt.isPresent()) {
+	        }
+	        return null;
+		}
 
 }
