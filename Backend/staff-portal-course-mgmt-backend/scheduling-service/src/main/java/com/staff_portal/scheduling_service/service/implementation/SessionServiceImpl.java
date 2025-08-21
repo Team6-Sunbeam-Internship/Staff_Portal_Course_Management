@@ -54,5 +54,28 @@ public class SessionServiceImpl implements ISessionService {
 	        }
 	        return null;
 		}
+		
+		@Override
+	    public SessionReqRespDTO updateSession(Long id,SessionReqRespDTO dto) {
+	        Optional<Session> existingOpt = sessionRepository.findById(id);
+	        if (existingOpt.isPresent()) {
+	            Session existing = existingOpt.get();
+	            existing.setTitle(dto.getTitle());
+	            existing.setMeetingId(dto.getMeetingId());
+	            existing.setMeetingCredentials(dto.getMeetingCredentials());
+	            existing.setStatus(dto.getStatus());
+	            existing.setDescription(dto.getDescription());
+	            existing.setCodeShareToken(dto.getCodeShareToken());
+	            existing.setSessionDate(dto.getSessionDate());
+                existing.setStartTime(dto.getStartTime());
+                existing.setEndTime(dto.getEndTime());
+	            existing.setStaffId(dto.getStaffId());
+
+	            Session updated = sessionRepository.save(existing);
+	            return SessionMapper.toSessionReqRespDTO(updated);
+	        }
+
+	        return null;
+	    }
 
 }
