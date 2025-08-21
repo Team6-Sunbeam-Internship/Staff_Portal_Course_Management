@@ -25,7 +25,7 @@ public class PremisesServiceImpl implements PremisesService {
 	        entity.setCity(request.getCity());
 	        entity.setState(request.getState());
 	        entity.setPostalCode(request.getPostalCode());
-	        entity.setActive(request.getIsActive());
+	        entity.setStatus(request.getStatus());
 
 	        Premises saved = premisesRepository.save(entity);
 
@@ -37,7 +37,7 @@ public class PremisesServiceImpl implements PremisesService {
 	                saved.getCity(),
 	                saved.getState(),
 	                saved.getPostalCode(),
-	                saved.isActive()
+	                saved.getStatus() 
 	        );
 	    }
 
@@ -55,8 +55,8 @@ public class PremisesServiceImpl implements PremisesService {
 		    existingPremises.setPostalCode(request.getPostalCode());
 
 		   
-		    if (request.getIsActive() != null) {
-		        existingPremises.setActive(request.getIsActive());
+		    if (request.getStatus() != null) {
+		        existingPremises.setStatus(request.getStatus());
 		    }
 
 		    Premises updated = premisesRepository.save(existingPremises);
@@ -69,7 +69,7 @@ public class PremisesServiceImpl implements PremisesService {
 		            updated.getCity(),
 		            updated.getState(),
 		            updated.getPostalCode(),
-		            updated.isActive()
+		            updated.getStatus()
 		    );
 	}
 
@@ -92,7 +92,7 @@ public class PremisesServiceImpl implements PremisesService {
 	                    p.getCity(),
 	                    p.getState(),
 	                    p.getPostalCode(),
-	                    p.isActive()
+	                    p.getStatus()
 	            ))
 	            .toList();
 	}
