@@ -35,7 +35,7 @@ public class CourseController {
                 .body(new CustomResponse<>(false, "Course Added Successfully!", response));
     }
 
-    @PutMapping("/updatecourse/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<?> updateCourse(@PathVariable int id, @RequestBody CourseRequestDTO requestDTO) {
         CourseResponseDTO response = courseService.updateCourse(id, requestDTO);
         return ResponseEntity.ok(new CustomResponse<>(false, "Course Updated Successfully!", response));

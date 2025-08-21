@@ -11,3 +11,4 @@ public interface PremisesRepository extends JpaRepository<Premises, Integer> {
 	
 }
 
+
