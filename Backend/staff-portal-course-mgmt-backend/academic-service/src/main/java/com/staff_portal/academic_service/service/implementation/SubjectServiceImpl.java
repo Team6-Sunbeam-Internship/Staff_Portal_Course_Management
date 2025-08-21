@@ -9,7 +9,7 @@ import com.staff_portal.academic_service.enums.SubjectStatus;
 import com.staff_portal.academic_service.model.Course;
 import com.staff_portal.academic_service.model.Module;
 import com.staff_portal.academic_service.model.Subject;
-import com.staff_portal.academic_service.repository.CourseRepository;
+//import com.staff_portal.academic_service.repository.CourseRepository;
 import com.staff_portal.academic_service.repository.ModuleRepository;
 import com.staff_portal.academic_service.repository.SubjectRepository;
 import com.staff_portal.academic_service.service.interfaces.SubjectService;
@@ -25,7 +25,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     private final SubjectRepository subjectRepository;
     private final ModuleRepository moduleRepository;
-    private final CourseRepository courseRepository;
+//    private final CourseRepository courseRepository;
 
     @Override
     public SubjectResponseDTO addSubject(SubjectRequestDTO requestDTO) {
