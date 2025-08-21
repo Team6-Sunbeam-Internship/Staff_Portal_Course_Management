@@ -77,5 +77,14 @@ public class SessionServiceImpl implements ISessionService {
 
 	        return null;
 	    }
+		
+		 @Override
+		    public boolean deleteSession(Long id) {
+		        if (sessionRepository.existsById(id)) {
+		            sessionRepository.deleteById(id);
+		            return true;
+		        }
+		        return false;
+		    }
 
 }
