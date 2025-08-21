@@ -53,8 +53,36 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	        );
         
 	}
-	
-	
+
+
+
+	@Override
+	public CourseGroupResponse updateCourseGroup(int groupId, CourseGroupRequest request) {
+		 CourseGroup group = courseGroupRepository.findById(groupId)
+	                .orElseThrow(() -> new RuntimeException("Course group not found with ID: " + groupId));
+
+	        Course course = courseRepository.findById(request.getCourseId())
+	                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + request.getCourseId()));
+
+	        group.setCourse(course);
+	        group.setGroupName(request.getGroupName());
+	        group.setDescription(request.getDescription());
+	        group.setCapacity(request.getCapacity());
+	        group.setStatus(request.getStatus() != null ? request.getStatus() : group.getStatus());
+
+	        CourseGroup updated = courseGroupRepository.save(group);
+
+	        return new CourseGroupResponse(
+	                updated.getGroupId(),
+	                updated.getGroupName(),
+	                updated.getDescription(),
+	                updated.getCapacity(),
+	                updated.getStatus(),
+	                updated.getCourse().getCourseId(),
+	                updated.getCourse().getCourseName()
+	        );
+		
+	}
 	
 
 }
