@@ -7,5 +7,6 @@ import com.staff_portal.academic_service.dto.response.CourseGroupResponse;
 public interface CourseGroupService  {
 	
 	CourseGroupResponse createCourseGroup(CourseGroupRequest request);
+    CourseGroupResponse updateCourseGroup(int groupId, CourseGroupRequest request);
 
 }
