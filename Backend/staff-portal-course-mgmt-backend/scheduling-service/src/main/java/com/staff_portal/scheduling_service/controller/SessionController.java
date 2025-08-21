@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,6 +51,16 @@ public class SessionController {
 	    	SessionReqRespDTO updatedSession = sessionService.updateSession(id, sessionDTO);
 	        if (updatedSession != null) {
 	            return ResponseEntity.ok(updatedSession);
+	        } else {
+	            return ResponseEntity.notFound().build();
+	        }
+	    }
+	    
+	    @DeleteMapping("/{id}")
+	    public ResponseEntity<Void> deleteSession(@PathVariable Long id) {
+	        boolean deleted = sessionService.deleteSession(id);
+	        if (deleted) {
+	            return ResponseEntity.noContent().build();
 	        } else {
 	            return ResponseEntity.notFound().build();
 	        }
