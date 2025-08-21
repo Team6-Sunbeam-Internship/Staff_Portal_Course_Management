@@ -14,4 +14,6 @@ public interface ISessionService {
 	SessionReqRespDTO getSessionById(Long id);
 	
 	SessionReqRespDTO updateSession(Long id,SessionReqRespDTO dto);
+	
+	boolean deleteSession(Long id);
 }
