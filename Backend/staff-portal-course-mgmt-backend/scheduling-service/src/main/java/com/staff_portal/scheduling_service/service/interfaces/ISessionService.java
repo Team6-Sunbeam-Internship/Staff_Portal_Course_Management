@@ -12,4 +12,6 @@ public interface ISessionService {
 	List<SessionReqRespDTO> getAllSessions();
 	
 	SessionReqRespDTO getSessionById(Long id);
+	
+	SessionReqRespDTO updateSession(Long id,SessionReqRespDTO dto);
 }
