@@ -10,4 +10,6 @@ public interface ISessionService {
 	SessionReqRespDTO createSession(SessionReqRespDTO dto);
 	
 	List<SessionReqRespDTO> getAllSessions();
+	
+	SessionReqRespDTO getSessionById(Long id);
 }
