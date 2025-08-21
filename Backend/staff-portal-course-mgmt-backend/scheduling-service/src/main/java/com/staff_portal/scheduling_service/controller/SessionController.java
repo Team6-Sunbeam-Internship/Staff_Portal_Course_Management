@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,4 +33,14 @@ public class SessionController {
 	        List<SessionReqRespDTO> sessions = sessionService.getAllSessions();
 	        return ResponseEntity.ok(sessions);
 	    } 
+	    
+	    @GetMapping("/{id}")
+	    public ResponseEntity<SessionReqRespDTO> getSessionById(@PathVariable Long id) {
+	    	SessionReqRespDTO session = sessionService.getSessionById(id);
+	        if (session != null) {
+	            return ResponseEntity.ok(session);
+	        } else {
+	            return ResponseEntity.notFound().build();
+	        }
+	    }
 }
