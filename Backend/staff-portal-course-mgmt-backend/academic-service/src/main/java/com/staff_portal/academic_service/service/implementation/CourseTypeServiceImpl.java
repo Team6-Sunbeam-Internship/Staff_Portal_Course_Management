@@ -3,6 +3,13 @@ package com.staff_portal.academic_service.service.implementation;
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 import com.staff_portal.academic_service.enums.CourseTypeStatus;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
+import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.model.CourseType;
 import com.staff_portal.academic_service.model.Premises;
@@ -14,6 +21,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import lombok.RequiredArgsConstructor;
+
+
+
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +56,17 @@ public class CourseTypeServiceImpl implements CourseTypeService {
 
         CourseType saved = courseTypeRepository.save(courseType);
         return mapToResponse(saved);
+        CourseType courseType = new CourseType();
+        courseType.setTypeName(requestDTO.getTypeName());
+        courseType.setBatchCycle(batchCycle);
+        courseType.setPremises(premises);
+
+        CourseType saved = courseTypeRepository.save(courseType);
+
+        return new CourseTypeResponseDTO(saved.getCourseTypeId(),
+                saved.getTypeName(),
+                saved.getBatchCycle().getBatchCycleId(),
+                saved.getPremises().getPremisesId());
     }
 
     @Override
@@ -66,6 +89,16 @@ public class CourseTypeServiceImpl implements CourseTypeService {
 
         courseTypeRepository.save(courseType);
         return mapToResponse(courseType);
+        courseType.setTypeName(requestDTO.getTypeName());
+        courseType.setBatchCycle(batchCycle);
+        courseType.setPremises(premises);
+
+        CourseType updated = courseTypeRepository.save(courseType);
+
+        return new CourseTypeResponseDTO(updated.getCourseTypeId(),
+                updated.getTypeName(),
+                updated.getBatchCycle().getBatchCycleId(),
+                updated.getPremises().getPremisesId());
     }
 
     @Override
@@ -74,6 +107,9 @@ public class CourseTypeServiceImpl implements CourseTypeService {
             throw new RuntimeException("CourseType not found");
         }
         courseTypeRepository.deleteById(id);
+        CourseType courseType = courseTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+        courseTypeRepository.delete(courseType);
     }
 
     @Override
@@ -81,6 +117,11 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         return courseTypeRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
+        return courseTypeRepository.findAll().stream()
+                .map(ct -> new CourseTypeResponseDTO(ct.getCourseTypeId(),
+                        ct.getTypeName(),
+                        ct.getBatchCycle().getBatchCycleId(),
+                        ct.getPremises().getPremisesId()))
                 .collect(Collectors.toList());
     }
 
@@ -103,5 +144,10 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         
 
         return response;
+
+        return new CourseTypeResponseDTO(courseType.getCourseTypeId(),
+                courseType.getTypeName(),
+                courseType.getBatchCycle().getBatchCycleId(),
+                courseType.getPremises().getPremisesId());
     }
 }
