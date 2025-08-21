@@ -2,6 +2,9 @@ package com.staff_portal.scheduling_service.service.implementation;
 
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,20 @@ public class SessionServiceImpl implements ISessionService {
 	        Session saved = sessionRepository.save(session);
 	        return SessionMapper.toSessionReqRespDTO(saved);
 	    }
+
+	
+		@Override
+	    public List<SessionReqRespDTO> getAllSessions() {
+	        List<Session> sessions = sessionRepository.findAll();
+	        List<SessionReqRespDTO> dtoList = new ArrayList<>();
+
+	        for (Session session : sessions) {
+	            SessionReqRespDTO dto = SessionMapper.toSessionReqRespDTO(session);
+	            dtoList.add(dto);
+	        }
+
+	        return dtoList;
+	}
 
 	
 
