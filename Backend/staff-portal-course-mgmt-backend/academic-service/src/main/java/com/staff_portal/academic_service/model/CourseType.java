@@ -2,9 +2,13 @@ package com.staff_portal.academic_service.model;
 
 import java.util.List;
 
+import com.staff_portal.academic_service.enums.CourseTypeStatus;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,9 +42,14 @@ public class CourseType {
 	 @Column(nullable = false)
 	    private String typeName;
 	 
+	 @Column(length = 500)
+	    private String description;
+	 
+	 @Enumerated(EnumType.STRING)
+	    @Column(nullable = false)
+	    private CourseTypeStatus status;
+	 
 	 @OneToMany(mappedBy = "courseType", cascade = CascadeType.ALL)
 	    private List<Course> courses;
-
-
 
 }
