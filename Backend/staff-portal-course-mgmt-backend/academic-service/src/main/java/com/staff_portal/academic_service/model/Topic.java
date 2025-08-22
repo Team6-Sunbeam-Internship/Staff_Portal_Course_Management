@@ -1,6 +1,5 @@
 package com.staff_portal.academic_service.model;
 
-import com.staff_portal.academic_service.enums.SectionStatus;
 import com.staff_portal.academic_service.enums.TopicStatus;
 
 import jakarta.persistence.Column;
