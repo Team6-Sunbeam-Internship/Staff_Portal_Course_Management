@@ -1,7 +1,11 @@
 package com.staff_portal.academic_service.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,4 +40,17 @@ public class CourseGroupController {
         return ResponseEntity.ok(courseGroupService.updateCourseGroup(groupId, request));
     }
 
+    // deleting course group
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<String> deleteCourseGroup(@PathVariable int groupId) {
+        courseGroupService.deleteCourseGroup(groupId);
+        return ResponseEntity.ok("Course group deleted successfully");
+}
+    // for getting all course groups
+    @GetMapping
+    public ResponseEntity<List<CourseGroupResponse>> getAllCourseGroups() {
+        List<CourseGroupResponse> responses = courseGroupService.getAllCourseGroups();
+        return ResponseEntity.ok(responses);
+    }
+    
 }
