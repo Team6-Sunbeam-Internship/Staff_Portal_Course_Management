@@ -50,8 +50,8 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	                saved.getDescription(),
 	                saved.getCapacity(),
 	                saved.getStatus(),
-	                saved.getCourse().getCourseId(),
-	                saved.getCourse().getCourseName()
+	                saved.getCourse().getCourseId()
+	               // saved.getCourse().getCourseName()
 	        );
         
 	}
@@ -80,8 +80,8 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	                updated.getDescription(),
 	                updated.getCapacity(),
 	                updated.getStatus(),
-	                updated.getCourse().getCourseId(),
-	                updated.getCourse().getCourseName()
+	                updated.getCourse().getCourseId()
+	              //  updated.getCourse().getCourseName()
 	        );
 		
 	}
@@ -110,11 +110,31 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	                        cg.getDescription(),
 	                        cg.getCapacity(),
 	                        cg.getStatus(),
-	                        cg.getCourse().getCourseId(),
-	                        cg.getCourse().getCourseName()
+	                        cg.getCourse().getCourseId()
+	                      //  cg.getCourse().getCourseName()
 	                ))
 	                .toList();
 
+	}
+
+
+
+	@Override
+	public List<CourseGroupResponse> getCourseGroupsByStatus(CourseGroupStatus status) {
+		List<CourseGroup> courseGroups = courseGroupRepository.findByStatus(status);
+
+	    // Map to response DTO
+	    return courseGroups.stream()
+	            .map(cg -> new CourseGroupResponse(
+	                    cg.getGroupId(),
+	                    cg.getGroupName(),
+	                    cg.getDescription(),
+	                    cg.getCapacity(),
+	                    cg.getStatus(),
+	                    cg.getCourse().getCourseId()
+	                    // cg.getCourse().getCourseName()  // Uncomment if courseName is available
+	            ))
+	            .toList();
 	}
 	
 	
