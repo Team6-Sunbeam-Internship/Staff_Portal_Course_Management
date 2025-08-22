@@ -1,5 +1,7 @@
 package com.staff_portal.academic_service.service.implementation;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.staff_portal.academic_service.dto.request.CourseGroupRequest;
@@ -83,6 +85,38 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	        );
 		
 	}
+
+// deleting course group by id 
+	@Override
+	public void deleteCourseGroup(int groupId) {
+		 CourseGroup group = courseGroupRepository.findById(groupId)
+	                .orElseThrow(() -> new RuntimeException("Course group not found with ID: " + groupId));
+	        courseGroupRepository.delete(group);
+		
+	}
+
+	//getting all course-group
+
+	@Override
+	public List<CourseGroupResponse> getAllCourseGroups() {
+		
+		 List<CourseGroup> courseGroups = courseGroupRepository.findAll();
+
+	        
+	        return courseGroups.stream()
+	                .map(cg -> new CourseGroupResponse(
+	                        cg.getGroupId(),
+	                        cg.getGroupName(),
+	                        cg.getDescription(),
+	                        cg.getCapacity(),
+	                        cg.getStatus(),
+	                        cg.getCourse().getCourseId(),
+	                        cg.getCourse().getCourseName()
+	                ))
+	                .toList();
+
+	}
+	
 	
 
 }
