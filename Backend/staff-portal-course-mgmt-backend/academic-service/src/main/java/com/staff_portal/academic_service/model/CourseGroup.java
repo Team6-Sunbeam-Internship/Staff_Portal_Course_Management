@@ -51,6 +51,14 @@ public class CourseGroup {
 	 @Column(name="coursegroup_status",nullable = false)
 	 private CourseGroupStatus status;
 	 
+	 @ManyToOne
+	 @JoinColumn(name = "course_type_id", nullable = false)
+	 private CourseType courseType;
+	 
+	 @ManyToOne
+	 @JoinColumn(name = "batch_cycle_id", nullable = false)
+	 private BatchCycle batchCycle;
+	 
 	 @OneToMany(mappedBy = "courseGroup", cascade = CascadeType.ALL)
 	    private List<StudentGroup> studentGroups;
 	
