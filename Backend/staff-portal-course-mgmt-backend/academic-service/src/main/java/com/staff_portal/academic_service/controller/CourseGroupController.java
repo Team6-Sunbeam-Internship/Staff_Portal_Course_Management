@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.staff_portal.academic_service.dto.request.CourseGroupRequest;
 import com.staff_portal.academic_service.dto.response.CourseGroupResponse;
+import com.staff_portal.academic_service.enums.CourseGroupStatus;
 import com.staff_portal.academic_service.service.interfaces.CourseGroupService;
 
 import lombok.RequiredArgsConstructor;
@@ -51,6 +53,21 @@ public class CourseGroupController {
     public ResponseEntity<List<CourseGroupResponse>> getAllCourseGroups() {
         List<CourseGroupResponse> responses = courseGroupService.getAllCourseGroups();
         return ResponseEntity.ok(responses);
+    }
+    
+    //for getting all courses related to status(status wise filtering)
+    
+    @GetMapping("/status-options")
+    public ResponseEntity<CourseGroupStatus[]> getStatusOptions() {
+        return ResponseEntity.ok(CourseGroupStatus.values());
+    }
+    
+    // Return course groups filtered by status
+    @GetMapping("/filter")
+    public ResponseEntity<List<CourseGroupResponse>> getCourseGroupsByStatus(
+            @RequestParam("status") CourseGroupStatus status) {
+        List<CourseGroupResponse> response = courseGroupService.getCourseGroupsByStatus(status);
+        return ResponseEntity.ok(response);
     }
     
 }
