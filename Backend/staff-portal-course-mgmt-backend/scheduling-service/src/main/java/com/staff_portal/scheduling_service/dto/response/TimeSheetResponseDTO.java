@@ -3,6 +3,8 @@ package com.staff_portal.scheduling_service.dto.response;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.staff_portal.scheduling_service.model.TimeSheetStatus;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +24,7 @@ public class TimeSheetResponseDTO {
     private String assignment;
     private LocalDate logDate;
     private int durationHours;
-    private String status;
+    private TimeSheetStatus status;
 
     private TimeSheetCourseModuleResponseDTO courseModule;
     private TimeSheetTopicResponseDTO topic;
