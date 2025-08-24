@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSheetRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetResponseDTO;
+import com.staff_portal.scheduling_service.dto.response.TimeSheetTopicResponseDTO;
 
 public interface ITimeSheetService {
 	
@@ -12,4 +13,7 @@ public interface ITimeSheetService {
 	List<TimeSheetResponseDTO> getAllTimeSheets();
 	
 	TimeSheetResponseDTO getTimeSheetById(Long id);
+	
+	TimeSheetResponseDTO updateTimeSheet(Long id, TimeSheetRequestDTO requestDto);
+
 }
