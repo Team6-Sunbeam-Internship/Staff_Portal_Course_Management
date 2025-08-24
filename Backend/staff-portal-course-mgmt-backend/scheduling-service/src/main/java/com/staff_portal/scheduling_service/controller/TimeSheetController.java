@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -32,6 +33,13 @@ public class TimeSheetController {
         List<TimeSheetResponseDTO> timesheets = timeSheetService.getAllTimeSheets();
         return ResponseEntity.ok(timesheets);
     }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<TimeSheetResponseDTO> getTimesheetById(@PathVariable Long id) {
+        TimeSheetResponseDTO responseDto = timeSheetService.getTimeSheetById(id);
+        return ResponseEntity.ok(responseDto);
+    }
+
 }
 
 
