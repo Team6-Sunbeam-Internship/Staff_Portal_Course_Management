@@ -66,6 +66,6 @@ public class TimeSheet {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "topic_id", referencedColumnName = "id")
-    private TimeSheetTopic topic;
+    private TimeSheetTopic timeSheetTopic;
 
 }
