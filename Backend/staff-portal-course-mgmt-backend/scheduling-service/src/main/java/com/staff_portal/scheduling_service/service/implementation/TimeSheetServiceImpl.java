@@ -1,5 +1,8 @@
 package com.staff_portal.scheduling_service.service.implementation;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSheetCourseModuleRequestDTO;
@@ -35,6 +38,16 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 		topicRepository.save(topic);
         TimeSheet saved = timeSheetRepository.save(timesheet);
         return TimeSheetMapper.toDto(saved);
+	}
+
+	@Override
+	public List<TimeSheetResponseDTO> getAllTimeSheets() {
+		
+	        return timeSheetRepository.findAll()
+	                .stream()
+	                .map(TimeSheetMapper::toDto)
+	                .collect(Collectors.toList());
+		
 	}
 
 }
