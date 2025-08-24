@@ -1,7 +1,11 @@
 package com.staff_portal.academic_service.model;
 
+import com.staff_portal.academic_service.enums.TopicStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,6 +38,7 @@ public class Topic {
 	 @Column(nullable = false)
 	    private String topicName;
 
-	 
+	 @Enumerated(EnumType.STRING)
+	    private TopicStatus status;
 
 }
