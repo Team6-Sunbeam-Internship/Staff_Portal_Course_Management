@@ -50,4 +50,14 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 		
 	}
 
-}
+	@Override
+	public TimeSheetResponseDTO getTimeSheetById(Long id) {
+		
+		        TimeSheet timesheet = timeSheetRepository.findById(id)
+		                .orElseThrow(() -> new RuntimeException("Timesheet not found"));
+		        return TimeSheetMapper.toDto(timesheet);
+		    }
+
+	}
+
+
