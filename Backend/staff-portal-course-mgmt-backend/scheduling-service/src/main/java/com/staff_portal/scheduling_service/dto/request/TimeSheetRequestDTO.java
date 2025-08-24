@@ -1,7 +1,8 @@
 package com.staff_portal.scheduling_service.dto.request;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
+import java.time.LocalTime;
 
 import com.staff_portal.scheduling_service.model.TimeSheetStatus;
 
@@ -21,10 +22,10 @@ import lombok.ToString;
 public class TimeSheetRequestDTO {
 
 	@NotNull(message = "Start time is required")
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
     @NotNull(message = "End time is required")
-    private LocalDateTime endTime;
+    private LocalTime endTime;
 
     @Size(max = 255)
     private String extraTopic;
@@ -49,6 +50,6 @@ public class TimeSheetRequestDTO {
     private TimeSheetCourseModuleRequestDTO courseModule;
 
     @NotNull
-    private TimeSheetTopicRequestDTO topic;
+    private TimeSheetTopicRequestDTO timeSheetTopic;
 
 }
