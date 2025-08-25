@@ -1,0 +1,26 @@
+package com.staff_portal.scheduling_service.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.staff_portal.scheduling_service.dto.request.TimeSheetTopicRequestDTO;
+import com.staff_portal.scheduling_service.dto.response.TimeSheetTopicResponseDTO;
+import com.staff_portal.scheduling_service.service.interfaces.ITimeSheetTopicService;
+
+import jakarta.validation.Valid;
+
+public class TimeSheetTopicController {
+
+	@Autowired
+    private ITimeSheetTopicService TimeSheetTopicService;
+
+    @PostMapping
+    public ResponseEntity<TimeSheetTopicResponseDTO> create(@Valid @RequestBody TimeSheetTopicRequestDTO requestDto) {
+        TimeSheetTopicResponseDTO responseDto = TimeSheetTopicService.createTimeSheetTopic(requestDto);
+        return ResponseEntity.ok(responseDto);
+    }
+
+	
+}
