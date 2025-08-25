@@ -51,6 +51,7 @@ public class SessionServiceImpl implements ISessionService {
 	    public SessionReqRespDTO getSessionById(Long id) {
 	        Optional<Session> sessionOpt = sessionRepository.findById(id);
 	        if (sessionOpt.isPresent()) {
+	        	 return SessionMapper.toSessionReqRespDTO(sessionOpt.get());
 	        }
 	        return null;
 		}
