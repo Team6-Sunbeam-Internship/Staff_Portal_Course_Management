@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +39,12 @@ public class CustomUserDetails implements UserDetails {
     @JsonIgnore // Don't serialize password for security
     private String password;
 
-    // Constructor for creating from AuthUser (your existing logic)
+    @JsonProperty("userId")
+    private UUID userId; // Store the user ID for JWT 'sub' claim
+
+    @JsonProperty("email")
+    private String email; // Store email for JWT claims
+
     @JsonCreator
     public CustomUserDetails(@JsonProperty("authorities") Set<GrantedAuthority> authorities,
                              @JsonProperty("username") String username) {
@@ -46,12 +52,14 @@ public class CustomUserDetails implements UserDetails {
         this.username = username;
     }
 
-    // Constructor for creating from AuthUser (your existing logic)
+    // Constructor for creating from AuthUser
     public CustomUserDetails(AuthUser authUser) {
         this.authUser = authUser;
         this.username = authUser.getUsername();
         this.password = authUser.getPassword();
         this.authorities = mapToGrantedAuthorities(authUser);
+        this.userId = authUser.getId();
+        this.email = authUser.getUsername();
     }
 
     private Set<GrantedAuthority> mapToGrantedAuthorities(AuthUser authUser) {
