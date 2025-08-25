@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.staff_portal.scheduling_service.model.TimeSheetStatus;
 
 import jakarta.validation.constraints.Min;
@@ -21,9 +22,11 @@ import lombok.ToString;
 @NoArgsConstructor
 public class TimeSheetRequestDTO {
 
+	@JsonFormat(pattern = "HH:mm")
 	@NotNull(message = "Start time is required")
     private LocalTime startTime;
 
+	@JsonFormat(pattern = "HH:mm")
     @NotNull(message = "End time is required")
     private LocalTime endTime;
 
@@ -33,6 +36,7 @@ public class TimeSheetRequestDTO {
     @Size(max = 255)
     private String assignment;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "Log date is required")
     private LocalDate logDate;
     
