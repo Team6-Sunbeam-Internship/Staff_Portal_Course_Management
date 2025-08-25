@@ -20,7 +20,7 @@ import com.staff_portal.scheduling_service.service.interfaces.ITimeSheetService;
 public class TimeSheetServiceImpl implements ITimeSheetService {
 
 	@Autowired
-    private TimeSheetRepository timeSheetRepository;
+    private TimeSheetRepository TimeSheetRepository;
 
     @Autowired
     private TimeSheetCourseModuleRepository courseModuleRepository;
@@ -31,19 +31,19 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 	@Override
 	public TimeSheetResponseDTO createTimeSheet(TimeSheetRequestDTO requestDto) {
 		
-		TimeSheet timesheet = TimeSheetMapper.toEntity(requestDto);
-		TimeSheetCourseModule timeSheetCourseModule = timesheet.getCourseModule();
-		TimeSheetTopic topic = timesheet.getTimeSheetTopic();
-		courseModuleRepository.save(timeSheetCourseModule);
+		TimeSheet TimeSheet = TimeSheetMapper.toEntity(requestDto);
+		TimeSheetCourseModule TimeSheetCourseModule = TimeSheet.getCourseModule();
+		TimeSheetTopic topic = TimeSheet.getTimeSheetTopic();
+		courseModuleRepository.save(TimeSheetCourseModule);
 		topicRepository.save(topic);
-        TimeSheet saved = timeSheetRepository.save(timesheet);
+        TimeSheet saved = TimeSheetRepository.save(TimeSheet);
         return TimeSheetMapper.toDto(saved);
 	}
 
 	@Override
 	public List<TimeSheetResponseDTO> getAllTimeSheets() {
 		
-	        return timeSheetRepository.findAll()
+	        return TimeSheetRepository.findAll()
 	                .stream()
 	                .map(TimeSheetMapper::toDto)
 	                .collect(Collectors.toList());
@@ -53,10 +53,20 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 	@Override
 	public TimeSheetResponseDTO getTimeSheetById(Long id) {
 		
-		        TimeSheet timesheet = timeSheetRepository.findById(id)
-		                .orElseThrow(() -> new RuntimeException("Timesheet not found"));
-		        return TimeSheetMapper.toDto(timesheet);
+		        TimeSheet TimeSheet = TimeSheetRepository.findById(id)
+		                .orElseThrow(() -> new RuntimeException("TimeSheet not found"));
+		        return TimeSheetMapper.toDto(TimeSheet);
 		    }
+
+	@Override
+	public TimeSheetResponseDTO updateTimeSheet(Long id, TimeSheetRequestDTO requestDto) {
+		TimeSheet existing = TimeSheetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("TimeSheet not found"));
+        TimeSheet updated = TimeSheetMapper.toEntity(requestDto);
+        updated.setId(id); // maintain the same ID
+        TimeSheet saved = TimeSheetRepository.save(updated);
+        return  TimeSheetMapper.toDto(saved);
+	}
 
 	}
 
