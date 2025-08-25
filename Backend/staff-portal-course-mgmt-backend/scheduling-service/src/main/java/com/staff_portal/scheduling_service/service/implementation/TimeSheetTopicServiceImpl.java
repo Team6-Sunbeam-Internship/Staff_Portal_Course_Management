@@ -35,4 +35,11 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
 	public List<TimeSheetTopicResponseDTO> getAllTimeSheetTopic() {
 		return topicRepository.findAll().stream().map(TimeSheetTopicMapper::toDto).collect(Collectors.toList());
 	}
+
+	@Override
+	public TimeSheetTopicResponseDTO getTimeSheetTopicById(Long id) {
+		TimeSheetTopic topic = topicRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("TimeSheet topic not found with id: " + id));
+        return TimeSheetTopicMapper.toDto(topic);
+	}
 }
