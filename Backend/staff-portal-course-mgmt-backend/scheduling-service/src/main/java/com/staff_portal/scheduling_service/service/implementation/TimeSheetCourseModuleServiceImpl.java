@@ -58,5 +58,10 @@ public class TimeSheetCourseModuleServiceImpl implements ITimeSheetCourseModuleS
         return TimeSheetCourseModuleMapper.toDto(updated);
 		
 	}
+	
+	@Override
+    public void deleteTimeSheetCourseModule(Long id) {
+        courseModuleRepository.deleteById(id);
+    }
 
 }
