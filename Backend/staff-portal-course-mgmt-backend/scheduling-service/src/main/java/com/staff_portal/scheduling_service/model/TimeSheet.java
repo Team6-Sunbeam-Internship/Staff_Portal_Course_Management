@@ -1,10 +1,9 @@
 package com.staff_portal.scheduling_service.model;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 
 import jakarta.persistence.CascadeType;
