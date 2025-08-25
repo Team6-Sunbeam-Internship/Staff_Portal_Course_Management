@@ -10,4 +10,6 @@ public interface ITimeSheetTopicService {
 	TimeSheetTopicResponseDTO createTimeSheetTopic(TimeSheetTopicRequestDTO dto);
 	
 	List<TimeSheetTopicResponseDTO> getAllTimeSheetTopic();
+	
+	TimeSheetTopicResponseDTO getTimeSheetTopicById(Long id);
 }
