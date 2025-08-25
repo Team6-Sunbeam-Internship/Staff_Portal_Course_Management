@@ -52,4 +52,10 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
 	        TimeSheetTopic updated = topicRepository.save(existing);
 	        return TimeSheetTopicMapper.toDto(updated);
 	}
+
+	@Override
+	public void deleteTimeSheetTopic(Long id) {
+		topicRepository.deleteById(id);
+		
+	}
 }
