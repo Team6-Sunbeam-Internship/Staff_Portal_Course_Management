@@ -10,4 +10,6 @@ public interface ITimeSheetCourseModuleService {
 	TimeSheetCourseModuleResponseDTO createTimeSheetCourseModule(TimeSheetCourseModuleRequestDTO dto);
 	
 	List<TimeSheetCourseModuleResponseDTO> getAllTimeSheetCourseModule();
+	
+	TimeSheetCourseModuleResponseDTO getTimeSheetCourseModuleById(Long id);
 }
