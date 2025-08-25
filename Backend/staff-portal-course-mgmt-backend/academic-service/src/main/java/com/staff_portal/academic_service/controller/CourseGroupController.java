@@ -49,8 +49,8 @@ public class CourseGroupController {
         return ResponseEntity.ok("Course group deleted successfully");
 }
     // for getting all course groups
-    @GetMapping
-    public ResponseEntity<List<CourseGroupResponse>> getAllCourseGroups() {
+    @GetMapping("/{batchCycleId}")
+    public ResponseEntity<List<CourseGroupResponse>> getAllCourseGroups(@PathVariable String batchCycleId) {
         List<CourseGroupResponse> responses = courseGroupService.getAllCourseGroups();
         return ResponseEntity.ok(responses);
     }
@@ -70,4 +70,21 @@ public class CourseGroupController {
         return ResponseEntity.ok(response);
     }
     
+    
+    //Get course groups filtered by batch cycle name
+    
+    @GetMapping("/by-batch-cycle-name")
+    public ResponseEntity<List<CourseGroupResponse>> getCourseGroupsByBatchCycleName(
+            @RequestParam String cycleName) {
+        List<CourseGroupResponse> groups = courseGroupService.getCourseGroupsByBatchCycleName(cycleName);
+        return ResponseEntity.ok(groups);
+    
+    }
+    
+    //for getting groups by course types
+    @GetMapping("/by-course-type")
+    public ResponseEntity<List<CourseGroupResponse>> getCourseGroupsByCourseType(@RequestParam String courseTypeName) {
+        List<CourseGroupResponse> response = courseGroupService.getCourseGroupsByCourseType(courseTypeName);
+        return ResponseEntity.ok(response);
+    }
 }
