@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSheetCourseModuleRequestDTO;
 import com.staff_portal.scheduling_service.dto.request.TimeSheetRequestDTO;
@@ -17,6 +18,10 @@ import com.staff_portal.scheduling_service.repository.TimeSheetRepository;
 import com.staff_portal.scheduling_service.repository.TimeSheetTopicRepository;
 import com.staff_portal.scheduling_service.service.interfaces.ITimeSheetService;
 
+import jakarta.transaction.Transactional;
+
+@Transactional
+@Service
 public class TimeSheetServiceImpl implements ITimeSheetService {
 
 	@Autowired
@@ -67,6 +72,11 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
         TimeSheet saved = TimeSheetRepository.save(updated);
         return  TimeSheetMapper.toDto(saved);
 	}
+	
+	 @Override
+	    public void deleteTimesheet(Long id) {
+	        TimeSheetRepository.deleteById(id);
+	    }
 
 	}
 
