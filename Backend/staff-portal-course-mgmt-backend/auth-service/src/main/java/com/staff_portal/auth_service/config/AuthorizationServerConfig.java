@@ -77,7 +77,7 @@ public class AuthorizationServerConfig {
                                 .oidc(oidcConfigurer ->     // Enable OpenId Connect 1.0
                                         oidcConfigurer.userInfoEndpoint(userInfoConfigurer ->
                                                 userInfoConfigurer.userInfoMapper(this::customUserInfoMapper))
-                                        )
+                                )
                 )
                 .authorizeHttpRequests(authorize ->
                         authorize
@@ -98,18 +98,16 @@ public class AuthorizationServerConfig {
     // Custom OIDC userinfo mapper
     private OidcUserInfo customUserInfoMapper(OidcUserInfoAuthenticationContext context) {
         Authentication authentication = context.getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        AuthUser authUser = userDetails.getAuthUser();
-        JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
+        JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication.getPrincipal();
         String bearer = "Bearer " + jwtAuthenticationToken.getToken().getTokenValue();
         // call user service to fetch extended staff profile
         StaffProfileResponseDTO staffProfile = userServiceClient.getStaffProfile(bearer);
 
         // Build OIDC userinfo response
         return OidcUserInfo.builder()
-                .subject(authUser.getId().toString())
+                .subject(jwtAuthenticationToken.getToken().getSubject())
                 .name(staffProfile.firstName() + " " + staffProfile.lastName())
-                .email(authUser.getUsername())
+                .email(jwtAuthenticationToken.getToken().getClaims().get("email").toString())
                 .emailVerified(true)
                 .phoneNumber(staffProfile.phoneNumber())
                 .phoneNumberVerified(true)
@@ -179,7 +177,6 @@ public class AuthorizationServerConfig {
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 CustomUserDetails principal = (CustomUserDetails) context.getPrincipal().getPrincipal();
                 Collection<? extends GrantedAuthority> authorities = context.getPrincipal().getAuthorities();
-                AuthUser authUser = principal.getAuthUser();
 
                 Set<String> roles = authorities.stream()
                         .map(GrantedAuthority::getAuthority)
@@ -193,12 +190,15 @@ public class AuthorizationServerConfig {
                         .map(auth -> auth.substring("SCOPE_".length()))
                         .collect(Collectors.toSet());
 
-                context.getClaims().claim("sub", authUser.getId());
+                context.getClaims().claim("sub", principal.getUserId());
                 context.getClaims().claim("roles", roles);
                 context.getClaims().claim("scopes", scopes);
                 context.getClaims().claim("email", principal.getUsername());
             } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
-                    // Customize headers/claims for id_token
+                // Customize headers/claims for id_token
+                CustomUserDetails principal = (CustomUserDetails) context.getPrincipal().getPrincipal();
+                context.getClaims().claim("sub", principal.getUserId());
+                context.getClaims().claim("email", principal.getEmail());
             }
         };
     }
