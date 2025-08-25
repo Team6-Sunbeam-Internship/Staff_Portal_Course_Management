@@ -25,6 +25,8 @@ public class CourseGroupRequest {
     private Integer capacity;
 
     private String description;
+    
+    private Integer batchCycleId; 
 
     @NotNull
     private CourseGroupStatus status;
