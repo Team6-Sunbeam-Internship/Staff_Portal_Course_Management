@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSheetTopicRequestDTO;
@@ -35,6 +36,13 @@ public class TimeSheetTopicController {
     @GetMapping("/{id}")
     public ResponseEntity<TimeSheetTopicResponseDTO> getById(@PathVariable Long id) {
         TimeSheetTopicResponseDTO responseDto = TimeSheetTopicService.getTimeSheetTopicById(id);
+        return ResponseEntity.ok(responseDto);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<TimeSheetTopicResponseDTO> update(@PathVariable Long id,
+                                                            @Valid @RequestBody TimeSheetTopicRequestDTO requestDto) {
+        TimeSheetTopicResponseDTO responseDto = TimeSheetTopicService.updateTimeSheetTopic(id, requestDto);
         return ResponseEntity.ok(responseDto);
     }
 }
