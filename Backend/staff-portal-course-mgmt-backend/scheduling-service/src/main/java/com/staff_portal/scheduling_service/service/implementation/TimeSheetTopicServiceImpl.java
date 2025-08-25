@@ -42,4 +42,14 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
                 .orElseThrow(() -> new RuntimeException("TimeSheet topic not found with id: " + id));
         return TimeSheetTopicMapper.toDto(topic);
 	}
+
+	@Override
+	public TimeSheetTopicResponseDTO updateTimeSheetTopic(Long id, TimeSheetTopicRequestDTO dto) {
+		 TimeSheetTopic existing = topicRepository.findById(id)
+	                .orElseThrow(() -> new RuntimeException("TimeSheet topic not found with id: " + id));
+	        existing.setTopicId(dto.getTopicId());
+
+	        TimeSheetTopic updated = topicRepository.save(existing);
+	        return TimeSheetTopicMapper.toDto(updated);
+	}
 }
