@@ -15,4 +15,5 @@ public interface ITimeSheetCourseModuleService {
 	
 	 TimeSheetCourseModuleResponseDTO updateTimeSheetCourseModule(Long id, TimeSheetCourseModuleRequestDTO dto);
 
+	 void deleteTimeSheetCourseModule(Long id);
 }
