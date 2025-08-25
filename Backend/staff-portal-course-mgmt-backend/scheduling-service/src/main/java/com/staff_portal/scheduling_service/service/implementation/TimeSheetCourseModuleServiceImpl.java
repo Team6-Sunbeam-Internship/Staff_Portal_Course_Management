@@ -22,28 +22,28 @@ public class TimeSheetCourseModuleServiceImpl implements ITimeSheetCourseModuleS
 	@Autowired
 	private TimeSheetCourseModuleRepository courseModuleRepository;
 
-	
-	
 	@Override
 	public TimeSheetCourseModuleResponseDTO createTimeSheetCourseModule(TimeSheetCourseModuleRequestDTO dto) {
-		
+
 		TimeSheetCourseModule entity = TimeSheetCourseModuleMapper.toEntity(dto);
-	    TimeSheetCourseModule saved = courseModuleRepository.save(entity);
-	    return TimeSheetCourseModuleMapper.toDto(saved);
-		
+		TimeSheetCourseModule saved = courseModuleRepository.save(entity);
+		return TimeSheetCourseModuleMapper.toDto(saved);
+
 	}
-
-
 
 	@Override
 	public List<TimeSheetCourseModuleResponseDTO> getAllTimeSheetCourseModule() {
-		
-		return courseModuleRepository.findAll()
-                .stream()
-                .map(TimeSheetCourseModuleMapper::toDto)
-                .collect(Collectors.toList());
+
+		return courseModuleRepository.findAll().stream().map(TimeSheetCourseModuleMapper::toDto)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public TimeSheetCourseModuleResponseDTO getTimeSheetCourseModuleById(Long id) {
+		TimeSheetCourseModule entity = courseModuleRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Course module not found with id: " + id));
+		return TimeSheetCourseModuleMapper.toDto(entity);
+
 	}
 
 }
-
-
