@@ -3,6 +3,10 @@ package com.staff_portal.academic_service.service.implementation;
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 import com.staff_portal.academic_service.enums.CourseTypeStatus;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.model.CourseType;
 import com.staff_portal.academic_service.model.Premises;
@@ -11,9 +15,6 @@ import com.staff_portal.academic_service.repository.CourseTypeRepository;
 import com.staff_portal.academic_service.repository.PremisesRepository;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +45,7 @@ public class CourseTypeServiceImpl implements CourseTypeService {
 
         CourseType saved = courseTypeRepository.save(courseType);
         return mapToResponse(saved);
+        
     }
 
     @Override
@@ -66,6 +68,7 @@ public class CourseTypeServiceImpl implements CourseTypeService {
 
         courseTypeRepository.save(courseType);
         return mapToResponse(courseType);
+       
     }
 
     @Override
@@ -74,6 +77,9 @@ public class CourseTypeServiceImpl implements CourseTypeService {
             throw new RuntimeException("CourseType not found");
         }
         courseTypeRepository.deleteById(id);
+        CourseType courseType = courseTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+        courseTypeRepository.delete(courseType);
     }
 
     @Override
@@ -100,7 +106,6 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         response.setBatchCycleId(courseType.getBatchCycle().getBatchCycleId());
         response.setCycleName(courseType.getBatchCycle().getCycleName());
         response.setPremisesId(courseType.getPremises().getPremisesId());
-        
 
         return response;
     }
