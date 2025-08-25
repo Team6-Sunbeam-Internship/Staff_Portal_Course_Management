@@ -14,4 +14,6 @@ public interface ITimeSheetTopicService {
 	TimeSheetTopicResponseDTO getTimeSheetTopicById(Long id);
 	
 	TimeSheetTopicResponseDTO updateTimeSheetTopic(Long id, TimeSheetTopicRequestDTO dto);
+	
+	void deleteTimeSheetTopic(Long id);
 }
