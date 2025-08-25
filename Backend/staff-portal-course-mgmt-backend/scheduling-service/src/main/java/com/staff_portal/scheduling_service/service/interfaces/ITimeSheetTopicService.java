@@ -12,4 +12,6 @@ public interface ITimeSheetTopicService {
 	List<TimeSheetTopicResponseDTO> getAllTimeSheetTopic();
 	
 	TimeSheetTopicResponseDTO getTimeSheetTopicById(Long id);
+	
+	TimeSheetTopicResponseDTO updateTimeSheetTopic(Long id, TimeSheetTopicRequestDTO dto);
 }
