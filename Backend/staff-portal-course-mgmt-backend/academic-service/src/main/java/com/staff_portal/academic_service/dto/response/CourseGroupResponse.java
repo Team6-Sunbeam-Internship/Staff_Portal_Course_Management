@@ -5,7 +5,6 @@ import com.staff_portal.academic_service.enums.CourseGroupStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Setter
