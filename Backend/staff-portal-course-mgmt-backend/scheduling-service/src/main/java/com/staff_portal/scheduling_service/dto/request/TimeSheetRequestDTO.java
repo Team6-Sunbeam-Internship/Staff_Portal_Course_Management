@@ -41,13 +41,13 @@ public class TimeSheetRequestDTO {
     private LocalDate logDate;
     
     @NotNull(message = "Staff ID is required")
-    private Long StaffId;
+    private Long staffId;
 
     @Min(1)
     @NotNull(message = "Duration of topic is required")
     private int durationHours;
 
-    @NotBlank
+    @NotNull
     private TimeSheetStatus status;
 
     @NotNull
