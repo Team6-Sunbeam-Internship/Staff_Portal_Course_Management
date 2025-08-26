@@ -11,6 +11,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -63,8 +64,12 @@ public class TimeSheet {
     @JoinColumn(name = "course_module_id", nullable = false)
     private TimeSheetCourseModule courseModule;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "topic_id", referencedColumnName = "id")
-    private TimeSheetTopic timeSheetTopic;
+	@OneToOne(mappedBy = "timeSheet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private TimeSheetTopic timeSheetTopic;
+	
+	public void addTopic(TimeSheetTopic topic) {
+	    this.timeSheetTopic = topic;
+	    topic.setTimeSheet(this);
+	}
 
 }
