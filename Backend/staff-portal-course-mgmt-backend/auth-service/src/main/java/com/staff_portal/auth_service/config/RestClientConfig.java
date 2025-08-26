@@ -47,15 +47,8 @@ public class RestClientConfig {
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
     }
 
-    @Bean(name="user-service-rest-client")
+    @Bean
     public RestClient userServiceRestClient(){
         return baseBuilder().baseUrl(URI.create(userServiceBaseUrl)).build();
-    }
-
-    @Bean
-    public UserServiceClient userServiceClient(){
-        RestClientAdapter adapter = RestClientAdapter.create(userServiceRestClient());
-        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builder().exchangeAdapter(adapter).build();
-        return factory.createClient(UserServiceClient.class);
     }
 }
