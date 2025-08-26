@@ -43,7 +43,8 @@ public class CustomUserDetailsServiceImpl implements ICustomUserDetailsService {
     @Override
     public void createUser(UserDetails user) {
         AuthUser authUser = AuthUser.builder()
-                .username(user.getUsername())
+                .firstName(user instanceof CustomUserDetails ? ((CustomUserDetails) user).getFirstName() : "")
+                .email(user.getUsername())
                 .password(passwordUtil.encode(user.getPassword()))
                 .roles(user
                         .getAuthorities()
