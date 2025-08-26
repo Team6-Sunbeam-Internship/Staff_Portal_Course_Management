@@ -3,6 +3,9 @@ package com.staff_portal.scheduling_service.mapper;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSheetRequestDTO;
 import com.staff_portal.scheduling_service.dto.request.TimeSheetTopicRequestDTO;
+import com.staff_portal.scheduling_service.dto.response.SimpleTimeSheetCourseModuleDTO;
+import com.staff_portal.scheduling_service.dto.response.SimpleTimeSheetResponseDTO;
+import com.staff_portal.scheduling_service.dto.response.SimpleTimeSheetTopicDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetCourseModuleResponseDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetResponseDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetTopicResponseDTO;
@@ -47,13 +50,32 @@ public class TimeSheetMapper {
 		dto.setDurationHours(entity.getDurationHours());
 		dto.setStatus(entity.getStatus());
 
-		TimeSheetCourseModuleResponseDTO cmDto = TimeSheetCourseModuleMapper.toDto(entity.getCourseModule());
+		SimpleTimeSheetCourseModuleDTO cmDto = new SimpleTimeSheetCourseModuleDTO();
+		cmDto.setId( entity.getCourseModule().getId());
+		cmDto.setModuleId( entity.getCourseModule().getModuleId());
+		cmDto.setCourseId( entity.getCourseModule().getCourseId());
 		dto.setCourseModule(cmDto);
 
-		TimeSheetTopicResponseDTO topicDto = TimeSheetTopicMapper.toDto(entity.getTimeSheetTopic());
-
-		dto.setTopic(topicDto);
+		SimpleTimeSheetTopicDTO topic = new SimpleTimeSheetTopicDTO(); 
+		topic.setId(entity.getTimeSheetTopic().getId());
+		topic.setTopicId(entity.getTimeSheetTopic().getTopicId());
+		dto.setTopic(topic);
 
 		return dto;
 	}
+	public static SimpleTimeSheetResponseDTO toSimpleDto(TimeSheet entity) {
+		SimpleTimeSheetResponseDTO dto = new SimpleTimeSheetResponseDTO();
+		dto.setId(entity.getId());
+		dto.setStartTime(entity.getStartTime());
+		dto.setStaffId(entity.getStaffId());
+		dto.setEndTime(entity.getEndTime());
+		dto.setExtraTopic(entity.getExtraTopic());
+		dto.setAssignment(entity.getAssignment());
+		dto.setLogDate(entity.getLogDate());
+		dto.setDurationHours(entity.getDurationHours());
+		dto.setStatus(entity.getStatus());
+		
+		return dto;
+		
+}
 }
