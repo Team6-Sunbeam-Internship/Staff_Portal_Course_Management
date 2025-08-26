@@ -17,7 +17,9 @@ public class TimeSheetTopicMapper {
 
 	public static TimeSheetTopicResponseDTO toDto(TimeSheetTopic entity) {
 		TimeSheetTopicResponseDTO topicDto = new TimeSheetTopicResponseDTO();
+		topicDto.setId(entity.getId());
 		topicDto.setTopicId(entity.getTopicId());
+		topicDto.setTimesheet(TimeSheetMapper.toSimpleDto(entity.getTimeSheet()));
 
 		return topicDto;
 	}
