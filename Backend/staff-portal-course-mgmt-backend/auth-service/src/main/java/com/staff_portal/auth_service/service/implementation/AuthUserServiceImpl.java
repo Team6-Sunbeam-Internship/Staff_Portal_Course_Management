@@ -1,6 +1,5 @@
 package com.staff_portal.auth_service.service.implementation;
 
-import com.staff_portal.auth_service.config.UserServiceClient;
 import com.staff_portal.auth_service.dto.request.CreateAuthUserRequestDTO;
 import com.staff_portal.auth_service.dto.response.ApiResponse;
 import com.staff_portal.auth_service.exception.ResourceAlreadyExistsException;
@@ -8,19 +7,26 @@ import com.staff_portal.auth_service.exception.UserServiceException;
 import com.staff_portal.auth_service.model.user.AuthUser;
 import com.staff_portal.auth_service.repository.AuthUserRepository;
 import com.staff_portal.auth_service.repository.RoleRepository;
+import com.staff_portal.auth_service.security.CustomUserDetails;
 import com.staff_portal.auth_service.security.ICustomUserDetailsService;
 import com.staff_portal.auth_service.service.interfaces.IAuthUserService;
 import com.staff_portal.auth_service.util.DateTimeUtil;
 import com.staff_portal.auth_service.util.PasswordUtil;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
+
+import java.net.URI;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -30,41 +36,38 @@ public class AuthUserServiceImpl implements IAuthUserService {
     private final AuthUserRepository authUserRepository;
     private final RoleRepository roleRepository;
     private final DateTimeUtil dateTimeUtil;
-    private final UserServiceClient userServiceClient;
+    private final RestClient userServiceRestClient;
 
-    public AuthUserServiceImpl(ICustomUserDetailsService customUserDetailsService, PasswordUtil passwordUtil, AuthUserRepository authUserRepository, RoleRepository roleRepository, DateTimeUtil dateTimeUtil, UserServiceClient userServiceClient) {
+    public AuthUserServiceImpl(ICustomUserDetailsService customUserDetailsService, PasswordUtil passwordUtil, AuthUserRepository authUserRepository, RoleRepository roleRepository, DateTimeUtil dateTimeUtil, @Qualifier("userServiceRestClient") RestClient userServiceRestClient) {
         this.customUserDetailsService = customUserDetailsService;
         this.passwordUtil = passwordUtil;
         this.authUserRepository = authUserRepository;
         this.roleRepository = roleRepository;
         this.dateTimeUtil = dateTimeUtil;
-        this.userServiceClient = userServiceClient;
+        this.userServiceRestClient = userServiceRestClient;
     }
 
     @Override
     public ApiResponse<String> createAuthUser(CreateAuthUserRequestDTO createStaffRequest) {
         // User existence check
-        if (customUserDetailsService.userExists(createStaffRequest.base().email())) {
-            throw new ResourceAlreadyExistsException("User [" + createStaffRequest.base().email() + "] already exists", HttpStatus.CONFLICT);
+        if (customUserDetailsService.userExists(createStaffRequest.email())) {
+            throw new ResourceAlreadyExistsException("User with [" + createStaffRequest.email() + "] already exists", HttpStatus.CONFLICT);
         }
         // generate temporary password
         String tempPassword = passwordUtil.generateRandomPassword();
 
         // build UserDetails for creation
-        UserDetails userDetails = User.withUsername(createStaffRequest.base().email())
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                .username(createStaffRequest.email())
                 .password(tempPassword)
-                .authorities("ROLE_" + createStaffRequest.role())
-                .accountExpired(false)
-                .accountLocked(false)
-                .disabled(false)
-                .credentialsExpired(false)
+                .authorities(Set.of(new SimpleGrantedAuthority("ROLE_"+createStaffRequest.role())))
                 .build();
 
         // persist userdetails in the db
         customUserDetailsService.createUser(userDetails);
 
         // load saved auth user
-        AuthUser savedUser = authUserRepository.findByUsername(createStaffRequest.base().email()).orElseThrow(() -> new IllegalStateException("Saved user not found"));
+        AuthUser savedUser = authUserRepository.findByUsername(createStaffRequest.email()).orElseThrow(() -> new IllegalStateException("Saved user not found"));
 
         // Get Current Jwt Token
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -72,10 +75,12 @@ public class AuthUserServiceImpl implements IAuthUserService {
         String bearerToken = "Bearer "+jwtAuthenticationToken.getToken().getTokenValue();
 
         // call user-service via rest client
-        ApiResponse<String> userServiceApiResponse = userServiceClient.
-                createStaffProfile(
-                        createStaffRequest.base(),
-                        bearerToken);
+        ApiResponse<String> userServiceApiResponse = userServiceRestClient
+                .post()
+                .uri(URI.create("/staff/create"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(new ParameterizedTypeReference<ApiResponse<String>>(){});
 
         // Check if the user service call was successful
         if (!userServiceApiResponse.isSuccess()) {
