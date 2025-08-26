@@ -2,10 +2,7 @@ package com.staff_portal.auth_service.security;
 
 import com.fasterxml.jackson.annotation.*;
 import com.staff_portal.auth_service.model.user.AuthUser;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +19,7 @@ import java.util.stream.Stream;
 @Setter
 @NoArgsConstructor // This is crucial for Jackson deserialization
 @AllArgsConstructor
+@Builder
 public class CustomUserDetails implements UserDetails {
 
     @JsonProperty("authUser")
@@ -33,7 +31,7 @@ public class CustomUserDetails implements UserDetails {
 
     // Store basic user info for serialization
     @JsonProperty("username")
-    private String username;
+    private String username;  // store the email(used for login)
 
     @JsonProperty("password")
     @JsonIgnore // Don't serialize password for security
@@ -45,6 +43,9 @@ public class CustomUserDetails implements UserDetails {
     @JsonProperty("email")
     private String email; // Store email for JWT claims
 
+    @JsonProperty("firstName")
+    private String firstName; // Store firstName for ID token
+
     @JsonCreator
     public CustomUserDetails(@JsonProperty("authorities") Set<GrantedAuthority> authorities,
                              @JsonProperty("username") String username) {
@@ -55,11 +56,11 @@ public class CustomUserDetails implements UserDetails {
     // Constructor for creating from AuthUser
     public CustomUserDetails(AuthUser authUser) {
         this.authUser = authUser;
-        this.username = authUser.getUsername();
+        this.username = authUser.getEmail();
         this.password = authUser.getPassword();
         this.authorities = mapToGrantedAuthorities(authUser);
         this.userId = authUser.getId();
-        this.email = authUser.getUsername();
+        this.firstName = authUser.getFirstName();
     }
 
     private Set<GrantedAuthority> mapToGrantedAuthorities(AuthUser authUser) {
