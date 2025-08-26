@@ -1,5 +1,6 @@
 package com.staff_portal.scheduling_service.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -33,6 +34,6 @@ public class TimeSheetCourseModule {
     private Long moduleId;
 
     @OneToMany(mappedBy = "courseModule")
-    private List<TimeSheet> timesheets;
+    private List<TimeSheet> timesheets = new ArrayList<>();;
 
 }
