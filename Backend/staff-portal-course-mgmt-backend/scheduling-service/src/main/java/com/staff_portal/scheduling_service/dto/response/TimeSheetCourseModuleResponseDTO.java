@@ -2,6 +2,8 @@ package com.staff_portal.scheduling_service.dto.response;
 
 import java.util.List;
 
+
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,5 +19,5 @@ public class TimeSheetCourseModuleResponseDTO {
     private Long courseId;
     private Long moduleId;
 
-    private List<TimeSheetCourseModuleResponseDTO> timesheets;
+    private List<SimpleTimeSheetResponseDTO> timesheets;
 }
