@@ -16,5 +16,5 @@ public class TimeSheetTopicResponseDTO {
 	private Long id;
     private Long topicId;
     
-	private TimeSheetResponseDTO timesheet;
+	private SimpleTimeSheetResponseDTO timesheet;
 }
