@@ -26,6 +26,6 @@ public class TimeSheetResponseDTO {
     private int durationHours;
     private TimeSheetStatus status;
 
-    private TimeSheetCourseModuleResponseDTO courseModule;
-    private TimeSheetTopicResponseDTO topic;
+    private SimpleTimeSheetCourseModuleDTO courseModule;
+    private SimpleTimeSheetTopicDTO topic;
 }
