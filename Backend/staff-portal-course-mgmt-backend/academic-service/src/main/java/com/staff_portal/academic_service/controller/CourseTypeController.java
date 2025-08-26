@@ -30,7 +30,7 @@ public class CourseTypeController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateCourseType(@PathVariable int id, @RequestBody CourseTypeRequestDTO requestDTO) {
         CourseTypeResponseDTO response = courseTypeService.updateCourseType(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Updated Successfully!", response));
+        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType s Successfully!", response));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -49,5 +49,12 @@ public class CourseTypeController {
     public ResponseEntity<?> getCourseTypeById(@PathVariable int id) {
         CourseTypeResponseDTO response = courseTypeService.getCourseTypeById(id);
         return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Found", response));
+    }
+ 
+    // 🔹 New filter by BatchCycle Name
+    @GetMapping("/batchcycle/{cycleName}")
+    public ResponseEntity<?> getCourseTypesByBatchCycleName(@PathVariable String cycleName) {
+        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleName(cycleName);
+        return ResponseEntity.ok(new CustomResponse<>(false, "CourseTypes for BatchCycle fetched", response));
     }
 }
