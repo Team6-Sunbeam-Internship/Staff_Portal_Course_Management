@@ -11,11 +11,13 @@ import com.staff_portal.auth_service.security.CustomUserDetails;
 import com.staff_portal.auth_service.service.interfaces.IJpaOAuth2AuthorizationConsentService;
 import com.staff_portal.auth_service.service.interfaces.IJpaOAuth2AuthorizationService;
 import com.staff_portal.auth_service.service.interfaces.IJpaRegisteredClientRepositoryService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,24 +37,22 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.client.RestClient;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Configuration
 public class AuthorizationServerConfig {
 
     private final KeyRotationScheduler keyRotationScheduler;
-    private final UserServiceClient userServiceClient;
+    private final RestClient userServiceRestClient;
     @Value("${authservice.security.issuer}")
     private String issuer;
 
-    public AuthorizationServerConfig(KeyRotationScheduler keyRotationScheduler, UserServiceClient userServiceClient) {
+    public AuthorizationServerConfig(KeyRotationScheduler keyRotationScheduler, @Qualifier("userServiceRestClient") RestClient userServiceClient) {
         this.keyRotationScheduler = keyRotationScheduler;
-        this.userServiceClient = userServiceClient;
+        this.userServiceRestClient = userServiceClient;
     }
 
     @Bean
@@ -99,9 +99,14 @@ public class AuthorizationServerConfig {
     private OidcUserInfo customUserInfoMapper(OidcUserInfoAuthenticationContext context) {
         Authentication authentication = context.getAuthentication();
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication.getPrincipal();
-        String bearer = "Bearer " + jwtAuthenticationToken.getToken().getTokenValue();
+        String authorization = "Bearer " + jwtAuthenticationToken.getToken().getTokenValue();
         // call user service to fetch extended staff profile
-        StaffProfileResponseDTO staffProfile = userServiceClient.getStaffProfile(bearer);
+        StaffProfileResponseDTO staffProfile = userServiceRestClient
+                .get()
+                .header(HttpHeaders.AUTHORIZATION, authorization)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(StaffProfileResponseDTO.class);
 
         // Build OIDC userinfo response
         return OidcUserInfo.builder()
@@ -190,17 +195,44 @@ public class AuthorizationServerConfig {
                         .map(auth -> auth.substring("SCOPE_".length()))
                         .collect(Collectors.toSet());
 
+                Set<String> audiences = determineAudience(scopes);
+
+                context.getClaims().claim("audience", audiences);
                 context.getClaims().claim("sub", principal.getUserId());
                 context.getClaims().claim("roles", roles);
                 context.getClaims().claim("scopes", scopes);
-                context.getClaims().claim("email", principal.getUsername());
             } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
                 // Customize headers/claims for id_token
                 CustomUserDetails principal = (CustomUserDetails) context.getPrincipal().getPrincipal();
+                context.getClaims().claim("aud", context.getRegisteredClient().getClientId());
                 context.getClaims().claim("sub", principal.getUserId());
-                context.getClaims().claim("email", principal.getEmail());
+                context.getClaims().claim("name", principal.getFirstName());
+                context.getClaims().claim("email", principal.getUsername());
+                context.getClaims().claim("email_verified", true);
             }
         };
+    }
+
+    private Set<String> determineAudience(Set<String> scopes) {
+        Set<String> audiences = new HashSet<>();
+        for (String scope : scopes) {
+            if (scope.contains("STAFF_") || scope.contains("PROFILE_") || scope.contains("STUDENT_") || scope.contains("MENUITEM_")) {
+                audiences.add("user-service");
+            }
+            if (scope.contains("COURSE_") || scope.contains("MODULE_") || scope.contains("SUBJECT_") || scope.contains("SECTION_") || scope.contains("TOPIC_") || scope.contains("COURSE_GROUP_")) {
+                audiences.add("academic-service");
+            }
+            if (scope.contains("SCHEDULE_") || scope.contains("SESSION_") || scope.contains("TIMESHEET_") || scope.contains("VIDEO_")) {
+                audiences.add("schedule-service");
+            }
+            if (scope.contains("INFRASTRUCTURE_") || scope.contains("PREMISE_") || scope.contains("BATCHCYCLE_")) {
+                audiences.add("academic-service");
+            }
+            if (scope.contains("CERTIFICATE_")) {
+                audiences.add("document-service");
+            }
+        }
+        return audiences;
     }
 
 }
