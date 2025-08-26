@@ -32,9 +32,12 @@ public class AuthUser implements Serializable {
     @JsonProperty("id")
     private UUID id;
 
+    @Column(nullable = false, name = "first_name")
+    private String firstName;
+
     @Column(nullable = false, unique = true)
-    @JsonProperty("username")
-    private String username;   // email
+    @JsonProperty("email")
+    private String email;   // email
 
     @Column(nullable = false)
     @JsonProperty("password")
