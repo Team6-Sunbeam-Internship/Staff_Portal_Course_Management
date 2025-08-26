@@ -1,5 +1,7 @@
 package com.staff_portal.scheduling_service.mapper;
 
+import java.util.stream.Collectors;
+
 import com.staff_portal.scheduling_service.dto.request.TimeSheetCourseModuleRequestDTO;
 
 import com.staff_portal.scheduling_service.dto.response.TimeSheetCourseModuleResponseDTO;
@@ -18,9 +20,11 @@ public class TimeSheetCourseModuleMapper {
 
 	public static TimeSheetCourseModuleResponseDTO toDto(TimeSheetCourseModule entity) {
 		TimeSheetCourseModuleResponseDTO cmDto = new TimeSheetCourseModuleResponseDTO();
+		cmDto.setId(entity.getId());
 		cmDto.setCourseId(entity.getCourseId());
 		cmDto.setModuleId(entity.getModuleId());
-
+		
+		cmDto.setTimesheets(entity.getTimesheets().stream().map(TimeSheetMapper::toSimpleDto).collect(Collectors.toList()));
 		return cmDto;
 	}
 }
