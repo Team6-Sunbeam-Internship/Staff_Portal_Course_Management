@@ -1,5 +1,7 @@
 package com.staff_portal.academic_service.dto.request;
 
+import com.staff_portal.academic_service.enums.PremisesStatus;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -31,7 +33,7 @@ public class PremisesRequest {
 	    private String postalCode;
 
 	    @NotNull
-	    private Boolean isActive;
+	    private PremisesStatus status;
 
 	
 	

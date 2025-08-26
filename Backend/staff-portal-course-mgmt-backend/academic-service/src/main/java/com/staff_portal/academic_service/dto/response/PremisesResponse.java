@@ -1,5 +1,7 @@
 package com.staff_portal.academic_service.dto.response;
 
+import com.staff_portal.academic_service.enums.PremisesStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,5 +18,5 @@ public class PremisesResponse {
     private String city;
     private String state;
     private String postalCode;
-    private boolean isActive;
+    private PremisesStatus status;
 }

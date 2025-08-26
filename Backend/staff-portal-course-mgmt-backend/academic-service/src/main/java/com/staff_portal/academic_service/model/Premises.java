@@ -2,9 +2,13 @@ package com.staff_portal.academic_service.model;
 
 import java.util.List;
 
+import com.staff_portal.academic_service.enums.PremisesStatus;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,8 +49,9 @@ public class Premises {
     @Column(name = "postal_code")  // name consistent with DB
     private String postalCode;
 
-    @Column(name = "status", nullable = false)
-    private boolean isActive = true;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "premises_status", nullable = false)
+    private PremisesStatus status;
 
 	
 	@OneToMany(mappedBy = "premises", cascade = CascadeType.ALL)
