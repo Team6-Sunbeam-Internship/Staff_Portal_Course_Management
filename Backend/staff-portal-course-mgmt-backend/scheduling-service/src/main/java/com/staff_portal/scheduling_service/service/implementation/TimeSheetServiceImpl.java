@@ -36,12 +36,16 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 	@Override
 	public TimeSheetResponseDTO createTimeSheet(TimeSheetRequestDTO requestDto) {
 		
-		TimeSheet TimeSheet = TimeSheetMapper.toEntity(requestDto);
-		TimeSheetCourseModule TimeSheetCourseModule = TimeSheet.getCourseModule();
-		TimeSheetTopic topic = TimeSheet.getTimeSheetTopic();
-		courseModuleRepository.save(TimeSheetCourseModule);
-		topicRepository.save(topic);
-        TimeSheet saved = TimeSheetRepository.save(TimeSheet);
+		TimeSheet timeSheet = TimeSheetMapper.toEntity(requestDto);
+		TimeSheetCourseModule timeSheetCourseModule = timeSheet.getCourseModule();
+		TimeSheetTopic topic = timeSheet.getTimeSheetTopic();
+	     TimeSheetCourseModule courseModule =courseModuleRepository.save(timeSheetCourseModule);
+	     timeSheet.setCourseModule(courseModule);
+	     topic.setTimeSheet(timeSheet);
+	     timeSheet.setTimeSheetTopic(topic);
+	     TimeSheet saved = TimeSheetRepository.save(timeSheet);
+	     
+	   
         return TimeSheetMapper.toDto(saved);
 	}
 
