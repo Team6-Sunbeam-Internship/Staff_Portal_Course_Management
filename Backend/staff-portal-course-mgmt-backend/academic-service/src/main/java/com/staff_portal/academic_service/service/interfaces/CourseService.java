@@ -12,5 +12,7 @@ public interface CourseService {
 	    void deleteCourse(int id);
 	    List<CourseResponseDTO> getAllCourses();
 	    CourseResponseDTO getCourseById(int id);
+	    // 🔎 New: filter by dropdowns
+	    List<CourseResponseDTO> getCoursesByFilters(String batchCycleName, String courseTypeName);
 	}
 

@@ -9,16 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-//@Setter
-//@Getter
-//@NoArgsConstructor
-//@AllArgsConstructor
-//public class CourseRequestDTO {
-//    private int courseTypeId;
-//    private String courseCode;
-//    private String courseName;
-//    private CourseStatus status;
-//}
+
 @Getter
 @Setter
 @NoArgsConstructor
