@@ -34,7 +34,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) throws Exception {
         http
                 .securityMatcher("/admin/**", "/createAuthUser")
                 .authorizeHttpRequests(authorizeRequests ->
@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 jwt.decoder(jwtDecoder)
                                         .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
+                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
