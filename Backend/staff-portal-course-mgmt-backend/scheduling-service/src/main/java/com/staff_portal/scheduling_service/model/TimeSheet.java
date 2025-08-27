@@ -64,7 +64,7 @@ public class TimeSheet {
     @JoinColumn(name = "course_module_id", nullable = false)
     private TimeSheetCourseModule courseModule;
 
-	@OneToOne(mappedBy = "timeSheet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "timeSheet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private TimeSheetTopic timeSheetTopic;
 	
 	public void addTopic(TimeSheetTopic topic) {
