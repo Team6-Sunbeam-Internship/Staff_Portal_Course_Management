@@ -40,12 +40,11 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 		TimeSheetCourseModule timeSheetCourseModule = timeSheet.getCourseModule();
 		TimeSheetTopic topic = timeSheet.getTimeSheetTopic();
 	     TimeSheetCourseModule courseModule =courseModuleRepository.save(timeSheetCourseModule);
-	     timeSheet.setCourseModule(courseModule);
-	     topic.setTimeSheet(timeSheet);
 	     timeSheet.setTimeSheetTopic(topic);
+	     topic.setTimeSheet(timeSheet);
 	     TimeSheet saved = TimeSheetRepository.save(timeSheet);
+	    
 	     
-	   
         return TimeSheetMapper.toDto(saved);
 	}
 
