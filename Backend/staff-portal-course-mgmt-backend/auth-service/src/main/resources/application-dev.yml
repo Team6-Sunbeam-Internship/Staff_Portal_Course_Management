@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+
+authservice:
+  jwt:
+    rsa-key-size: ${JWT_RSA_KEY_SIZE}
+  keys:
+    path: ${KEYS_PATH}
+    rotation-days: ${KEYS_ROTATION_DAYS}
+  security:
+    issuer: http://${OAUTH2_AUTHORIZATION_ISSUER_HOST}:${OAUTH2_AUTHORIZATION_ISSUER_PORT}
+
+user-service:
+  url: http://${USER_SERVICE_HOST}:${USER_SERVICE_PORT}
