@@ -96,6 +96,18 @@ public class CourseTypeServiceImpl implements CourseTypeService {
                 .orElseThrow(() -> new RuntimeException("CourseType not found"));
         return mapToResponse(courseType);
     }
+    
+    @Override
+    public List<CourseTypeResponseDTO> getCourseTypesByBatchCycleName(String cycleName) {
+        List<CourseType> courseTypes = courseTypeRepository.findByBatchCycle_CycleNameIgnoreCase(cycleName);
+        if (courseTypes.isEmpty()) {
+            throw new RuntimeException("No CourseTypes found for BatchCycle: " + cycleName);
+        }
+        return courseTypes.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+        
 
     private CourseTypeResponseDTO mapToResponse(CourseType courseType) {
         CourseTypeResponseDTO response = new CourseTypeResponseDTO();
@@ -103,10 +115,16 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         response.setTypeName(courseType.getTypeName());
         response.setDescription(courseType.getDescription());
         response.setStatus(courseType.getStatus());
-        response.setBatchCycleId(courseType.getBatchCycle().getBatchCycleId());
+//        response.setBatchCycleId(courseType.getBatchCycle().getBatchCycleId());
         response.setCycleName(courseType.getBatchCycle().getCycleName());
-        response.setPremisesId(courseType.getPremises().getPremisesId());
+//        response.setPremisesId(courseType.getPremises().getPremisesId());
+        if (courseType.getPremises() != null) {
+            response.setPremisesName(courseType.getPremises().getName());
+        }
+
 
         return response;
     }
+
+
 }

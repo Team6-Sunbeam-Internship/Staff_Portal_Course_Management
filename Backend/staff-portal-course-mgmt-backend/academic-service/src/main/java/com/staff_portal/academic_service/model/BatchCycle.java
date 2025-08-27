@@ -28,7 +28,7 @@ public class BatchCycle {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "batchcycle_id")
+	@Column(name = "batch_cycle_id")
 	private int batchCycleId;
 	
 	@Column(nullable=false,unique = true,name="cycle_name")
