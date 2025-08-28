@@ -1,5 +1,7 @@
 package com.staff_portal.academic_service.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,6 +52,12 @@ public class InfrastructureController {
 	    public ResponseEntity<String> deleteInfrastructure(@PathVariable int id) {
 	        infrastructureService.deleteInfrastructure(id);
 	        return ResponseEntity.ok("Infrastructure deleted successfully with id: " + id);
+	    }
+	    
+	    // get all infrastructures
+	    @GetMapping
+	    public ResponseEntity<List<InfrastructureResponse>> getAllInfrastructures() {
+	        return ResponseEntity.ok(infrastructureService.getAllInfrastructures());
 	    }
 
 }
