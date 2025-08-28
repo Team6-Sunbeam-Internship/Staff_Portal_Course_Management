@@ -4,6 +4,6 @@ spring:
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
-logging:
-  level:
-    root: debug
+#logging:
+ # level:
+  #  root: debug
