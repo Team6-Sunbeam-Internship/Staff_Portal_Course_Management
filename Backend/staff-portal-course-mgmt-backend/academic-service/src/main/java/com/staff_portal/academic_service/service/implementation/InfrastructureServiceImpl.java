@@ -1,6 +1,9 @@
 package com.staff_portal.academic_service.service.implementation;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.InfrastructureRequest;
 import com.staff_portal.academic_service.dto.response.InfrastructureResponse;
@@ -106,7 +109,23 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 		
 	}
 	
-    
+	@Override
+	public List<InfrastructureResponse> getAllInfrastructures() {
+	    List<Infrastructure> infrastructures = infrastructureRepository.findAll();
+
+	    return infrastructures.stream()
+	            .map(infra -> new InfrastructureResponse(
+	                    infra.getInfrastructureId(),
+	                    infra.getRoomName(),
+	                    infra.getType(),
+	                    infra.getLocation(),
+	                    infra.getCapacity(),
+	                    infra.getDescription(),
+	                    infra.getPremises().getPremisesId(),
+	                    infra.getPremises().getName()
+	            ))
+	            .collect(Collectors.toList());
+	}
    
 	
   	
