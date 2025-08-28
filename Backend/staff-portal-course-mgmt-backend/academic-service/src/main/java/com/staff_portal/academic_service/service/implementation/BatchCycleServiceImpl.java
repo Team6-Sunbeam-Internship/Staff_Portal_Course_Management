@@ -28,6 +28,8 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	    entity.setDescription(request.getDescription());
 	    entity.setStartDate(request.getStartDate());
 	    entity.setEndDate(request.getEndDate());
+	    entity.setStatus(request.getStatus());
+
 
 	    BatchCycle saved = repository.save(entity);
 
@@ -36,7 +38,8 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	        saved.getCycleName(),
 	        saved.getDescription(),
 	        saved.getStartDate(),
-	        saved.getEndDate()
+	        saved.getEndDate(),
+	        saved.getStatus()
 	    );
 	}
 
@@ -49,7 +52,8 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	                    batch.getCycleName(),
 	                    batch.getDescription(),
 	                    batch.getStartDate(),
-	                    batch.getEndDate()
+	                    batch.getEndDate(),
+	                    batch.getStatus()
 	            ))
 	            .toList();
 	}
@@ -63,7 +67,8 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	            batch.getCycleName(),
 	            batch.getDescription(),
 	            batch.getStartDate(),
-	            batch.getEndDate()
+	            batch.getEndDate(),
+	            batch.getStatus()
 	    );
 	}
 	
@@ -76,6 +81,7 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	    batch.setDescription(request.getDescription());
 	    batch.setStartDate(request.getStartDate());
 	    batch.setEndDate(request.getEndDate());
+	    batch.setStatus(request.getStatus());
 
 	    BatchCycle updated = repository.save(batch);
 
@@ -84,7 +90,8 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	            updated.getCycleName(),
 	            updated.getDescription(),
 	            updated.getStartDate(),
-	            updated.getEndDate()
+	            updated.getEndDate(),
+	            updated.getStatus()
 	    );
 	}
 
@@ -100,5 +107,4 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	 }
 	 
 	 }
-
 
