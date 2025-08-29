@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.PremisesRequest;
 import com.staff_portal.academic_service.dto.response.PremisesResponse;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.Premises;
 import com.staff_portal.academic_service.repository.PremisesRepository;
 import com.staff_portal.academic_service.service.interfaces.PremisesService;
@@ -43,8 +44,8 @@ public class PremisesServiceImpl implements PremisesService {
 
 	@Override
 	public PremisesResponse updatePremises(int id, PremisesRequest request) {
-		 Premises existingPremises = premisesRepository.findById(id)
-		            .orElseThrow(() -> new RuntimeException("Premises with id " + id + " not found"));
+		Premises existingPremises = premisesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
 
 		    // Update fields from request
 		    existingPremises.setName(request.getName());
@@ -75,9 +76,9 @@ public class PremisesServiceImpl implements PremisesService {
 
 	@Override
 	public void deletePremises(int id) {
-	    Premises premises = premisesRepository.findById(id)
-	        .orElseThrow(() -> new RuntimeException("Premises with id " + id + " not found"));
-	    premisesRepository.delete(premises);
+		 Premises premises = premisesRepository.findById(id)
+	                .orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
+	        premisesRepository.delete(premises);
 	}
 
 	@Override

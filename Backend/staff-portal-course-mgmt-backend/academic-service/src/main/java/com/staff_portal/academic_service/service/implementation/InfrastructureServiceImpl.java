@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.InfrastructureRequest;
 import com.staff_portal.academic_service.dto.response.InfrastructureResponse;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.Infrastructure;
 import com.staff_portal.academic_service.model.Premises;
 import com.staff_portal.academic_service.repository.InfrastructureRepository;
@@ -24,8 +25,8 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 
     @Override
     public InfrastructureResponse createInfrastructure(InfrastructureRequest request) {
-        Premises premises = premisesRepository.findById(request.getPremisesId())
-                .orElseThrow(() -> new RuntimeException("Premises not found"));
+    	 Premises premises = premisesRepository.findById(request.getPremisesId())
+    	            .orElseThrow(() -> new ResourceNotFoundException("Premises not found with id: " + request.getPremisesId()));
 
         Infrastructure entity = new Infrastructure();
         entity.setRoomName(request.getRoomName());
@@ -52,8 +53,8 @@ public class InfrastructureServiceImpl implements InfrastructureService {
     
     @Override
     public InfrastructureResponse getInfrastructureById(int id) {
-        Infrastructure infra = infrastructureRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Infrastructure not found with id: " + id));
+    	Infrastructure infra = infrastructureRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
 
         return new InfrastructureResponse(
                 infra.getInfrastructureId(),
@@ -71,11 +72,11 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 	@Override
 	public InfrastructureResponse updateInfrastructure(int id, InfrastructureRequest request) {
 		
-		   Infrastructure infra = infrastructureRepository.findById(id)
-		            .orElseThrow(() -> new RuntimeException("Infrastructure not found with id: " + id));
+		 Infrastructure infra = infrastructureRepository.findById(id)
+		            .orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
 
-		    Premises premises = premisesRepository.findById(request.getPremisesId())
-		            .orElseThrow(() -> new RuntimeException("Premises not found with id: " + request.getPremisesId()));
+		        Premises premises = premisesRepository.findById(request.getPremisesId())
+		            .orElseThrow(() -> new ResourceNotFoundException("Premises not found with id: " + request.getPremisesId()));
 
 		    // update fields
 		    infra.setRoomName(request.getRoomName());
@@ -103,9 +104,9 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 	@Override
 	public void deleteInfrastructure(int id) {
 		 Infrastructure infra = infrastructureRepository.findById(id)
-		            .orElseThrow(() -> new RuntimeException("Infrastructure not found with id: " + id));
+		            .orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
 
-		    infrastructureRepository.delete(infra);
+		        infrastructureRepository.delete(infra);
 		
 	}
 	
