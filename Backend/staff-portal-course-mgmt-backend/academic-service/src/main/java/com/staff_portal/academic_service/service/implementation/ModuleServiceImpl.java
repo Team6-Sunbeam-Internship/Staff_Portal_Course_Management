@@ -92,6 +92,32 @@ public class ModuleServiceImpl implements ModuleService {
                 .orElseThrow(() -> new RuntimeException("Module not found"));
         return mapToResponse(module);
     }
+    
+    @Override
+    public List<ModuleResponseDTO> getModulesByFilters(String batchCycleName, String courseTypeName, String courseName) {
+        List<Module> modules;
+
+        if (batchCycleName != null && courseTypeName != null && courseName != null) {
+            modules = moduleRepository.findByCourse_CourseType_BatchCycle_CycleNameIgnoreCaseAndCourse_CourseType_TypeNameIgnoreCaseAndCourse_CourseNameIgnoreCase(
+                    batchCycleName, courseTypeName, courseName);
+        } else if (batchCycleName != null && courseTypeName != null) {
+            modules = moduleRepository.findByCourse_CourseType_BatchCycle_CycleNameIgnoreCaseAndCourse_CourseType_TypeNameIgnoreCase(
+                    batchCycleName, courseTypeName);
+        } else if (batchCycleName != null) {
+            modules = moduleRepository.findByCourse_CourseType_BatchCycle_CycleNameIgnoreCase(batchCycleName);
+        } else if (courseTypeName != null) {
+            modules = moduleRepository.findByCourse_CourseType_TypeNameIgnoreCase(courseTypeName);
+        } else if (courseName != null) {
+            modules = moduleRepository.findByCourse_CourseNameIgnoreCase(courseName);
+        } else {
+            modules = moduleRepository.findAll();
+        }
+        return modules.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        
+        
+    }
 
     private ModuleResponseDTO mapToResponse(Module module) {
         ModuleResponseDTO response = new ModuleResponseDTO();

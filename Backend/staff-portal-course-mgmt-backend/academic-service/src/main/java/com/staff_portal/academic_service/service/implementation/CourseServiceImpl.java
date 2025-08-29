@@ -23,7 +23,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final CourseTypeRepository courseTypeRepository;
 
-    // ✅ Create Course
+    //  Create Course
     @Override
     public CourseResponseDTO addCourse(CourseRequestDTO requestDTO) {
         CourseType courseType = courseTypeRepository.findById(requestDTO.getCourseTypeId())
@@ -41,7 +41,7 @@ public class CourseServiceImpl implements CourseService {
         return mapToResponseDTO(saved);
     }
 
-    // ✅ Update Course
+    //  Update Course
     @Override
     public CourseResponseDTO updateCourse(int id, CourseRequestDTO requestDTO) {
         Course course = courseRepository.findById(id)
@@ -61,7 +61,7 @@ public class CourseServiceImpl implements CourseService {
         return mapToResponseDTO(updated);
     }
 
-    // ✅ Get Course by ID
+    //  Get Course by ID
     @Override
     public CourseResponseDTO getCourseById(int id) {
         Course course = courseRepository.findById(id)
@@ -69,7 +69,7 @@ public class CourseServiceImpl implements CourseService {
         return mapToResponseDTO(course);
     }
 
-    // ✅ Get All Courses
+    //  Get All Courses
     @Override
     public List<CourseResponseDTO> getAllCourses() {
         return courseRepository.findAll()
@@ -78,7 +78,7 @@ public class CourseServiceImpl implements CourseService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Delete Course
+    //  Delete Course
     @Override
     public void deleteCourse(int id) {
         Course course = courseRepository.findById(id)
@@ -87,7 +87,7 @@ public class CourseServiceImpl implements CourseService {
     }
     
 
-    // ✅ New Filter
+    //  New Filter
     @Override
     public List<CourseResponseDTO> getCoursesByFilters(String batchCycleName, String courseTypeName) {
         List<Course> courses;
@@ -108,7 +108,7 @@ public class CourseServiceImpl implements CourseService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Mapper (Entity → Response DTO)
+    //  Mapper (Entity → Response DTO)
     private CourseResponseDTO mapToResponseDTO(Course course) {
         CourseResponseDTO response = new CourseResponseDTO();
         response.setCourseId(course.getCourseId());
