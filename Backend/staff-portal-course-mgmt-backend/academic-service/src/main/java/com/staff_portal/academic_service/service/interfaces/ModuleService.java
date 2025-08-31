@@ -12,4 +12,5 @@ public interface ModuleService {
     void deleteModule(int id);
     List<ModuleResponseDTO> getAllModules();
     ModuleResponseDTO getModuleById(int id);
+    List<ModuleResponseDTO> getModulesByFilters(String batchCycleName, String courseTypeName, String courseName);
 }

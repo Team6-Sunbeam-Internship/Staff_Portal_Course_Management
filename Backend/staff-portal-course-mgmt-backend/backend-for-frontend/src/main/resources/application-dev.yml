@@ -1,0 +1,47 @@
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+
+bff:
+  auth-service:
+    issuer:  ${AUTH_SERVER_ISSUER:http://localhost:8001}
+    introspect-uri:  ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/introspect
+    revoke-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/revoke
+    logout-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/connect/v1/logout
+  api-gateway:
+    base-url: ${API_GATEWAY_URL:http://localhost:8003}
+  frontend:
+    base-url: ${FRONTEND_URL:http://localhost:5173}
+  cookie:
+    secure: true
+    http-only: true
+    same-site: none
+  session:
+    timeout: 1800
+  oauth2:
+    client:
+      registration:
+        auth-service:
+          provider: auth-service
+          client-id: ${OAUTH2_CLIENT_ID:staff-portal-client}
+          client-secret: ${OAUTH2_CLIENT_SECRET:staff-portal-secret}
+          client-authentication-method: client_secret_basic
+          authorization-grant-type: authorization_code
+          redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          scope:
+            - openid
+          #            - profile
+          client-name: BACKEND FOR FRONTEND
+          require-proof-key: true
+
+      provider:
+        auth-service:
+          issuer-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}
+          authorization-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/authorize
+          token-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/token
+          user-info-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/connect/v1/userinfo
+          user-info-authentication-method: header
+          jwk-set-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/jwks

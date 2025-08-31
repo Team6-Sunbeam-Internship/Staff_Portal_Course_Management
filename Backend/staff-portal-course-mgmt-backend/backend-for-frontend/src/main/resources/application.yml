@@ -1,7 +1,40 @@
 server:
   port: ${SERVER_PORT}
-
+  servlet:
+    session:
+      cookie:
+        name: BFF_SESSION
+        secure: true
+        same-site: none
+        max-age: 3600
+        http-only: true
+      tracking-modes: cookie
 spring:
   application:
     name: backend-for-frontend
     group: com.team6
+  profiles:
+    active: ${ACTIVE_PROFILE}
+  data:
+    redis:
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  session:
+    redis:
+      flush-mode: on_save
+      namespace: bff:spring:session
+      save-mode: on_set_attribute
+    timeout: 30m
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        security: DEBUG
+    com:
+      staff_portal.backend_for_frontend: DEBUG
