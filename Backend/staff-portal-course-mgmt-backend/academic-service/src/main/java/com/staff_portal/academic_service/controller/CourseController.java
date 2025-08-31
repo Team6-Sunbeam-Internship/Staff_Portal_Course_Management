@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.staff_portal.academic_service.dto.request.CourseRequestDTO;
@@ -58,5 +59,15 @@ public class CourseController {
     public ResponseEntity<?> getCourseById(@PathVariable int id) {
         CourseResponseDTO response = courseService.getCourseById(id);
         return ResponseEntity.ok(new CustomResponse<>(false, "Course Found", response));
+    }
+    
+ // ✅ Filter API
+    @GetMapping("/filter")
+    public ResponseEntity<?> getCoursesByFilters(
+            @RequestParam(required = false) String batchCycleName,
+            @RequestParam(required = false) String courseTypeName) {
+
+        List<CourseResponseDTO> response = courseService.getCoursesByFilters(batchCycleName, courseTypeName);
+        return ResponseEntity.ok(new CustomResponse<>(false, "Courses filtered", response));
     }
 }

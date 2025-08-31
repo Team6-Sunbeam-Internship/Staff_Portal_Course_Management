@@ -16,6 +16,5 @@ public class CourseTypeResponseDTO {
     private String cycleName;
     private String description;
     private CourseTypeStatus status;
-//    private int premisesId;
     private String premisesName;
 }
