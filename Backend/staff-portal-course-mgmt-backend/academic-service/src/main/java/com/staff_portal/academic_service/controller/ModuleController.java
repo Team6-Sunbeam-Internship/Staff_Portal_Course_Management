@@ -55,4 +55,14 @@ public class ModuleController {
         ModuleResponseDTO response = moduleService.getModuleById(id);
         return ResponseEntity.ok(new CustomResponse<>(false, "Module Found", response));
     }
+    
+    @GetMapping("/filter")
+    public ResponseEntity<?> getModulesByFilters(
+            @RequestParam(required = false) String batchCycleName,
+            @RequestParam(required = false) String courseTypeName,
+            @RequestParam(required = false) String courseName) {
+
+        List<ModuleResponseDTO> response = moduleService.getModulesByFilters(batchCycleName, courseTypeName, courseName);
+        return ResponseEntity.ok(new CustomResponse<>(false, "Modules filtered", response));
+    }
 }

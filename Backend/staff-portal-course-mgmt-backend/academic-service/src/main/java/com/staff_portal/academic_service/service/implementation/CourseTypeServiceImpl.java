@@ -117,7 +117,7 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         response.setStatus(courseType.getStatus());
 //        response.setBatchCycleId(courseType.getBatchCycle().getBatchCycleId());
         response.setCycleName(courseType.getBatchCycle().getCycleName());
-//        response.setPremisesId(courseType.getPremises().getPremisesId());
+//       
         if (courseType.getPremises() != null) {
             response.setPremisesName(courseType.getPremises().getName());
         }
