@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
 import com.staff_portal.academic_service.dto.response.BatchCycleResponse;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.repository.BatchCycleRepository;
 import com.staff_portal.academic_service.service.interfaces.BatchCycleService;
@@ -56,8 +57,8 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 		
 	@Override
 	public BatchCycleResponse findById(int id) {
-	    BatchCycle batch = repository.findById(id)
-	            .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
+		BatchCycle batch = repository.findById(id)
+		        .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
 	    return new BatchCycleResponse(
 	            batch.getBatchCycleId(),
 	            batch.getCycleName(),
@@ -69,9 +70,8 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	
 	@Override
 	public BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request) {
-	    BatchCycle batch = repository.findById(id)
-	            .orElseThrow(() -> new RuntimeException("BatchCycle not found with id " + id));
-
+		 BatchCycle batch = repository.findById(id)
+			        .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
 	    batch.setCycleName(request.getCycleName());
 	    batch.setDescription(request.getDescription());
 	    batch.setStartDate(request.getStartDate());
@@ -92,11 +92,10 @@ public class BatchCycleServiceImpl implements BatchCycleService{
 	 @Override
 	 public void deleteBatchCycle(int id) {
 	   
-	     if (!repository.existsById(id)) {
-	         throw new RuntimeException("BatchCycle not found with id " + id);
-	     }
-	     
-	     repository.deleteById(id);
+		 if (!repository.existsById(id)) {
+		        throw new ResourceNotFoundException("BatchCycle not found with id " + id);
+		    }
+		    repository.deleteById(id);
 	 }
 	 
 	 }

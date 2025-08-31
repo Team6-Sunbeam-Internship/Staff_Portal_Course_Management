@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.CourseGroupRequest;
 import com.staff_portal.academic_service.dto.response.CourseGroupResponse;
 import com.staff_portal.academic_service.enums.CourseGroupStatus;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.model.Course;
 import com.staff_portal.academic_service.model.CourseGroup;
@@ -29,22 +30,18 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	
     @Override
     public CourseGroupResponse createCourseGroup(CourseGroupRequest request) {
-        // ✅ Check if Course exists
-        Course course = courseRepository.findById(request.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + request.getCourseId()));
+    	 Course course = courseRepository.findById(request.getCourseId())
+    	            .orElseThrow(() -> new ResourceNotFoundException("Course not found with ID: " + request.getCourseId()));
 
-        // ✅ Check if BatchCycle exists (if required)
-        BatchCycle batchCycle = null;
-        if (request.getBatchCycleId() != null) {
-            batchCycle = batchCycleRepository.findById(request.getBatchCycleId())
-                    .orElseThrow(() -> new RuntimeException("Batch cycle not found with ID: " + request.getBatchCycleId()));
-        }
+    	    BatchCycle batchCycle = null;
+    	    if (request.getBatchCycleId() != null) {
+    	        batchCycle = batchCycleRepository.findById(request.getBatchCycleId())
+    	                .orElseThrow(() -> new ResourceNotFoundException("Batch cycle not found with ID: " + request.getBatchCycleId()));
+    	    }
 
-        // ✅ Check if CourseType exists (derive from Course or request)
-        if (course.getCourseType() == null) {
-            throw new RuntimeException("Course type is missing for this course. Please set it.");
-        }
-
+    	    if (course.getCourseType() == null) {
+    	        throw new ResourceNotFoundException("Course type is missing for this course. Please set it.");
+    	    }
         // ✅ Create new CourseGroup entity
         CourseGroup courseGroup = new CourseGroup();
         courseGroup.setCourse(course);
@@ -74,11 +71,11 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 
 	@Override
 	public CourseGroupResponse updateCourseGroup(int groupId, CourseGroupRequest request) {
-		 CourseGroup group = courseGroupRepository.findById(groupId)
-	                .orElseThrow(() -> new RuntimeException("Course group not found with ID: " + groupId));
+		CourseGroup group = courseGroupRepository.findById(groupId)
+		        .orElseThrow(() -> new ResourceNotFoundException("Course group not found with ID: " + groupId));
 
-	        Course course = courseRepository.findById(request.getCourseId())
-	                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + request.getCourseId()));
+		Course course = courseRepository.findById(request.getCourseId())
+		        .orElseThrow(() -> new ResourceNotFoundException("Course not found with ID: " + request.getCourseId()));
 
 	        group.setCourse(course);
 	        group.setGroupName(request.getGroupName());
@@ -103,9 +100,11 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 // deleting course group by id 
 	@Override
 	public void deleteCourseGroup(int groupId) {
-		 CourseGroup group = courseGroupRepository.findById(groupId)
-	                .orElseThrow(() -> new RuntimeException("Course group not found with ID: " + groupId));
-	        courseGroupRepository.delete(group);
+		CourseGroup group = courseGroupRepository.findById(groupId)
+		        .orElseThrow(() -> new ResourceNotFoundException("Course group not found with ID: " + groupId));
+
+		courseGroupRepository.delete(group);
+
 		
 	}
 
