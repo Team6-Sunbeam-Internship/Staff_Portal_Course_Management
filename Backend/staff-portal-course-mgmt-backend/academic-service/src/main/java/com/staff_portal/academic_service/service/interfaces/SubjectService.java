@@ -16,4 +16,11 @@ public interface SubjectService {
     List<SubjectResponseDTO> getAllSubjects();
 
     SubjectResponseDTO getSubjectById(int id);
+    
+    List<SubjectResponseDTO> getSubjectsByFilters(
+            String batchCycleName,
+            String courseTypeName,
+            String courseName,
+            String moduleName
+    );
 }
