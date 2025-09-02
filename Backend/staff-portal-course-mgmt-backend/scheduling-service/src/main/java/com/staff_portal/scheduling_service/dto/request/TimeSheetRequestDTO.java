@@ -3,6 +3,7 @@ package com.staff_portal.scheduling_service.dto.request;
 import java.time.LocalDate;
 
 import java.time.LocalTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.staff_portal.scheduling_service.model.TimeSheetStatus;
@@ -54,6 +55,6 @@ public class TimeSheetRequestDTO {
     private TimeSheetCourseModuleRequestDTO courseModule;
 
     @NotNull
-    private TimeSheetTopicRequestDTO timeSheetTopic;
+    private List<TimeSheetTopicRequestDTO> timeSheetTopics;
 
 }

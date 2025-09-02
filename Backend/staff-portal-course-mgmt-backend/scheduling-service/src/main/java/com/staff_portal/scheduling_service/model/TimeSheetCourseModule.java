@@ -3,11 +3,14 @@ package com.staff_portal.scheduling_service.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -33,7 +36,7 @@ public class TimeSheetCourseModule {
     @Column(name = "module_id", nullable = false)
     private Long moduleId;
 
-    @OneToMany(mappedBy = "courseModule")
-    private List<TimeSheet> timesheets = new ArrayList<>();;
+    @OneToMany(mappedBy = "courseModule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TimeSheet> timeSheets = new ArrayList<>();
 
 }

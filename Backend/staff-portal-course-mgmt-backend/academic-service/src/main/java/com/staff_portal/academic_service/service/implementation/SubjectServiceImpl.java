@@ -91,6 +91,44 @@ public class SubjectServiceImpl implements SubjectService {
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
         return mapToResponse(subject);
     }
+    
+    @Override
+    public List<SubjectResponseDTO> getSubjectsByFilters(
+            String batchCycleName,
+            String courseTypeName,
+            String courseName,
+            String moduleName) {
+
+        List<Subject> subjects;
+
+        if (batchCycleName != null && courseTypeName != null && courseName != null && moduleName != null) {
+            subjects = subjectRepository
+                    .findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCaseAndModule_Course_CourseNameIgnoreCaseAndModule_ModuleNameIgnoreCase(
+                            batchCycleName, courseTypeName, courseName, moduleName);
+        } else if (batchCycleName != null && courseTypeName != null && courseName != null) {
+            subjects = subjectRepository
+                    .findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCaseAndModule_Course_CourseNameIgnoreCase(
+                            batchCycleName, courseTypeName, courseName);
+        } else if (batchCycleName != null && courseTypeName != null) {
+            subjects = subjectRepository
+                    .findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCase(
+                            batchCycleName, courseTypeName);
+        } else if (batchCycleName != null) {
+            subjects = subjectRepository.findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCase(batchCycleName);
+        } else if (courseTypeName != null) {
+            subjects = subjectRepository.findByModule_Course_CourseType_TypeNameIgnoreCase(courseTypeName);
+        } else if (courseName != null) {
+            subjects = subjectRepository.findByModule_Course_CourseNameIgnoreCase(courseName);
+        } else if (moduleName != null) {
+            subjects = subjectRepository.findByModule_ModuleNameIgnoreCase(moduleName);
+        } else {
+            subjects = subjectRepository.findAll();
+        }
+
+        return subjects.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
     private SubjectResponseDTO mapToResponse(Subject subject) {
         SubjectResponseDTO response = new SubjectResponseDTO();

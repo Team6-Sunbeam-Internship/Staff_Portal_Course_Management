@@ -24,7 +24,7 @@ public class TimeSheetCourseModuleMapper {
 		cmDto.setCourseId(entity.getCourseId());
 		cmDto.setModuleId(entity.getModuleId());
 		
-		cmDto.setTimesheets(entity.getTimesheets().stream().map(TimeSheetMapper::toSimpleDto).collect(Collectors.toList()));
+		cmDto.setTimeSheets(entity.getTimeSheets().stream().map(TimeSheetMapper::toSimpleDto).collect(Collectors.toList()));
 		return cmDto;
 	}
 }

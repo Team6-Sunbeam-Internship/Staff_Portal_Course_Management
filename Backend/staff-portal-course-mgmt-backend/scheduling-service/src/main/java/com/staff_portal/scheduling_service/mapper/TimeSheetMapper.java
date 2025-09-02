@@ -1,6 +1,9 @@
 package com.staff_portal.scheduling_service.mapper;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.staff_portal.scheduling_service.dto.request.TimeSheetRequestDTO;
 import com.staff_portal.scheduling_service.dto.request.TimeSheetTopicRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.SimpleTimeSheetCourseModuleDTO;
@@ -31,9 +34,8 @@ public class TimeSheetMapper {
 
 		entity.setCourseModule(courseModule);
 
-		TimeSheetTopicRequestDTO topicDto = dto.getTimeSheetTopic();
-		TimeSheetTopic topic = TimeSheetTopicMapper.toEntity(dto.getTimeSheetTopic());
-		entity.setTimeSheetTopic(topic);
+		List<TimeSheetTopic> topic = dto.getTimeSheetTopics().stream().map(TimeSheetTopicMapper::toEntity).collect(Collectors.toList());
+		entity.setTimeSheetTopics(topic);
 
 		return entity;
 	}
@@ -55,11 +57,8 @@ public class TimeSheetMapper {
 		cmDto.setModuleId( entity.getCourseModule().getModuleId());
 		cmDto.setCourseId( entity.getCourseModule().getCourseId());
 		dto.setCourseModule(cmDto);
-
-		SimpleTimeSheetTopicDTO topic = new SimpleTimeSheetTopicDTO(); 
-		topic.setId(entity.getTimeSheetTopic().getId());
-		topic.setTopicId(entity.getTimeSheetTopic().getTopicId());
-		dto.setTopic(topic);
+ 
+		dto.setTopics(entity.getTimeSheetTopics().stream().map(TimeSheetTopicMapper::toSimpleDto).collect(Collectors.toList()));
 
 		return dto;
 	}
