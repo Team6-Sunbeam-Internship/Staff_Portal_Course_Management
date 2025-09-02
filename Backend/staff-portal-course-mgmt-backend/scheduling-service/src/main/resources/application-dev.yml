@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DATABASE_URL}
+    url: jdbc:mysql://${DATABASE_HOST}:3306/scheduling-service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
