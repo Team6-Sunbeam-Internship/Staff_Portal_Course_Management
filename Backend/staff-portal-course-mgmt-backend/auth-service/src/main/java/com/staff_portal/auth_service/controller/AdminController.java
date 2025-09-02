@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -24,7 +26,9 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN') and hasAuthority('STAFF_WRITE')")
     @PostMapping("/createAuthUser")
     public ResponseEntity<ApiResponse<String>> createAuthUser(@RequestBody CreateAuthUserRequestDTO createAuthUserRequestDTO) {
-        ApiResponse<String> response = authUserService.createAuthUser(createAuthUserRequestDTO);
+        UUID authUserId = authUserService.createAuthUser(createAuthUserRequestDTO);
+        createAuthUserRequestDTO.setAuthUserId(authUserId);
+        ApiResponse<String> response = authUserService.createStaff(createAuthUserRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
