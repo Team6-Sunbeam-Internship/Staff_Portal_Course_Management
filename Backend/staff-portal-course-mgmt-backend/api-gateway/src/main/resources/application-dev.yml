@@ -1,0 +1,56 @@
+server:
+  port: 8003
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8001/oauth2/v1/jwks
+          issuer-uri: http://localhost:8001
+
+gateway:
+  services:
+    user-service:
+      url: http://localhost:8004
+      timeout: 30s
+    scheduling-service:
+      url: http://localhost:8005
+      timeout: 30s
+    academic-service:
+      url: http://localhost:8006
+      timeout: 30s
+    auth-service:
+      url: http://localhost:8001
+      timeout: 10s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.staff_portal.api_gateway: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    io.github.resilience4j: DEBUG
+  file:
+    name: logs/api-gateway-dev.log
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 30
+      scheduling-service:
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 30
+      academic-service:
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 30
