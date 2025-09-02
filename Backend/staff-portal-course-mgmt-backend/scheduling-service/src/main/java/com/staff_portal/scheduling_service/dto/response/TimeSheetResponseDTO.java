@@ -2,6 +2,7 @@ package com.staff_portal.scheduling_service.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import com.staff_portal.scheduling_service.model.TimeSheetStatus;
 
@@ -27,5 +28,5 @@ public class TimeSheetResponseDTO {
     private TimeSheetStatus status;
 
     private SimpleTimeSheetCourseModuleDTO courseModule;
-    private SimpleTimeSheetTopicDTO topic;
+    private List<SimpleTimeSheetTopicDTO> topics;
 }
