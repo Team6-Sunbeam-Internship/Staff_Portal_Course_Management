@@ -19,5 +19,5 @@ public class TimeSheetCourseModuleResponseDTO {
     private Long courseId;
     private Long moduleId;
 
-    private List<SimpleTimeSheetResponseDTO> timesheets;
+    private List<SimpleTimeSheetResponseDTO> timeSheets;
 }
