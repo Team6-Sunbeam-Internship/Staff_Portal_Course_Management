@@ -34,9 +34,8 @@ public class TimeSheetTopic {
     @Column(name = "topic_id", nullable = false)
     private Long topicId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "timesheet_id", nullable = false, unique = true,referencedColumnName = "id")
-    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "timesheet_id", nullable = false)
     private TimeSheet timeSheet;
     
 }
