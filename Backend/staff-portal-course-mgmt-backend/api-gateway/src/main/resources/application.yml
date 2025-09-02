@@ -1,7 +1,162 @@
 server:
-  port: ${SERVER_PORT}
+  port: 8003
+  error:
+    whitelabel:
+      enabled: false
 
 spring:
   application:
     name: api-gateway
-    group: com.team6
+    group: team6
+  profiles:
+    active: dev
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-service:8001/oauth2/v1/jwks
+          issuer-uri: http://auth-service:8001
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=10m
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,configprops
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+
+gateway:
+  services:
+    user-service:
+      url: http://localhost:8004
+      audience: user-service
+      timeout: 30s
+      retry:
+        max-attempts: 3
+    scheduling-service:
+      url: http://localhost:8005
+      audience: scheduling-service
+      timeout: 30s
+      retry:
+        max-attempts: 3
+    academic-service:
+      url: http://localhost:8006
+      audience: academic-service
+      timeout: 30s
+      retry:
+        max-attempts: 3
+    auth-service:
+      url: http://localhost:8001
+      audience: auth-service
+      timeout: 10s
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      scheduling-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      academic-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+
+  retry:
+    instances:
+      user-service:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+      scheduling-service:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+      academic-service:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+
+  timelimiter:
+    instances:
+      user-service:
+        timeoutDuration: 10s
+        cancelRunningFuture: true
+      scheduling-service:
+        timeoutDuration: 10s
+        cancelRunningFuture: true
+      academic-service:
+        timeoutDuration: 10s
+        cancelRunningFuture: true
+
+  bulkhead:
+    instances:
+      user-service:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 100ms
+      scheduling-service:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 100ms
+      academic-service:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 100ms
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.staff_portal.api_gateway: DEBUG
+    org.springframework.security: INFO
+    org.springframework.cloud.gateway: INFO
+    io.github.resilience4j: INFO
+    io.github.resilience4j.spring6.utils.RxJava2OnClasspathCondition: WARN
+    io.github.resilience4j.spring6.utils.ReactorOnClasspathCondition: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] %logger{36} - %msg%n"
