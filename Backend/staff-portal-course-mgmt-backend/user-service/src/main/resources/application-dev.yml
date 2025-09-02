@@ -3,6 +3,14 @@ spring:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8001/oauth2/v1/jwks
+          issuer-uri: http://localhost:8001
+          audiences: user-service
+
 
 #logging:
 #  level:
