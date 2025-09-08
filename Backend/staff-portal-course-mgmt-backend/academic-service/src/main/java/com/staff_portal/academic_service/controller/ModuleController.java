@@ -58,11 +58,11 @@ public class ModuleController {
     
     @GetMapping("/filter")
     public ResponseEntity<?> getModulesByFilters(
-            @RequestParam(required = false) String batchCycleName,
-            @RequestParam(required = false) String courseTypeName,
-            @RequestParam(required = false) String courseName) {
+            @RequestParam(required = false) Integer batchCycleId,
+            @RequestParam(required = false) Integer courseTypeId,
+            @RequestParam(required = false) Integer courseId) {
 
-        List<ModuleResponseDTO> response = moduleService.getModulesByFilters(batchCycleName, courseTypeName, courseName);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Modules filtered", response));
+        List<ModuleResponseDTO> response = moduleService.getModulesByFilters(batchCycleId, courseTypeId, courseId);
+        return ResponseEntity.ok(new CustomResponse<>(false, "Modules filtered by IDs", response));
     }
 }

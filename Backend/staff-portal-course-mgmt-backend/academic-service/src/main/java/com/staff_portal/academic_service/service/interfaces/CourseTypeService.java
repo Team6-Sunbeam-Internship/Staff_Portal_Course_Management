@@ -16,6 +16,5 @@ public interface CourseTypeService {
     
     CourseTypeResponseDTO getCourseTypeById(int id);
     
-    // new filter by batchCycleName
-    List<CourseTypeResponseDTO> getCourseTypesByBatchCycleName(String cycleName);
+    List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId);
 }

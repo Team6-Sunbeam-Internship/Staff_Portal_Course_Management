@@ -11,26 +11,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, Integer> {
-	  // All filters
-    List<Subject> findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCaseAndModule_Course_CourseNameIgnoreCaseAndModule_ModuleNameIgnoreCase(
-            String batchCycleName, String courseTypeName, String courseName, String moduleName);
-
-    // 3 filters
-    List<Subject> findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCaseAndModule_Course_CourseNameIgnoreCase(
-            String batchCycleName, String courseTypeName, String courseName);
-
-    // 2 filters
-    List<Subject> findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCase(
-            String batchCycleName, String courseTypeName);
-
-    List<Subject> findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCase(String batchCycleName);
-
-    List<Subject> findByModule_Course_CourseType_TypeNameIgnoreCase(String courseTypeName);
-
-    List<Subject> findByModule_Course_CourseNameIgnoreCase(String courseName);
-
-    List<Subject> findByModule_ModuleNameIgnoreCase(String moduleName);
-
+ 
     // Check if a subject already exists under a given module
     boolean existsBySubjectNameAndModule_ModuleId(String subjectName, int moduleId);
+    
+    List<Subject> findByModule_ModuleId(Integer moduleId);
+    
+    List<Subject> findByModule_ModuleIdAndModule_Course_CourseIdAndModule_CourseType_CourseTypeIdAndModule_BatchCycle_BatchCycleId(
+            Integer moduleId, Integer courseId, Integer courseTypeId, Integer batchCycleId);
 }

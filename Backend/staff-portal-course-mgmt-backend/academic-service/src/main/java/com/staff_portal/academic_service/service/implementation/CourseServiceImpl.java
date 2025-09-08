@@ -86,22 +86,16 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.delete(course);
     }
     
+//    @Override
+//    public List<Course> getCoursesByCourseType(int courseTypeId) {
+//        return courseRepository.findByCourseTypeId(courseTypeId);
+//    }
 
-    //  New Filter
+
     @Override
-    public List<CourseResponseDTO> getCoursesByFilters(String batchCycleName, String courseTypeName) {
-        List<Course> courses;
-
-        if (batchCycleName != null && courseTypeName != null) {
-            courses = courseRepository.findByCourseType_BatchCycle_CycleNameAndCourseType_TypeName(
-                    batchCycleName, courseTypeName);
-        } else if (batchCycleName != null) {
-            courses = courseRepository.findByCourseType_BatchCycle_CycleName(batchCycleName);
-        } else if (courseTypeName != null) {
-            courses = courseRepository.findByCourseType_TypeName(courseTypeName);
-        } else {
-            courses = courseRepository.findAll();
-        }
+    public List<CourseResponseDTO> getCoursesByFilters(Integer batchCycleId, Integer courseTypeId) {
+        List<Course> courses = courseRepository
+                .findByCourseType_BatchCycle_BatchCycleIdAndCourseType_CourseTypeId(batchCycleId, courseTypeId);
 
         return courses.stream()
                 .map(this::mapToResponseDTO)

@@ -79,6 +79,24 @@ public class TopicServiceImpl implements TopicService {
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
         return mapToResponse(topic);
     }
+    
+    @Override
+    public List<TopicResponseDTO> getTopicsByFilters(
+            Integer batchCycleId,
+            Integer courseTypeId,
+            Integer courseId,
+            Integer moduleId,
+            Integer subjectId,
+            Integer sectionId
+    ) {
+        List<Topic> topics = topicRepository.findTopicsByAllFilters(
+                batchCycleId, courseTypeId, courseId, moduleId, subjectId, sectionId
+        );
+
+        return topics.stream()
+        		.map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
     private TopicResponseDTO mapToResponse(Topic topic) {
         TopicResponseDTO response = new TopicResponseDTO();
