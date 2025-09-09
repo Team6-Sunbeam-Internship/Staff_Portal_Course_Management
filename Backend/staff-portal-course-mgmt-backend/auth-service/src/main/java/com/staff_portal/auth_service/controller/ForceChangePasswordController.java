@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class ForceChangePasswordController {
@@ -31,6 +32,7 @@ public class ForceChangePasswordController {
     @PostMapping("/force-change-password")
     public String handleForceChange(@ModelAttribute ChangePasswordRequestDTO changePasswordRequestDTO,
                                     Model model,
+                                    RedirectAttributes redirectAttributes,
                                     Authentication authentication,
                                     HttpServletRequest request) {
         String oldPassword = changePasswordRequestDTO.getOldPassword();
@@ -42,6 +44,7 @@ public class ForceChangePasswordController {
         ApiResponse<String> changePasswordResponse = authService.changePassword(oldPassword, newPassword);
         if (changePasswordResponse.isSuccess()) {
             SecurityContextHolder.clearContext();
+            redirectAttributes.addFlashAttribute("changePassword", true);
         } else {
             model.addAttribute("error", changePasswordResponse.getError());
         }
