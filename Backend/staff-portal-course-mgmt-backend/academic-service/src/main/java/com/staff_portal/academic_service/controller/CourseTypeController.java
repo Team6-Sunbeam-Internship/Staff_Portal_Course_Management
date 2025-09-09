@@ -51,10 +51,10 @@ public class CourseTypeController {
         return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Found", response));
     }
  
-    // 🔹 New filter by BatchCycle Name
-    @GetMapping("/batchcycle/{cycleName}")
-    public ResponseEntity<?> getCourseTypesByBatchCycleName(@PathVariable String cycleName) {
-        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleName(cycleName);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseTypes for BatchCycle fetched", response));
+   
+    @GetMapping("/byBatchCycle")
+    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
+        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleId(batchCycleId);
+        return ResponseEntity.ok(new CustomResponse<>(false, "Course types fetched", response));
     }
 }

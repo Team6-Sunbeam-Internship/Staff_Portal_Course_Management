@@ -15,4 +15,13 @@ public interface SectionService {
     List<SectionResponseDTO> getAllSections();
 
     SectionResponseDTO getSectionById(int id);
+    
+    List<SectionResponseDTO> filterSections(
+            Integer batchCycleId,
+            String courseTypeId,
+            Integer courseId,
+            Integer moduleId,
+            Integer subjectId
+    );
 }
+
