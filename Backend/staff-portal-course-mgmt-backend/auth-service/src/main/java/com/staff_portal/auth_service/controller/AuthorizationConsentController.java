@@ -1,7 +1,8 @@
 package com.staff_portal.auth_service.controller;
 
-import com.staff_portal.auth_service.service.interfaces.IJpaOAuth2AuthorizationConsentService;
-import com.staff_portal.auth_service.service.interfaces.IJpaRegisteredClientRepositoryService;
+
+import com.staff_portal.auth_service.service.interfaces.IOAuth2AuthorizationConsentService;
+import com.staff_portal.auth_service.service.interfaces.IRegisteredClientService;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
@@ -17,16 +18,16 @@ import java.util.*;
 
 @Controller
 public class AuthorizationConsentController {
-	private final IJpaRegisteredClientRepositoryService jpaRegisteredClientRepositoryService;
-	private final IJpaOAuth2AuthorizationConsentService jpaOAuth2AuthorizationConsentService;
+	private final IRegisteredClientService registeredClientService;
+	private final IOAuth2AuthorizationConsentService oauth2AuthorizationConsentService;
 
-	public AuthorizationConsentController(IJpaRegisteredClientRepositoryService jpaRegisteredClientRepositoryService,
-			IJpaOAuth2AuthorizationConsentService jpaOAuth2AuthorizationConsentService) {
-		this.jpaRegisteredClientRepositoryService = jpaRegisteredClientRepositoryService;
-		this.jpaOAuth2AuthorizationConsentService = jpaOAuth2AuthorizationConsentService;
-	}
+    public AuthorizationConsentController(IRegisteredClientService registeredClientService, IOAuth2AuthorizationConsentService oauth2AuthorizationConsentService) {
+        this.registeredClientService = registeredClientService;
+        this.oauth2AuthorizationConsentService = oauth2AuthorizationConsentService;
+    }
 
-	@GetMapping(value = "/oauth2/consent")
+
+    @GetMapping(value = "/oauth2/consent")
 	public String consent(Principal principal, Model model,
                           @RequestParam(OAuth2ParameterNames.CLIENT_ID) String clientId,
                           @RequestParam(OAuth2ParameterNames.SCOPE) String scope,
@@ -36,9 +37,10 @@ public class AuthorizationConsentController {
 		// Remove scopes that were already approved
 		Set<String> scopesToApprove = new HashSet<>();
 		Set<String> previouslyApprovedScopes = new HashSet<>();
-		RegisteredClient registeredClient = this.jpaRegisteredClientRepositoryService.findByClientId(clientId);
-		OAuth2AuthorizationConsent currentAuthorizationConsent =
-				this.jpaOAuth2AuthorizationConsentService.findById(registeredClient.getId(), principal.getName());
+		RegisteredClient registeredClient = this.registeredClientService.findByClientId(clientId);
+        assert registeredClient != null;
+        OAuth2AuthorizationConsent currentAuthorizationConsent =
+				this.oauth2AuthorizationConsentService.findById(registeredClient.getId(), principal.getName());
 		Set<String> authorizedScopes;
 		if (currentAuthorizationConsent != null) {
 			authorizedScopes = currentAuthorizationConsent.getScopes();
@@ -94,5 +96,4 @@ public class AuthorizationConsentController {
 			this.description = scopeDescriptions.getOrDefault(scope, DEFAULT_DESCRIPTION);
 		}
 	}
-
 }

@@ -1,9 +1,9 @@
 package com.staff_portal.auth_service.controller;
 
-import com.staff_portal.auth_service.dto.request.CreateAuthUserRequestDTO;
+import com.staff_portal.auth_service.dto.request.AuthUserRequestDTO;
 import com.staff_portal.auth_service.dto.response.ApiResponse;
-import com.staff_portal.auth_service.service.interfaces.IAuthUserService;
-import org.springframework.http.HttpStatus;
+import com.staff_portal.auth_service.service.interfaces.IAuthService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,24 +11,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/admin")
+@Slf4j
 public class AdminController {
 
-    private final IAuthUserService authUserService;
+    private final IAuthService authService;
 
-    public AdminController(IAuthUserService authUserService) {
-        this.authUserService = authUserService;
+    public AdminController(IAuthService authService) {
+        this.authService = authService;
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasAuthority('STAFF_WRITE')")
-    @PostMapping("/createAuthUser")
-    public ResponseEntity<ApiResponse<String>> createAuthUser(@RequestBody CreateAuthUserRequestDTO createAuthUserRequestDTO) {
-        UUID authUserId = authUserService.createAuthUser(createAuthUserRequestDTO);
-        createAuthUserRequestDTO.setAuthUserId(authUserId);
-        ApiResponse<String> response = authUserService.createStaff(createAuthUserRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    // Create Staff(Admin, Course_Coordinator, General_User)
+    @PreAuthorize("hasRole('ADMIN') and hasAuthority('STAFF_WRITE')" )
+    @PostMapping("/createStaff")
+    public ResponseEntity<ApiResponse<String>> createStaff(@RequestBody AuthUserRequestDTO authUserRequestDTO) {
+        ApiResponse<String> createStaffResponse = authService.createStaff(authUserRequestDTO);
+        return ResponseEntity.ok(createStaffResponse);
     }
 }

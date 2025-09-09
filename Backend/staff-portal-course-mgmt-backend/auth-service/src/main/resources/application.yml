@@ -1,6 +1,14 @@
 server:
   port: ${SERVER_PORT}
-
+  servlet:
+    session:
+      cookie:
+        name: AS_SESSION
+        secure: true
+        same-site: none
+        max-age: 2h
+        http-only: true
+        domain: localhost:8001
 spring:
   application:
     name: auth-service

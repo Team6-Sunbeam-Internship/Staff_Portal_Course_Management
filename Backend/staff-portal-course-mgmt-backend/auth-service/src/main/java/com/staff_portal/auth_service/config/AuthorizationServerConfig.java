@@ -5,14 +5,13 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.staff_portal.auth_service.dto.response.StaffProfileResponseDTO;
-import com.staff_portal.auth_service.model.user.AuthUser;
+import com.staff_portal.auth_service.handler.CustomAuthorizeFlowFailureHandler;
 import com.staff_portal.auth_service.scheduler.KeyRotationScheduler;
 import com.staff_portal.auth_service.security.CustomUserDetails;
-import com.staff_portal.auth_service.service.interfaces.IJpaOAuth2AuthorizationConsentService;
-import com.staff_portal.auth_service.service.interfaces.IJpaOAuth2AuthorizationService;
-import com.staff_portal.auth_service.service.interfaces.IJpaRegisteredClientRepositoryService;
+import com.staff_portal.auth_service.service.interfaces.IOAuth2AuthorizationConsentService;
+import com.staff_portal.auth_service.service.interfaces.IOAuth2AuthorizationService;
+import com.staff_portal.auth_service.service.interfaces.IRegisteredClientService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -25,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
@@ -39,6 +39,9 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,8 +50,6 @@ public class AuthorizationServerConfig {
 
     private final KeyRotationScheduler keyRotationScheduler;
     private final RestClient userServiceRestClient;
-    @Value("${authservice.security.issuer}")
-    private String issuer;
 
     public AuthorizationServerConfig(KeyRotationScheduler keyRotationScheduler, @Qualifier("userServiceRestClient") RestClient userServiceClient) {
         this.keyRotationScheduler = keyRotationScheduler;
@@ -57,10 +58,11 @@ public class AuthorizationServerConfig {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, OAuth2TokenGenerator oAuth2TokenGenerator,
-                                                                      IJpaRegisteredClientRepositoryService jpaRegisteredClientRepositoryService,
-                                                                      IJpaOAuth2AuthorizationService jpaOAuth2AuthorizationService,
-                                                                      IJpaOAuth2AuthorizationConsentService jpaOAuth2AuthorizationConsentService) throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, OAuth2TokenGenerator<Jwt> oAuth2TokenGenerator,
+                                                                      IRegisteredClientService registeredClientService,
+                                                                      IOAuth2AuthorizationService oauth2AuthorizationService,
+                                                                      IOAuth2AuthorizationConsentService oauth2AuthorizationConsentService,
+                                                                      CustomAuthorizeFlowFailureHandler authorizeFlowFailureHandler) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = OAuth2AuthorizationServerConfigurer.authorizationServer();
 
         http
@@ -68,19 +70,24 @@ public class AuthorizationServerConfig {
                 .with(authorizationServerConfigurer, (authorizationServer) ->
                         authorizationServer
                                 .authorizationEndpoint(authEnpoints ->
-                                        authEnpoints.consentPage("/oauth2/consent")
+                                        authEnpoints
+                                                .errorResponseHandler(authorizeFlowFailureHandler)
+                                                .consentPage("/oauth2/consent")
+
                                 )
                                 .tokenGenerator(oAuth2TokenGenerator)
-                                .registeredClientRepository(jpaRegisteredClientRepositoryService)
-                                .authorizationService(jpaOAuth2AuthorizationService)
-                                .authorizationConsentService(jpaOAuth2AuthorizationConsentService)
+                                .registeredClientRepository(registeredClientService)
+                                .authorizationService(oauth2AuthorizationService)
+                                .authorizationConsentService(oauth2AuthorizationConsentService)
                                 .oidc(oidcConfigurer ->     // Enable OpenId Connect 1.0
                                         oidcConfigurer.userInfoEndpoint(userInfoConfigurer ->
                                                 userInfoConfigurer.userInfoMapper(this::customUserInfoMapper))
+
                                 )
                 )
                 .authorizeHttpRequests(authorize ->
                         authorize
+                                .requestMatchers("/oauth2-error", "/error").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2ResourceServer ->
@@ -90,7 +97,8 @@ public class AuthorizationServerConfig {
                                 .defaultAuthenticationEntryPointFor(
                                         new LoginUrlAuthenticationEntryPoint("/login"),
                                         new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                                ))
+                                )
+                )
         ;
         return http.build();
     }
@@ -109,6 +117,7 @@ public class AuthorizationServerConfig {
                 .body(StaffProfileResponseDTO.class);
 
         // Build OIDC userinfo response
+        assert staffProfile != null;
         return OidcUserInfo.builder()
                 .subject(jwtAuthenticationToken.getToken().getSubject())
                 .name(staffProfile.firstName() + " " + staffProfile.lastName())
@@ -179,36 +188,54 @@ public class AuthorizationServerConfig {
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
         return context -> {
+
+            CustomUserDetails principal = (CustomUserDetails) context.getPrincipal().getPrincipal();
+            Collection<? extends GrantedAuthority> authorities = context.getPrincipal().getAuthorities();
+
+            Set<String> roles = authorities.stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .map(auth -> auth.substring("ROLE_".length()))
+                    .collect(Collectors.toSet());
+
+            Set<String> scopes = authorities.stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(auth -> auth.startsWith("SCOPE_"))
+                    .map(auth -> auth.substring("SCOPE_".length()))
+                    .collect(Collectors.toSet());
+
+            Set<String> audiences = determineAudience(scopes);
+
+            ZoneId ist = ZoneId.of("Asia/Kolkata");
+            Instant now = Instant.now();
+
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-                CustomUserDetails principal = (CustomUserDetails) context.getPrincipal().getPrincipal();
-                Collection<? extends GrantedAuthority> authorities = context.getPrincipal().getAuthorities();
-
-                Set<String> roles = authorities.stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .filter(auth -> auth.startsWith("ROLE_"))
-                        .map(auth -> auth.substring("ROLE_".length()))
-                        .collect(Collectors.toSet());
-
-                Set<String> scopes = authorities.stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .filter(auth -> auth.startsWith("SCOPE_"))
-                        .map(auth -> auth.substring("SCOPE_".length()))
-                        .collect(Collectors.toSet());
-
-                Set<String> audiences = determineAudience(scopes);
-
-                context.getClaims().claim("audience", audiences);
-                context.getClaims().claim("sub", principal.getUserId());
+                // Customize headers/claims for id_token
+                context.getClaims().claim("aud", audiences);
+                context.getClaims().claim("sub", principal.getId());
+                context.getClaims().claim("email", principal.getUsername());
                 context.getClaims().claim("roles", roles);
                 context.getClaims().claim("scopes", scopes);
+
+                // Add IST version of timestamps for display purpose
+                context.getClaims().claim("iat_ist", now.atZone(ist).toString());
+                Duration ttl = context.getRegisteredClient().getTokenSettings().getAccessTokenTimeToLive();
+                Instant expiresAt = now.plus(ttl);
+                context.getClaims().claim("exp_ist", expiresAt.atZone(ist).toString());
             } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
                 // Customize headers/claims for id_token
-                CustomUserDetails principal = (CustomUserDetails) context.getPrincipal().getPrincipal();
                 context.getClaims().claim("aud", context.getRegisteredClient().getClientId());
-                context.getClaims().claim("sub", principal.getUserId());
+                context.getClaims().claim("sub", principal.getId());
                 context.getClaims().claim("name", principal.getFirstName());
                 context.getClaims().claim("email", principal.getUsername());
                 context.getClaims().claim("email_verified", true);
+                context.getClaims().claim("roles", roles);
+
+                // Add IST version of timestamps for display purpose
+                context.getClaims().claim("iat_ist", now.atZone(ist).toString());
+                Duration ttl = context.getRegisteredClient().getTokenSettings().getAccessTokenTimeToLive();
+                Instant expiresAt = now.plus(ttl);
+                context.getClaims().claim("exp_ist", expiresAt.atZone(ist).toString());
             }
         };
     }

@@ -6,11 +6,10 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 @Controller
 public class OAuth2ErrorController {
 
-    @GetMapping("/error")
+    @GetMapping("/oauth2-error")
     public String handleOAuth2Error(
             @RequestParam(value = "error", required = false) String error,
             @RequestParam(value = "error_description", required = false) String errorDescription,
@@ -19,60 +18,68 @@ public class OAuth2ErrorController {
             Model model,
             HttpServletRequest request) {
 
-        // Handle different OAuth2 error types
+        // Fallback to session attributes (for server-side redirects)
+        if (!StringUtils.hasText(error)) {
+            error = (String) request.getSession().getAttribute("oauth2_error_code");
+            errorDescription = (String) request.getSession().getAttribute("oauth2_error_description");
+            errorUri = (String) request.getSession().getAttribute("oauth2_error_uri");
+            // Clear attributes to avoid reusing them accidentally
+            request.getSession().removeAttribute("oauth2_error_code");
+            request.getSession().removeAttribute("oauth2_error_description");
+        }
+
         String errorTitle = "OAuth2 Error";
         String errorMessage = "An OAuth2 error occurred.";
 
         if (StringUtils.hasText(error)) {
-            switch (error) {
-                case "invalid_request":
+            errorMessage = switch (error) {
+                case "invalid_request" -> {
                     errorTitle = "Invalid Request";
-                    errorMessage = "The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.";
-                    break;
-                case "unauthorized_client":
+                    yield "The request is missing a required parameter or is malformed.";
+                }
+                case "unauthorized_client" -> {
                     errorTitle = "Unauthorized Client";
-                    errorMessage = "The client is not authorized to request an authorization code using this method.";
-                    break;
-                case "access_denied":
+                    yield "The client is not authorized to request an authorization code using this method.";
+                }
+                case "access_denied" -> {
                     errorTitle = "Access Denied";
-                    errorMessage = "The resource owner or authorization server denied the request.";
-                    break;
-                case "unsupported_response_type":
+                    yield "The resource owner or authorization server denied the request.";
+                }
+                case "unsupported_response_type" -> {
                     errorTitle = "Unsupported Response Type";
-                    errorMessage = "The authorization server does not support obtaining an authorization code using this method.";
-                    break;
-                case "invalid_scope":
+                    yield "The authorization server does not support this response type.";
+                }
+                case "invalid_scope" -> {
                     errorTitle = "Invalid Scope";
-                    errorMessage = "The requested scope is invalid, unknown, or malformed.";
-                    break;
-                case "server_error":
+                    yield "The requested scope is invalid, unknown, or malformed.";
+                }
+                case "server_error" -> {
                     errorTitle = "Server Error";
-                    errorMessage = "The authorization server encountered an unexpected condition that prevented it from fulfilling the request.";
-                    break;
-                case "temporarily_unavailable":
+                    yield "The authorization server encountered an unexpected condition.";
+                }
+                case "temporarily_unavailable" -> {
                     errorTitle = "Temporarily Unavailable";
-                    errorMessage = "The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server.";
-                    break;
-                case "invalid_client":
+                    yield "The server is temporarily unable to handle the request.";
+                }
+                case "invalid_client" -> {
                     errorTitle = "Invalid Client";
-                    errorMessage = "Client authentication failed.";
-                    break;
-                case "invalid_grant":
+                    yield "Client authentication failed.";
+                }
+                case "invalid_grant" -> {
                     errorTitle = "Invalid Grant";
-                    errorMessage = "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.";
-                    break;
-                case "unsupported_grant_type":
+                    yield "The provided authorization grant is invalid or expired.";
+                }
+                case "unsupported_grant_type" -> {
                     errorTitle = "Unsupported Grant Type";
-                    errorMessage = "The authorization grant type is not supported by the authorization server.";
-                    break;
-                default:
+                    yield "The authorization grant type is not supported.";
+                }
+                default -> {
                     errorTitle = "OAuth2 Error: " + error;
-                    errorMessage = StringUtils.hasText(errorDescription) ? errorDescription : "An unknown OAuth2 error occurred.";
-                    break;
-            }
+                    yield StringUtils.hasText(errorDescription) ? errorDescription : "An unknown OAuth2 error occurred.";
+                }
+            };
         }
 
-        // Override with custom error description if provided
         if (StringUtils.hasText(errorDescription)) {
             errorMessage = errorDescription;
         }
@@ -81,7 +88,8 @@ public class OAuth2ErrorController {
         model.addAttribute("errorMessage", errorMessage);
         model.addAttribute("errorCode", error);
         model.addAttribute("state", state);
+        model.addAttribute("errorUri", errorUri);
 
-        return "error";
+        return "error"; // Thymeleaf template name
     }
 }

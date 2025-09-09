@@ -1,7 +1,6 @@
 package com.staff_portal.auth_service.repository;
 
-import com.staff_portal.auth_service.model.user.AuthUser;
-import org.springframework.data.jpa.repository.EntityGraph;
+import com.staff_portal.auth_service.model.users.AuthUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,12 +9,10 @@ import java.util.UUID;
 
 @Repository
 public interface AuthUserRepository extends JpaRepository<AuthUser, UUID> {
-
-    @EntityGraph(attributePaths = {"roles", "roles.scopes", "roles.scopes.roles"})
-    Optional<AuthUser> findByUsername(String username);
-    boolean existsByUsername(String username);
-
-    // Fetch roles along with user (avoid N+1 issue)
-    @EntityGraph(attributePaths = "roles")
-    Optional<AuthUser> findWithRolesByUsername(String username);
+    
+    Optional<AuthUser> findByEmail(String email);
+    
+    Optional<AuthUser> findByEmailAndActiveTrue(String email);
+    
+    boolean existsByEmail(String email);
 }

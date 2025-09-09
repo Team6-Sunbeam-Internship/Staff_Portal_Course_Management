@@ -1,17 +1,63 @@
 spring:
   datasource:
-    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
-
-authservice:
-  jwt:
-    rsa-key-size: ${JWT_RSA_KEY_SIZE}
-  keys:
-    path: ${KEYS_PATH}
-    rotation-days: ${KEYS_ROTATION_DAYS}
   security:
-    issuer: http://${OAUTH2_AUTHORIZATION_ISSUER_HOST}:${OAUTH2_AUTHORIZATION_ISSUER_PORT}
+    oauth2:
+      authorizationserver:
+        endpoint:
+          authorization-uri: ${AUTHORIZATION_SERVER_AUTHORIZE_ENDPOINT}
+          token-uri: ${AUTHORIZATION_SERVER_TOKEN_ENDPOINT}
+          jwk-set-uri: ${AUTHORIZATION_SERVER_JWK_SET_ENDPOINT}
+          oidc:
+            logout-uri: ${AUTHORIZATION_SERVER_OIDC_LOGOUT_ENDPOINT}
+            user-info-uri: ${AUTHORIZATION_SERVER_OIDC_USERINFO_ENDPOINT}
+            client-registration-uri: ${AUTHORIZATION_SERVER_OIDC_CLIENT_REGISTRATION_ENDPOINT}
+          token-revocation-uri: ${AUTHORIZATION_SERVER_TOKEN_REVOCATION}
+          token-introspection-uri: ${AUTHORIZATION_SERVER_TOKEN_INTROSPECTION}
+          device-authorization-uri: ${AUTHORIZATION_SERVER_DEVICE_AUTHORIZATION_ENDPOINT}
+          device-verification-uri: ${AUTHORIZATION_SERVER_DEVICE_VERIFICATION_ENDPOINT}
+        issuer: ${AUTHORIZATION_SERVER_URL_PROTOCOL}://${AUTHORIZATION_SERVER_HOST}:${AUTHORIZATION_SERVER_PORT}
+        client:
+          oidc-client:
+            registration:
+              client-id: ${CLIENT_ID}
+              client-name: ${CLIENT_NAME}
+              client-secret: ${CLIENT_SECRET}
+              client-authentication-methods:
+                - "client_secret_basic"
+              authorization-grant-types:
+                - "authorization_code"
+                - "refresh_token"
+                - "client_credentials"
+              redirect-uris: ${CLIENT_REDIRECT_URI}
+              post-logout-redirect-uris: ${CLIENT_POSTLOGOUT_REDIRECT_URI}
+              scopes:
+                - openid
+                - profile
+                - email
+                - address
+            require-proof-key: true
+            require-authorization-consent: true
+            jwk-set-uri: ${AUTHORIZATION_SERVER_JWK_SET_ENDPOINT}
+            token-endpoint-authentication-signing-algorithm: "RS256"
+            token: # Token Settings
+              authorization-code-time-to-live: 5m
+              access-token-time-to-live: 10m
+              access-token-format: "self-contained"
+              reuse-refresh-tokens: false
+              refresh-token-time-to-live: 2h
+              id-token-signature-algorithm: "RS256"
+
+
+
+auth-service:
+  jwt:
+    rsa-key-size: ${AUTH_SERVICE_JWT_RSA_KEY_SIZE}
+  keys:
+    path: ${AUTH_SERVICE_KEYS_PATH}
+    rotation-days: ${AUTH_SERVICE_KEYS_ROTATION_DAYS}
 
 user-service:
   url: http://${USER_SERVICE_HOST}:${USER_SERVICE_PORT}

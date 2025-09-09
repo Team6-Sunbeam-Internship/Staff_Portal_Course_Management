@@ -23,15 +23,10 @@
                     <div th:if="${errorCode}" class="alert alert-info">
                         <strong>Error Code:</strong> <span th:text="${errorCode}"></span>
                     </div>
-
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                        <a href="/login" class="btn btn-primary">
-                            <i class="bi bi-house-door"></i> Go to Login
-                        </a>
-                        <button onclick="history.back()" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Go Back
-                        </button>
+                    <div th:if="${errorUri}" class="alert alert-success">
+                        <strong>Error URI:</strong> <a th:href="${errorUri}"></a>
                     </div>
+
                 </div>
             </div>
 
@@ -50,7 +45,7 @@
                         </p>
                         <p th:case="'invalid_request'" class="card-text">
                             The authorization request was malformed. This is typically a technical issue
-                            with the client application.
+                            with the client application. Please contact the application administrator.
                         </p>
                         <p th:case="'unauthorized_client'" class="card-text">
                             The client application is not authorized to use this authorization method.
