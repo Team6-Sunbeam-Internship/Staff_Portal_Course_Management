@@ -1,8 +1,10 @@
 import React from 'react'
-
+import CourseTypePage from './pages/courses/CourseTypePage'
 const App = () => {
   return (
-    <div>App</div>
+   <div className="App">
+      <CourseTypePage />
+    </div>
   )
 }
 
