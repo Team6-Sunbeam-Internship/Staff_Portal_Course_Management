@@ -97,17 +97,16 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         return mapToResponse(courseType);
     }
     
+       
     @Override
-    public List<CourseTypeResponseDTO> getCourseTypesByBatchCycleName(String cycleName) {
-        List<CourseType> courseTypes = courseTypeRepository.findByBatchCycle_CycleNameIgnoreCase(cycleName);
-        if (courseTypes.isEmpty()) {
-            throw new RuntimeException("No CourseTypes found for BatchCycle: " + cycleName);
-        }
+    public List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId) {
+        List<CourseType> courseTypes = courseTypeRepository.findByBatchCycle_BatchCycleId(batchCycleId);
+
         return courseTypes.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-        
+
 
     private CourseTypeResponseDTO mapToResponse(CourseType courseType) {
         CourseTypeResponseDTO response = new CourseTypeResponseDTO();

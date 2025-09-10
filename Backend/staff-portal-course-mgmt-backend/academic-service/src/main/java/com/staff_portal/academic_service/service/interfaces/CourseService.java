@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.staff_portal.academic_service.dto.request.CourseRequestDTO;
 import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
+//import com.staff_portal.academic_service.model.Course;
+
 
 public interface CourseService {
 	
@@ -12,7 +14,11 @@ public interface CourseService {
 	    void deleteCourse(int id);
 	    List<CourseResponseDTO> getAllCourses();
 	    CourseResponseDTO getCourseById(int id);
+	   
 	    // 🔎 New: filter by dropdowns
-	    List<CourseResponseDTO> getCoursesByFilters(String batchCycleName, String courseTypeName);
+//	    List<Course> getCoursesByCourseType(int courseTypeId);
+	    
+	    List<CourseResponseDTO> getCoursesByFilters(Integer batchCycleId, Integer courseTypeId);
+
 	}
 

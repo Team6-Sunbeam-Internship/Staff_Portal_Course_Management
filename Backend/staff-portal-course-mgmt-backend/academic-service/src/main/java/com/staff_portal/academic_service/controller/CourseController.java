@@ -61,13 +61,13 @@ public class CourseController {
         return ResponseEntity.ok(new CustomResponse<>(false, "Course Found", response));
     }
     
- // ✅ Filter API
-    @GetMapping("/filter")
-    public ResponseEntity<?> getCoursesByFilters(
-            @RequestParam(required = false) String batchCycleName,
-            @RequestParam(required = false) String courseTypeName) {
+  
+    @GetMapping("/filterByIds")
+    public ResponseEntity<?> getCoursesByBatchCycleAndType(
+            @RequestParam Integer batchCycleId,
+            @RequestParam Integer courseTypeId) {
 
-        List<CourseResponseDTO> response = courseService.getCoursesByFilters(batchCycleName, courseTypeName);
+        List<CourseResponseDTO> response = courseService.getCoursesByFilters(batchCycleId, courseTypeId);
         return ResponseEntity.ok(new CustomResponse<>(false, "Courses filtered", response));
     }
 }

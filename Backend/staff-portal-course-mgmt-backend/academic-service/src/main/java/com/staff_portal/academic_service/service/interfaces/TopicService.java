@@ -11,4 +11,12 @@ public interface TopicService {
     void deleteTopic(int id);
     List<TopicResponseDTO> getAllTopics();
     TopicResponseDTO getTopicById(int id);
+    List<TopicResponseDTO> getTopicsByFilters(
+            Integer batchCycleId,
+            Integer courseTypeId,
+            Integer courseId,
+            Integer moduleId,
+            Integer subjectId,
+            Integer sectionId
+    );
 }
