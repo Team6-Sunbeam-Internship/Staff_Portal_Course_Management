@@ -17,6 +17,10 @@ public interface IStudentService {
 
 	List<StudentDTO> getAllStudents();
 
+	List<StudentDTO> getStudentsByCourseName(String courseName);
+
+	List<StudentDTO> getStudentsByBatchCycleName(String batchCycleName);
+
 	void deleteStudentByRegistrationNumber(String registrationNumber);
 
 	void restoreStudentByRegistrationNumber(String registrationNumber);
