@@ -23,51 +23,51 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StaffController {
 
-	private final IStaffService staffService;
+    private final IStaffService staffService;
 
-	@PostMapping("/createStaff")
-	public ResponseEntity<StaffDTO> createStaff(@RequestBody StaffDTO staffDTO) {
-		return ResponseEntity.ok(staffService.createStaff(staffDTO));
-	}
+    @PostMapping("/createStaff")
+    public ResponseEntity<StaffDTO> createStaff(@RequestBody StaffDTO staffDTO) {
+        return ResponseEntity.ok(staffService.createStaff(staffDTO));
+    }
 
-	@GetMapping("/getAll")
-	public ResponseEntity<List<StaffDTO>> getAllStaff() {
-		return ResponseEntity.ok(staffService.getAllStaff());
-	}
-	
-	@GetMapping("/getStaffById/{id}")
-	public ResponseEntity<StaffDTO> getStaffById(@PathVariable String id) {
-	    UUID uuid = parseUUID(id);
-	    return ResponseEntity.ok(staffService.getStaffById(uuid));
-	}
+    @GetMapping("/getAll")
+    public ResponseEntity<List<StaffDTO>> getAllStaff() {
+        return ResponseEntity.ok(staffService.getAllStaff());
+    }
 
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<String> deleteStaff(@PathVariable String id) {
-	    UUID uuid = parseUUID(id);
-	    String message = staffService.deleteStaff(uuid);
-	    return ResponseEntity.ok(message);
-	}
+    @GetMapping("/getStaffById/{id}")
+    public ResponseEntity<StaffDTO> getStaffById(@PathVariable String id) {
+        UUID uuid = parseUUID(id);
+        return ResponseEntity.ok(staffService.getStaffById(uuid));
+    }
 
-	@PatchMapping("/update/{id}")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteStaff(@PathVariable String id) {
+        UUID uuid = parseUUID(id);
+        String message = staffService.deleteStaff(uuid);
+        return ResponseEntity.ok(message);
+    }
+
+    @PatchMapping("/update/{id}")
     public ResponseEntity<StaffDTO> updateStaff(@PathVariable String id, @RequestBody StaffDTO staffDTO) {
         UUID uuid = parseUUID(id);
         return ResponseEntity.ok(staffService.updateStaff(uuid, staffDTO));
     }
-	
-	private UUID parseUUID(String id) {
-	    if (id.startsWith("0x") || id.startsWith("0X")) {
-	        String hex = id.substring(2).toLowerCase();
-	        if (hex.length() == 32) {
-	            String formatted = String.format("%s-%s-%s-%s-%s",
-	                hex.substring(0, 8),
-	                hex.substring(8, 12),
-	                hex.substring(12, 16),
-	                hex.substring(16, 20),
-	                hex.substring(20, 32));
-	            return UUID.fromString(formatted);
-	        }
-	    }
-	    return UUID.fromString(id); 
-	}
 
+    private UUID parseUUID(String id) {
+        if (id.startsWith("0x") || id.startsWith("0X")) {
+            String hex = id.substring(2).toLowerCase();
+            if (hex.length() == 32) {
+                String formatted = String.format("%s-%s-%s-%s-%s",
+                        hex.substring(0, 8),
+                        hex.substring(8, 12),
+                        hex.substring(12, 16),
+                        hex.substring(16, 20),
+                        hex.substring(20, 32));
+                return UUID.fromString(formatted);
+            }
+        }
+        return UUID.fromString(id);
+    }
+    
 }
