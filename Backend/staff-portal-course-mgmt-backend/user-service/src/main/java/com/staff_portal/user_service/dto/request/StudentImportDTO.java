@@ -12,7 +12,8 @@ public class StudentImportDTO {
 	private String registrationNumber;
     private String studentName;
     private String email;
-    private String password;
     private String mobileNumber;
     private String address;
+    private String courseName;
+    private String batchCycleName;
 }
