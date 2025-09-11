@@ -21,7 +21,12 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
 	// All students (both deleted + active/inactive)
 	List<Student> findAll();
-	
-    Optional<Student> findByEmail(String email);
-    Optional<Student> findByMobileNumber(String mobileNumber);
+
+	List<Student> findByCourseNameAndIsDeletedFalse(String courseName);
+
+	List<Student> findByBatchCycleNameAndIsDeletedFalse(String batchCycleName);
+
+	Optional<Student> findByEmail(String email);
+
+	Optional<Student> findByMobileNumber(String mobileNumber);
 }
