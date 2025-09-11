@@ -6,7 +6,7 @@ import com.staff_portal.academic_service.dto.response.DropdownDTO;
 
 public interface DropdownService {
     List<DropdownDTO> getBatchCycles();
-    List<DropdownDTO> getCourseTypesByBatchCycle(Integer batchCycleId);
+    List<DropdownDTO> getAllCourseTypes();
     List<DropdownDTO> getCoursesByCourseType(Integer courseTypeId);
     List<DropdownDTO> getModulesByCourse(Integer courseId);
     List<DropdownDTO> getSubjectsByModule(Integer moduleId);

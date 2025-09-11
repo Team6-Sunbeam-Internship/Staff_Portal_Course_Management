@@ -82,7 +82,7 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public List<SectionResponseDTO> filterSections(
             Integer batchCycleId,
-            String courseTypeId,
+            Integer courseTypeId,
             Integer courseId,
             Integer moduleId,
             Integer subjectId
@@ -95,7 +95,7 @@ public class SectionServiceImpl implements SectionService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-   
+
 
     private SectionResponseDTO mapToResponse(Section section) {
         SectionResponseDTO response = new SectionResponseDTO();

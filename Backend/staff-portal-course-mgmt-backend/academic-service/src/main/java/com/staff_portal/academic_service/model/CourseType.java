@@ -31,9 +31,9 @@ public class CourseType {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int courseTypeId;
 	
-	 @ManyToOne
-	    @JoinColumn(name = "batchCycleId", nullable = false)
-	    private BatchCycle batchCycle;
+//	 @ManyToOne
+//	    @JoinColumn(name = "batchCycleId", nullable = false)
+//	    private BatchCycle batchCycle;
 	
 	 @ManyToOne
 	    @JoinColumn(name = "premisesId", nullable = false)

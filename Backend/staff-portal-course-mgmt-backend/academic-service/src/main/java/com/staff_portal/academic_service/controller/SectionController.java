@@ -57,7 +57,7 @@ public class SectionController {
     @GetMapping("/filter")
     public ResponseEntity<?> filterSections(
             @RequestParam Integer batchCycleId,
-            @RequestParam String courseTypeId,
+            @RequestParam Integer courseTypeId,
             @RequestParam Integer courseId,
             @RequestParam Integer moduleId,
             @RequestParam Integer subjectId

@@ -12,7 +12,6 @@ public class SubjectResponseDTO {
 
     private int subjectId;
     private String subjectName;
-    private String facultyName;
     private SubjectStatus status;
 
     private String moduleName;   // from Module

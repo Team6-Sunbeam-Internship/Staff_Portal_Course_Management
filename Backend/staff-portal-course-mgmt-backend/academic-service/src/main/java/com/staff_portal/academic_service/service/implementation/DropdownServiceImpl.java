@@ -37,9 +37,10 @@ public class DropdownServiceImpl implements DropdownService {
                 .collect(Collectors.toList());
     }
 
+ // Get all course types (independent of batch cycle)
     @Override
-    public List<DropdownDTO> getCourseTypesByBatchCycle(Integer batchCycleId) {
-        return courseTypeRepository.findByBatchCycle_BatchCycleId(batchCycleId).stream()
+    public List<DropdownDTO> getAllCourseTypes() {
+        return courseTypeRepository.findAll().stream()
                 .map(ct -> new DropdownDTO(ct.getCourseTypeId(), ct.getTypeName()))
                 .collect(Collectors.toList());
     }

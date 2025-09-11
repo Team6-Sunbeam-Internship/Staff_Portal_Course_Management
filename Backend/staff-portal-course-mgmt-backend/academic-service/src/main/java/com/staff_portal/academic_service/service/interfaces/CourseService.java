@@ -15,10 +15,10 @@ public interface CourseService {
 	    List<CourseResponseDTO> getAllCourses();
 	    CourseResponseDTO getCourseById(int id);
 	   
-	    // 🔎 New: filter by dropdowns
-//	    List<Course> getCoursesByCourseType(int courseTypeId);
-	    
+	 
 	    List<CourseResponseDTO> getCoursesByFilters(Integer batchCycleId, Integer courseTypeId);
+	    
+	    
 
 	}
 

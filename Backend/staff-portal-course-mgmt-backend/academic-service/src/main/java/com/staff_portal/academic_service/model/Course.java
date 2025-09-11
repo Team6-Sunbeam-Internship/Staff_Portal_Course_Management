@@ -23,40 +23,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-//@Setter
-//@Getter
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Entity
-//@Table(name = "courses")
-//public class Course {
-//	
-//	@Id
-//	@GeneratedValue(strategy = GenerationType.IDENTITY)
-//	private int courseId;
-//	
-//	@ManyToOne
-//    @JoinColumn(name = "courseTypeId", nullable = false)
-//    private CourseType courseType;
-//	
-//	 @Column(nullable = false, unique = true)
-//	    private String courseCode;
-//	 
-//	 @Column(nullable = false)
-//	    private String courseName;
-//	 
-//	 @Enumerated(EnumType.STRING)
-//	    @Column(nullable = false)
-//	    private CourseStatus status; 
-//	 
-//	 @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-//	    private List<Module> modules;
-//
-//	    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-//	    private List<CourseGroup> courseGroups;
-//	
-//
-//}
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -68,6 +35,10 @@ public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int courseId;
+    
+    @ManyToOne
+    @JoinColumn(name = "batchCycleId", nullable = false)
+    private BatchCycle batchCycle;
 
     @ManyToOne
     @JoinColumn(name = "courseTypeId", nullable = false)

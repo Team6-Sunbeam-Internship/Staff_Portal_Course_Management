@@ -17,6 +17,9 @@ public interface SubjectRepository extends JpaRepository<Subject, Integer> {
     
     List<Subject> findByModule_ModuleId(Integer moduleId);
     
-    List<Subject> findByModule_ModuleIdAndModule_Course_CourseIdAndModule_CourseType_CourseTypeIdAndModule_BatchCycle_BatchCycleId(
+  
+    
+    List<Subject> findByModule_ModuleIdAndModule_Course_CourseIdAndModule_Course_CourseType_CourseTypeIdAndModule_Course_BatchCycle_BatchCycleId(
             Integer moduleId, Integer courseId, Integer courseTypeId, Integer batchCycleId);
+
 }

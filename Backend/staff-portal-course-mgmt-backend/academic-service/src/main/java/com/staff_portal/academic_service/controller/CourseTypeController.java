@@ -51,10 +51,10 @@ public class CourseTypeController {
         return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Found", response));
     }
  
-   
-    @GetMapping("/byBatchCycle")
-    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
-        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleId(batchCycleId);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Course types fetched", response));
-    }
+//   
+//    @GetMapping("/byBatchCycle")
+//    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
+//        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleId(batchCycleId);
+//        return ResponseEntity.ok(new CustomResponse<>(false, "Course types fetched", response));
+//    }
 }

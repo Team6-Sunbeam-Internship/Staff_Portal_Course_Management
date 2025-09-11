@@ -16,18 +16,19 @@ public interface TopicRepository extends JpaRepository<Topic, Integer> {
     List<Topic> findBySection_SectionId(Integer sectionId);
     
     @Query("SELECT t FROM Topic t " +
-            "WHERE t.section.sectionId = :sectionId " +
-            "AND t.section.subject.subjectId = :subjectId " +
-            "AND t.section.subject.module.moduleId = :moduleId " +
-            "AND t.section.subject.module.course.courseId = :courseId " +
-            "AND t.section.subject.module.courseType.courseTypeId = :courseTypeId " +
-            "AND t.section.subject.module.batchCycle.batchCycleId = :batchCycleId")
-     List<Topic> findTopicsByAllFilters(
-             @Param("batchCycleId") Integer batchCycleId,
-             @Param("courseTypeId") Integer courseTypeId,
-             @Param("courseId") Integer courseId,
-             @Param("moduleId") Integer moduleId,
-             @Param("subjectId") Integer subjectId,
-             @Param("sectionId") Integer sectionId
-     );
+    	       "WHERE t.section.sectionId = :sectionId " +
+    	       "AND t.section.subject.subjectId = :subjectId " +
+    	       "AND t.section.subject.module.moduleId = :moduleId " +
+    	       "AND t.section.subject.module.course.courseId = :courseId " +
+    	       "AND t.section.subject.module.course.courseType.courseTypeId = :courseTypeId " +
+    	       "AND t.section.subject.module.course.batchCycle.batchCycleId = :batchCycleId")
+    	List<Topic> findTopicsByAllFilters(
+    	        @Param("batchCycleId") Integer batchCycleId,
+    	        @Param("courseTypeId") Integer courseTypeId,
+    	        @Param("courseId") Integer courseId,
+    	        @Param("moduleId") Integer moduleId,
+    	        @Param("subjectId") Integer subjectId,
+    	        @Param("sectionId") Integer sectionId
+    	);
+
 }

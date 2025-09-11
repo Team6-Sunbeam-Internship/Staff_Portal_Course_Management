@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 public class CourseTypeRequestDTO {
     private String typeName;
-    private int batchCycleId;
+//    private int batchCycleId;
     private int premisesId;
 
     private String description;

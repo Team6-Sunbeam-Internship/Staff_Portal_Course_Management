@@ -44,7 +44,6 @@ public class SubjectServiceImpl implements SubjectService {
         Subject subject = new Subject();
         subject.setModule(module);
         subject.setSubjectName(requestDTO.getSubjectName());
-        subject.setFacultyName(requestDTO.getFacultyName());
         subject.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : SubjectStatus.ACTIVE);
 
         Subject saved = subjectRepository.save(subject);
@@ -61,7 +60,6 @@ public class SubjectServiceImpl implements SubjectService {
 
         subject.setModule(module);
         subject.setSubjectName(requestDTO.getSubjectName());
-        subject.setFacultyName(requestDTO.getFacultyName());
         subject.setStatus(requestDTO.getStatus());
 //        subject.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : SubjectStatus.ACTIVE);
 
@@ -95,8 +93,9 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public List<SubjectResponseDTO> getSubjectsByFilters(Integer batchCycleId, Integer courseTypeId, Integer courseId, Integer moduleId) {
         List<Subject> subjects = subjectRepository
-                .findByModule_ModuleIdAndModule_Course_CourseIdAndModule_CourseType_CourseTypeIdAndModule_BatchCycle_BatchCycleId(
-                        moduleId, courseId, courseTypeId, batchCycleId);
+                .findByModule_ModuleIdAndModule_Course_CourseIdAndModule_Course_CourseType_CourseTypeIdAndModule_Course_BatchCycle_BatchCycleId(
+                        moduleId, courseId, courseTypeId, batchCycleId
+                );
 
         return subjects.stream()
                 .map(this::mapToResponse)
@@ -107,7 +106,7 @@ public class SubjectServiceImpl implements SubjectService {
         SubjectResponseDTO response = new SubjectResponseDTO();
         response.setSubjectId(subject.getSubjectId());
         response.setSubjectName(subject.getSubjectName());
-        response.setFacultyName(subject.getFacultyName());
+        
         response.setStatus(subject.getStatus());
 
         if (subject.getModule() != null) {

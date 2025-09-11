@@ -16,5 +16,5 @@ public interface CourseTypeService {
     
     CourseTypeResponseDTO getCourseTypeById(int id);
     
-    List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId);
+//    List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId);
 }

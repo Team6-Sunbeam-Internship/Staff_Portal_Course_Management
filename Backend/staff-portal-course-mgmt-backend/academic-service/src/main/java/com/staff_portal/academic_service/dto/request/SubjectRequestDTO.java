@@ -12,6 +12,5 @@ public class SubjectRequestDTO {
 
     private int moduleId;        // dropdown (select module)
     private String subjectName;  // title
-    private String facultyName;  // faculty
     private SubjectStatus status;       // ACTIVE / INACTIVE
 }

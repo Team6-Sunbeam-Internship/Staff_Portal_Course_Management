@@ -15,19 +15,19 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     // Filter query based on hierarchy
     @Query("""
             SELECT s FROM Section s
-            WHERE s.subject.module.course.courseType.batchCycle.batchCycleId = :batchCycleId
+            WHERE s.subject.module.course.batchCycle.batchCycleId = :batchCycleId
               AND s.subject.module.course.courseType.courseTypeId = :courseTypeId
               AND s.subject.module.course.courseId = :courseId
               AND s.subject.module.moduleId = :moduleId
               AND s.subject.subjectId = :subjectId
         """)
-        List<Section> filterSections(
-                @Param("batchCycleId") Integer batchCycleId,
-                @Param("courseTypeId") String courseTypeId,
-                @Param("courseId") Integer courseId,
-                @Param("moduleId") Integer moduleId,
-                @Param("subjectId") Integer subjectId
-        );
+    List<Section> filterSections(
+            @Param("batchCycleId") Integer batchCycleId,
+            @Param("courseTypeId") Integer courseTypeId,
+            @Param("courseId") Integer courseId,
+            @Param("moduleId") Integer moduleId,
+            @Param("subjectId") Integer subjectId
+    );
     
     List<Section> findBySubject_SubjectId(Integer subjectId);
 }

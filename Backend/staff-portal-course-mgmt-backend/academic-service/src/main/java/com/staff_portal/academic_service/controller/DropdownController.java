@@ -24,11 +24,12 @@ public class DropdownController {
         return dropdownService.getBatchCycles();
     }
 
-    @GetMapping("/coursetypes/{batchCycleId}")
-    public List<DropdownDTO> getCourseTypes(@PathVariable Integer batchCycleId) {
-        return dropdownService.getCourseTypesByBatchCycle(batchCycleId);
-    }
 
+    @GetMapping("/coursetypes")
+    public List<DropdownDTO> getCourseTypes() {
+        return dropdownService.getAllCourseTypes();
+    }
+    
     @GetMapping("/courses/{courseTypeId}")
     public List<DropdownDTO> getCourses(@PathVariable Integer courseTypeId) {
         return dropdownService.getCoursesByCourseType(courseTypeId);

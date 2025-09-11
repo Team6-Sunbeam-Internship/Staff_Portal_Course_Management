@@ -17,10 +17,15 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     
 
     // Filter by BatchCycle ID + CourseType ID
-    List<Course> findByCourseType_BatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
-            Integer batchCycleId, Integer courseTypeId);
+//    List<Course> findByCourseType_BatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
+//            Integer batchCycleId, Integer courseTypeId);
     
     List<Course> findByCourseType_CourseTypeId(Integer courseTypeId);
+    
+    List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
+            Integer batchCycleId,
+            Integer courseTypeId
+        );
     
    
 

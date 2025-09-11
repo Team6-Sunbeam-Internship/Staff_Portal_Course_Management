@@ -10,9 +10,9 @@ import lombok.Setter;
 public class ModuleRequestDTO {
     private String moduleName;
     private int courseTypeId;
-    private int batchCycleId;
+//    private int batchCycleId;
     private int courseId;
-    private int staffId;
+//    private int staffId;
     private int theoryHours;
     private int practicalHours;
     private ModuleStatus status;   // Enum: ACTIVE, INACTIVE

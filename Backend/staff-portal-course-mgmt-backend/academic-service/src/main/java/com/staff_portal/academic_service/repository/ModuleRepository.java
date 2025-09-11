@@ -11,14 +11,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ModuleRepository extends JpaRepository<Module, Integer> {
 
-    boolean existsByModuleNameAndCourse_CourseId(String moduleName, int courseId);
-    
-    List<Module> findByCourse_CourseId(Integer courseId);
-    
- 
 
-    // Fetch modules by exact batchCycleId, courseTypeId, and courseId
-    List<Module> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeIdAndCourse_CourseId(
+    
+    boolean existsByModuleNameAndCourse_CourseId(String moduleName, int courseId);
+
+    // Fetch all modules of a course
+    List<Module> findByCourse_CourseId(Integer courseId);
+
+    // Fetch modules by batchCycleId, courseTypeId, and courseId
+    List<Module> findByCourse_BatchCycle_BatchCycleIdAndCourse_CourseType_CourseTypeIdAndCourse_CourseId(
             Integer batchCycleId, Integer courseTypeId, Integer courseId
     );
 }
