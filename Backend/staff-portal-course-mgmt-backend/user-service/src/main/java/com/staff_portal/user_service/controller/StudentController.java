@@ -85,6 +85,16 @@ public class StudentController {
     public ResponseEntity<List<StudentDTO>> getAllStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
+    
+    @GetMapping("/by-course/{courseName}")
+    public ResponseEntity<List<StudentDTO>> getStudentsByCourseName(@PathVariable String courseName) {
+        return ResponseEntity.ok(studentService.getStudentsByCourseName(courseName));
+    }
+
+    @GetMapping("/by-batch-cycle/{batchCycleName}")
+    public ResponseEntity<List<StudentDTO>> getStudentsByBatchCycleName(@PathVariable String batchCycleName) {
+        return ResponseEntity.ok(studentService.getStudentsByBatchCycleName(batchCycleName));
+    }
 
     // Delete student by registration number
     @DeleteMapping("/delete/{registrationNumber}")
