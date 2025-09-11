@@ -28,6 +28,7 @@ public class StaffServiceImpl implements IStaffService {
                 .designation(staffDTO.getDesignation())
                 .staffType(staffDTO.getStaffType())
                 .staffRole(staffDTO.getStaffRole())
+                .courseSpecialization(staffDTO.getCourseSpecialization())
                 .build();
 
         return mapToDTO(staffRepository.save(staff));
@@ -62,6 +63,7 @@ public class StaffServiceImpl implements IStaffService {
         if (staffDTO.getDesignation() != null) staff.setDesignation(staffDTO.getDesignation());
         if (staffDTO.getStaffType() != null) staff.setStaffType(staffDTO.getStaffType());
         if (staffDTO.getStaffRole() != null) staff.setStaffRole(staffDTO.getStaffRole());
+        if (staffDTO.getCourseSpecialization() != null) staff.setCourseSpecialization(staffDTO.getCourseSpecialization());
 
         return mapToDTO(staffRepository.save(staff));
     }
@@ -71,7 +73,6 @@ public class StaffServiceImpl implements IStaffService {
         Staff staff = staffRepository.findByStaffIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + id));
 
-//        staff.setIsDeleted(true);
         staff.setDeleted(true);
         staffRepository.save(staff);
 
@@ -90,6 +91,7 @@ public class StaffServiceImpl implements IStaffService {
                 .designation(staff.getDesignation())
                 .staffType(staff.getStaffType())
                 .staffRole(staff.getStaffRole())
+                .courseSpecialization(staff.getCourseSpecialization())
                 .build();
     }
 }
