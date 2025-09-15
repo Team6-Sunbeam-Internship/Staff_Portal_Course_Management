@@ -31,17 +31,17 @@ public class Schedule {
     @Column(name = "staff_id", nullable = false)
     private Long staffId;
    
-   	@JoinColumn(name = "course_id", nullable = true)
+   	@JoinColumn(name = "course_id", nullable = false)
    	private Long courseId;
     
    	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "timeslot_id", nullable = false)
     private TimeSlot timeSlot;
     
-   	@Column(name = "module_id", nullable = true)
+   	@Column(name = "module_id", nullable = false)
    	private Long moduleId;
     
-   	@Column(name = "infrastructure_id", nullable = true)
+   	@Column(name = "infrastructure_id", nullable = false)
    	private Long infrastructureId;
     
     
