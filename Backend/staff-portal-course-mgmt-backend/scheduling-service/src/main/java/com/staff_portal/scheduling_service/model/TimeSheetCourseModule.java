@@ -28,6 +28,7 @@ public class TimeSheetCourseModule {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(nullable = false)
     private Long id;
 
     @Column(name = "course_id", nullable = false)
