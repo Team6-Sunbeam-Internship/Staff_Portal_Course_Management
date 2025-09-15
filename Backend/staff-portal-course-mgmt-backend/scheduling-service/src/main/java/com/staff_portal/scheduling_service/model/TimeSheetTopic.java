@@ -29,6 +29,7 @@ public class TimeSheetTopic {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private Long id;
 
     @Column(name = "topic_id", nullable = false)
