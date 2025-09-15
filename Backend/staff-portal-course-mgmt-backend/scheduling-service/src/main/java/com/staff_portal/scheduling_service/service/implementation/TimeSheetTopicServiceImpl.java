@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSheetTopicRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetTopicResponseDTO;
+import com.staff_portal.scheduling_service.exception.ResourceNotFoundException;
 import com.staff_portal.scheduling_service.mapper.TimeSheetTopicMapper;
 import com.staff_portal.scheduling_service.model.TimeSheetTopic;
 import com.staff_portal.scheduling_service.repository.TimeSheetTopicRepository;
@@ -19,43 +20,57 @@ import jakarta.transaction.Transactional;
 @Service
 public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
 
-	@Autowired
-	private TimeSheetTopicRepository topicRepository;
+    @Autowired
+    private TimeSheetTopicRepository topicRepository;
 
-	@Override
-	public TimeSheetTopicResponseDTO createTimeSheetTopic(TimeSheetTopicRequestDTO dto) {
-		TimeSheetTopic topic = new TimeSheetTopic();
-		topic.setTopicId(dto.getTopicId());
+    @Override
+    public TimeSheetTopicResponseDTO createTimeSheetTopic(TimeSheetTopicRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("TimeSheet topic request cannot be null");
+        }
 
-		TimeSheetTopic saved = topicRepository.save(topic);
-		return TimeSheetTopicMapper.toDto(saved);
-	}
+        TimeSheetTopic topic = new TimeSheetTopic();
+        topic.setTopicId(dto.getTopicId());
 
-	@Override
-	public List<TimeSheetTopicResponseDTO> getAllTimeSheetTopic() {
-		return topicRepository.findAll().stream().map(TimeSheetTopicMapper::toDto).collect(Collectors.toList());
-	}
+        TimeSheetTopic saved = topicRepository.save(topic);
+        return TimeSheetTopicMapper.toDto(saved);
+    }
 
-	@Override
-	public TimeSheetTopicResponseDTO getTimeSheetTopicById(Long id) {
-		TimeSheetTopic topic = topicRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TimeSheet topic not found with id: " + id));
+    @Override
+    public List<TimeSheetTopicResponseDTO> getAllTimeSheetTopic() {
+        return topicRepository.findAll()
+                .stream()
+                .map(TimeSheetTopicMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TimeSheetTopicResponseDTO getTimeSheetTopicById(Long id) {
+        TimeSheetTopic topic = topicRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TimeSheet topic not found with ID: " + id));
         return TimeSheetTopicMapper.toDto(topic);
-	}
+    }
 
-	@Override
-	public TimeSheetTopicResponseDTO updateTimeSheetTopic(Long id, TimeSheetTopicRequestDTO dto) {
-		 TimeSheetTopic existing = topicRepository.findById(id)
-	                .orElseThrow(() -> new RuntimeException("TimeSheet topic not found with id: " + id));
-	        existing.setTopicId(dto.getTopicId());
+    @Override
+    public TimeSheetTopicResponseDTO updateTimeSheetTopic(Long id, TimeSheetTopicRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("TimeSheet topic request cannot be null");
+        }
 
-	        TimeSheetTopic updated = topicRepository.save(existing);
-	        return TimeSheetTopicMapper.toDto(updated);
-	}
+        TimeSheetTopic existing = topicRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TimeSheet topic not found with ID: " + id));
 
-	@Override
-	public void deleteTimeSheetTopic(Long id) {
-		topicRepository.deleteById(id);
-		
-	}
+        existing.setTopicId(dto.getTopicId());
+
+        TimeSheetTopic updated = topicRepository.save(existing);
+        return TimeSheetTopicMapper.toDto(updated);
+    }
+
+    @Override
+    public void deleteTimeSheetTopic(Long id) {
+        if (!topicRepository.existsById(id)) {
+            throw new ResourceNotFoundException("TimeSheet topic not found with ID: " + id);
+        }
+        topicRepository.deleteById(id);
+    }
 }
