@@ -35,6 +35,7 @@ public class TimeSheet {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(nullable = false)
 	private Long id;
 
 	@Column(name = "start_time", nullable = false)
@@ -58,7 +59,7 @@ public class TimeSheet {
 	@Column(name = "log_date", nullable = false)
 	private LocalDate logDate;
 
-	@Column(name = "duration_hours")
+	@Column(name = "duration_hours", nullable = false)
 	private int durationHours;
 
 	@ManyToOne
