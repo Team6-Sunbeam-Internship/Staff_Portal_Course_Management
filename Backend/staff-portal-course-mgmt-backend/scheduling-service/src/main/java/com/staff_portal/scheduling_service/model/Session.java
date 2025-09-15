@@ -35,20 +35,20 @@ public class Session {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    @Column(name = "meeting_id", nullable = true)
+    @Column(name = "meeting_id", nullable = false)
     private String meetingId;
 
-    @Column(name = "meeting_credentials", nullable = true)
+    @Column(name = "meeting_credentials", nullable = false)
     private String meetingCredentials;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SessionStatus status;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String description;
 
-    @Column(name = "code_share_token", nullable = true)
+    @Column(name = "code_share_token", nullable = false)
     private String codeShareToken;
 
     @Column(name = "session_date", nullable = false)

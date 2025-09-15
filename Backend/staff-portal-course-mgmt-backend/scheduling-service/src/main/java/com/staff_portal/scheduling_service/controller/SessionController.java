@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.staff_portal.scheduling_service.dto.request.SessionReqRespDTO;
 import com.staff_portal.scheduling_service.service.interfaces.ISessionService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/sessions")
 public class SessionController {
@@ -25,7 +27,7 @@ public class SessionController {
 
 	 
 	    @PostMapping
-	    public ResponseEntity<SessionReqRespDTO> createSession(@RequestBody SessionReqRespDTO sessionDTO) {
+	    public ResponseEntity<SessionReqRespDTO> createSession(@Valid @RequestBody SessionReqRespDTO sessionDTO) {
 	    	SessionReqRespDTO createdSession = sessionService.createSession(sessionDTO);
 	        return ResponseEntity.ok(createdSession);
 	    }
@@ -47,7 +49,7 @@ public class SessionController {
 	    }
 	    
 	    @PutMapping("/{id}")
-	    public ResponseEntity<SessionReqRespDTO> updateSession(@PathVariable Long id, @RequestBody SessionReqRespDTO sessionDTO) {
+	    public ResponseEntity<SessionReqRespDTO> updateSession(@PathVariable Long id,@Valid @RequestBody SessionReqRespDTO sessionDTO) {
 	    	SessionReqRespDTO updatedSession = sessionService.updateSession(id, sessionDTO);
 	        if (updatedSession != null) {
 	            return ResponseEntity.ok(updatedSession);
