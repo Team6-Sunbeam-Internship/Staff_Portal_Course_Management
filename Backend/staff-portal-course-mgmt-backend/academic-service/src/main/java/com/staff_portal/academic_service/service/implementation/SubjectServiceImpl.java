@@ -44,7 +44,6 @@ public class SubjectServiceImpl implements SubjectService {
         Subject subject = new Subject();
         subject.setModule(module);
         subject.setSubjectName(requestDTO.getSubjectName());
-        subject.setFacultyName(requestDTO.getFacultyName());
         subject.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : SubjectStatus.ACTIVE);
 
         Subject saved = subjectRepository.save(subject);
@@ -61,7 +60,6 @@ public class SubjectServiceImpl implements SubjectService {
 
         subject.setModule(module);
         subject.setSubjectName(requestDTO.getSubjectName());
-        subject.setFacultyName(requestDTO.getFacultyName());
         subject.setStatus(requestDTO.getStatus());
 //        subject.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : SubjectStatus.ACTIVE);
 
@@ -93,37 +91,11 @@ public class SubjectServiceImpl implements SubjectService {
     }
     
     @Override
-    public List<SubjectResponseDTO> getSubjectsByFilters(
-            String batchCycleName,
-            String courseTypeName,
-            String courseName,
-            String moduleName) {
-
-        List<Subject> subjects;
-
-        if (batchCycleName != null && courseTypeName != null && courseName != null && moduleName != null) {
-            subjects = subjectRepository
-                    .findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCaseAndModule_Course_CourseNameIgnoreCaseAndModule_ModuleNameIgnoreCase(
-                            batchCycleName, courseTypeName, courseName, moduleName);
-        } else if (batchCycleName != null && courseTypeName != null && courseName != null) {
-            subjects = subjectRepository
-                    .findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCaseAndModule_Course_CourseNameIgnoreCase(
-                            batchCycleName, courseTypeName, courseName);
-        } else if (batchCycleName != null && courseTypeName != null) {
-            subjects = subjectRepository
-                    .findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCaseAndModule_Course_CourseType_TypeNameIgnoreCase(
-                            batchCycleName, courseTypeName);
-        } else if (batchCycleName != null) {
-            subjects = subjectRepository.findByModule_Course_CourseType_BatchCycle_CycleNameIgnoreCase(batchCycleName);
-        } else if (courseTypeName != null) {
-            subjects = subjectRepository.findByModule_Course_CourseType_TypeNameIgnoreCase(courseTypeName);
-        } else if (courseName != null) {
-            subjects = subjectRepository.findByModule_Course_CourseNameIgnoreCase(courseName);
-        } else if (moduleName != null) {
-            subjects = subjectRepository.findByModule_ModuleNameIgnoreCase(moduleName);
-        } else {
-            subjects = subjectRepository.findAll();
-        }
+    public List<SubjectResponseDTO> getSubjectsByFilters(Integer batchCycleId, Integer courseTypeId, Integer courseId, Integer moduleId) {
+        List<Subject> subjects = subjectRepository
+                .findByModule_ModuleIdAndModule_Course_CourseIdAndModule_Course_CourseType_CourseTypeIdAndModule_Course_BatchCycle_BatchCycleId(
+                        moduleId, courseId, courseTypeId, batchCycleId
+                );
 
         return subjects.stream()
                 .map(this::mapToResponse)
@@ -134,7 +106,7 @@ public class SubjectServiceImpl implements SubjectService {
         SubjectResponseDTO response = new SubjectResponseDTO();
         response.setSubjectId(subject.getSubjectId());
         response.setSubjectName(subject.getSubjectName());
-        response.setFacultyName(subject.getFacultyName());
+        
         response.setStatus(subject.getStatus());
 
         if (subject.getModule() != null) {

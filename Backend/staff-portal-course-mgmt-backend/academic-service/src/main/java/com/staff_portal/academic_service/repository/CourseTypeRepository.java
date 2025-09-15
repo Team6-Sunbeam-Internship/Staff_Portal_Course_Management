@@ -9,11 +9,12 @@ import com.staff_portal.academic_service.model.CourseType;
 
 @Repository
 public interface CourseTypeRepository extends JpaRepository<CourseType, Integer> { 
-	
-	 // Filter by BatchCycle name (case-insensitive)
-    List<CourseType> findByBatchCycle_CycleNameIgnoreCase(String cycleName);
+
+//    List<CourseType> findByBatchCycle_BatchCycleId(Integer batchCycleId);
     
-	 boolean existsByTypeNameAndBatchCycle_BatchCycleId(String typeName, int batchCycleId);
+//	 boolean existsByTypeNameAndBatchCycle_BatchCycleId(String typeName, int batchCycleId);
+	 
+	
 	
 }
 

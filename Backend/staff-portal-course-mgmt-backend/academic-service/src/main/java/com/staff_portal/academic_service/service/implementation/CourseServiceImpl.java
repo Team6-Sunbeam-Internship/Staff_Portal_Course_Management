@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.staff_portal.academic_service.dto.request.CourseRequestDTO;
 import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
+import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.model.Course;
 import com.staff_portal.academic_service.model.CourseType;
+import com.staff_portal.academic_service.repository.BatchCycleRepository;
 import com.staff_portal.academic_service.repository.CourseRepository;
 import com.staff_portal.academic_service.repository.CourseTypeRepository;
 import com.staff_portal.academic_service.service.interfaces.CourseService;
@@ -22,10 +24,15 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     private final CourseTypeRepository courseTypeRepository;
+    private final BatchCycleRepository batchCycleRepository;
 
     //  Create Course
     @Override
     public CourseResponseDTO addCourse(CourseRequestDTO requestDTO) {
+    	// Fetch BatchCycle by ID
+        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
+                .orElseThrow(() -> new RuntimeException("BatchCycle not found with id "));
+
         CourseType courseType = courseTypeRepository.findById(requestDTO.getCourseTypeId())
                 .orElseThrow(() -> new RuntimeException("CourseType not found"));
 
@@ -35,6 +42,7 @@ public class CourseServiceImpl implements CourseService {
         course.setStartDate(requestDTO.getStartDate());
         course.setEndDate(requestDTO.getEndDate());
         course.setStatus(requestDTO.getStatus());
+        course.setBatchCycle(batchCycle);   // ✅ attach BatchCycle entity
         course.setCourseType(courseType);
 
         Course saved = courseRepository.save(course);
@@ -85,29 +93,17 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         courseRepository.delete(course);
     }
-    
 
-    //  New Filter
+
     @Override
-    public List<CourseResponseDTO> getCoursesByFilters(String batchCycleName, String courseTypeName) {
-        List<Course> courses;
-
-        if (batchCycleName != null && courseTypeName != null) {
-            courses = courseRepository.findByCourseType_BatchCycle_CycleNameAndCourseType_TypeName(
-                    batchCycleName, courseTypeName);
-        } else if (batchCycleName != null) {
-            courses = courseRepository.findByCourseType_BatchCycle_CycleName(batchCycleName);
-        } else if (courseTypeName != null) {
-            courses = courseRepository.findByCourseType_TypeName(courseTypeName);
-        } else {
-            courses = courseRepository.findAll();
-        }
+    public List<CourseResponseDTO> getCoursesByFilters(Integer batchCycleId, Integer courseTypeId) {
+        List<Course> courses = courseRepository
+                .findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(batchCycleId, courseTypeId);
 
         return courses.stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }
-
     //  Mapper (Entity → Response DTO)
     private CourseResponseDTO mapToResponseDTO(Course course) {
         CourseResponseDTO response = new CourseResponseDTO();
@@ -118,7 +114,7 @@ public class CourseServiceImpl implements CourseService {
         response.setEndDate(course.getEndDate());
         response.setStatus(course.getStatus());
         response.setCourseTypeName(course.getCourseType().getTypeName());
-        response.setCycleName(course.getCourseType().getBatchCycle().getCycleName());
+        response.setCycleName(course.getBatchCycle().getCycleName());
         response.setPremisesName(course.getCourseType().getPremises().getName()); // 🔗 via CourseType
         return response;
     }

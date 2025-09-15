@@ -7,10 +7,10 @@ import com.staff_portal.academic_service.enums.CourseTypeStatus;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import com.staff_portal.academic_service.model.BatchCycle;
+//import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.model.CourseType;
 import com.staff_portal.academic_service.model.Premises;
-import com.staff_portal.academic_service.repository.BatchCycleRepository;
+//import com.staff_portal.academic_service.repository.BatchCycleRepository;
 import com.staff_portal.academic_service.repository.CourseTypeRepository;
 import com.staff_portal.academic_service.repository.PremisesRepository;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
@@ -22,24 +22,24 @@ import java.util.stream.Collectors;
 public class CourseTypeServiceImpl implements CourseTypeService {
 
     private final CourseTypeRepository courseTypeRepository;
-    private final BatchCycleRepository batchCycleRepository;
+//    private final BatchCycleRepository batchCycleRepository;
     private final PremisesRepository premisesRepository;
 
     @Override
     public CourseTypeResponseDTO addCourseType(CourseTypeRequestDTO requestDTO) {
-        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
-                .orElseThrow(() -> new RuntimeException("BatchCycle not found"));
+//        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
+//                .orElseThrow(() -> new RuntimeException("BatchCycle not found"));
         Premises premises = premisesRepository.findById(requestDTO.getPremisesId())
                 .orElseThrow(() -> new RuntimeException("Premises not found"));
 
-        if (courseTypeRepository.existsByTypeNameAndBatchCycle_BatchCycleId(requestDTO.getTypeName(), requestDTO.getBatchCycleId())) {
-            throw new RuntimeException("CourseType already exists for this batch cycle");
-        }
+//        if (courseTypeRepository.existsByTypeName(requestDTO.getTypeName(), requestDTO.getBatchCycleId())) {
+//            throw new RuntimeException("CourseType already exists for this batch cycle");
+//        }
 
         CourseType courseType = new CourseType();
         courseType.setTypeName(requestDTO.getTypeName());
         courseType.setDescription(requestDTO.getDescription());
-        courseType.setBatchCycle(batchCycle);
+//        courseType.setBatchCycle(batchCycle);
         courseType.setPremises(premises);
         courseType.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : CourseTypeStatus.ACTIVE);
 
@@ -58,12 +58,12 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         courseType.setStatus(requestDTO.getStatus());
 
         // update relations if needed
-        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
-                .orElseThrow(() -> new RuntimeException("BatchCycle not found"));
+//        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
+//                .orElseThrow(() -> new RuntimeException("BatchCycle not found"));
         Premises premises = premisesRepository.findById(requestDTO.getPremisesId())
                 .orElseThrow(() -> new RuntimeException("Premises not found"));
 
-        courseType.setBatchCycle(batchCycle);
+//        courseType.setBatchCycle(batchCycle);
         courseType.setPremises(premises);
 
         courseTypeRepository.save(courseType);
@@ -97,17 +97,16 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         return mapToResponse(courseType);
     }
     
-    @Override
-    public List<CourseTypeResponseDTO> getCourseTypesByBatchCycleName(String cycleName) {
-        List<CourseType> courseTypes = courseTypeRepository.findByBatchCycle_CycleNameIgnoreCase(cycleName);
-        if (courseTypes.isEmpty()) {
-            throw new RuntimeException("No CourseTypes found for BatchCycle: " + cycleName);
-        }
-        return courseTypes.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-        
+       
+//    @Override
+//    public List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId) {
+//        List<CourseType> courseTypes = courseTypeRepository.findByBatchCycle_BatchCycleId(batchCycleId);
+//
+//        return courseTypes.stream()
+//                .map(this::mapToResponse)
+//                .collect(Collectors.toList());
+//    }
+
 
     private CourseTypeResponseDTO mapToResponse(CourseType courseType) {
         CourseTypeResponseDTO response = new CourseTypeResponseDTO();
@@ -116,7 +115,7 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         response.setDescription(courseType.getDescription());
         response.setStatus(courseType.getStatus());
 //        response.setBatchCycleId(courseType.getBatchCycle().getBatchCycleId());
-        response.setCycleName(courseType.getBatchCycle().getCycleName());
+//        response.setCycleName(courseType.getBatchCycle().getCycleName());
 //       
         if (courseType.getPremises() != null) {
             response.setPremisesName(courseType.getPremises().getName());

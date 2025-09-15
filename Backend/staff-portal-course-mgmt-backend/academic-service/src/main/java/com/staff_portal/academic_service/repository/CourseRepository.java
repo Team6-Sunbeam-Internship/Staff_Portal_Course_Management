@@ -9,12 +9,25 @@ import com.staff_portal.academic_service.model.Course;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Integer> {
-	List<Course> findByCourseType_BatchCycle_CycleName(String batchCycleName);
 
-    List<Course> findByCourseType_TypeName(String courseTypeName);
-
-    List<Course> findByCourseType_BatchCycle_CycleNameAndCourseType_TypeName(String batchCycleName, String courseTypeName);
-    
+	
     boolean existsByCourseCode(String courseCode);
+    
+//    List<Course> findByCourseTypeId(int courseTypeId);
+    
+
+    // Filter by BatchCycle ID + CourseType ID
+//    List<Course> findByCourseType_BatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
+//            Integer batchCycleId, Integer courseTypeId);
+    
+    List<Course> findByCourseType_CourseTypeId(Integer courseTypeId);
+    
+    List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
+            Integer batchCycleId,
+            Integer courseTypeId
+        );
+    
+   
+
 }
 

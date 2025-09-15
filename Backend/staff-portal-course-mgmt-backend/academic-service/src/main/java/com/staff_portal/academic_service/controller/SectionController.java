@@ -53,4 +53,18 @@ public class SectionController {
         SectionResponseDTO response = sectionService.getSectionById(id);
         return ResponseEntity.ok(new CustomResponse<>(false, "Section Found", response));
     }
+    
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterSections(
+            @RequestParam Integer batchCycleId,
+            @RequestParam Integer courseTypeId,
+            @RequestParam Integer courseId,
+            @RequestParam Integer moduleId,
+            @RequestParam Integer subjectId
+    ) {
+        List<SectionResponseDTO> response = sectionService.filterSections(
+                batchCycleId, courseTypeId, courseId, moduleId, subjectId
+        );
+        return ResponseEntity.ok(new CustomResponse<>(false, "Filtered Sections", response));
+    }
 }

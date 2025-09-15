@@ -41,7 +41,7 @@ public class Subject {
     @Column(nullable = false)
     private String subjectName;   // Title in UI
 
-    private String facultyName;   // Faculty in UI (later can be linked to Staff entity)
+//    private String facultyName;   // Faculty in UI (later can be linked to Staff entity)
 
     @Enumerated(EnumType.STRING)
     private SubjectStatus status;   // ACTIVE / INACTIVE

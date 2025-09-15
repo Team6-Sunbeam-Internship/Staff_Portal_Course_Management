@@ -79,6 +79,23 @@ public class SectionServiceImpl implements SectionService {
                 .orElseThrow(() -> new RuntimeException("Section not found"));
         return mapToResponse(section);
     }
+    @Override
+    public List<SectionResponseDTO> filterSections(
+            Integer batchCycleId,
+            Integer courseTypeId,
+            Integer courseId,
+            Integer moduleId,
+            Integer subjectId
+    ) {
+        List<Section> sections = sectionRepository.filterSections(
+                batchCycleId, courseTypeId, courseId, moduleId, subjectId
+        );
+
+        return sections.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
 
     private SectionResponseDTO mapToResponse(Section section) {
         SectionResponseDTO response = new SectionResponseDTO();

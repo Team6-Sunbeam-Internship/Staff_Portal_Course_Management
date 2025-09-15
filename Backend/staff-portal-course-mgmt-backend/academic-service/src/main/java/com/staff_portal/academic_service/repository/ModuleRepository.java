@@ -10,24 +10,16 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ModuleRepository extends JpaRepository<Module, Integer> {
-//	 List<Module> findByCourse_CourseType_BatchCycle_CycleName(String batchCycleName);
 
-//	    List<Module> findByCourse_CourseType_TypeName(String courseTypeName);
 
-//	    List<Module> findByCourse_CourseName(String courseName);
-	List<Module> findByCourse_CourseType_BatchCycle_CycleNameIgnoreCaseAndCourse_CourseType_TypeNameIgnoreCaseAndCourse_CourseNameIgnoreCase(
-	        String batchCycleName, String courseTypeName, String courseName);
-
-	List<Module> findByCourse_CourseType_BatchCycle_CycleNameIgnoreCaseAndCourse_CourseType_TypeNameIgnoreCase(
-	        String batchCycleName, String courseTypeName);
-
-//	    List<Module> findByCourse_CourseType_BatchCycle_CycleNameAndCourse_CourseType_TypeName(
-//	            String batchCycleName, String courseTypeName);
-
-//	    List<Module> findByCourse_CourseType_BatchCycle_CycleNameAndCourse_CourseType_TypeNameAndCourse_CourseName(
-//	            String batchCycleName, String courseTypeName, String courseName);
-	    List<Module> findByCourse_CourseType_BatchCycle_CycleNameIgnoreCase(String batchCycleName);
-	    List<Module> findByCourse_CourseType_TypeNameIgnoreCase(String courseTypeName);
-	    List<Module> findByCourse_CourseNameIgnoreCase(String courseName);
+    
     boolean existsByModuleNameAndCourse_CourseId(String moduleName, int courseId);
+
+    // Fetch all modules of a course
+    List<Module> findByCourse_CourseId(Integer courseId);
+
+    // Fetch modules by batchCycleId, courseTypeId, and courseId
+    List<Module> findByCourse_BatchCycle_BatchCycleIdAndCourse_CourseType_CourseTypeIdAndCourse_CourseId(
+            Integer batchCycleId, Integer courseTypeId, Integer courseId
+    );
 }

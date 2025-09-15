@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.staff_portal.academic_service.dto.request.TopicRequestDTO;
@@ -61,5 +62,21 @@ public class TopicController {
     public ResponseEntity<?> getTopicById(@PathVariable int id) {
         TopicResponseDTO response = topicService.getTopicById(id);
         return ResponseEntity.ok(new CustomResponse<>(false, "Topic Found", response));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> getTopicsByFilters(
+            @RequestParam Integer batchCycleId,
+            @RequestParam Integer courseTypeId,
+            @RequestParam Integer courseId,
+            @RequestParam Integer moduleId,
+            @RequestParam Integer subjectId,
+            @RequestParam Integer sectionId
+    ) {
+        List<TopicResponseDTO> response = topicService.getTopicsByFilters(
+                batchCycleId, courseTypeId, courseId, moduleId, subjectId, sectionId
+        );
+
+        return ResponseEntity.ok(new CustomResponse<>(false, "Filtered Topics", response));
     }
 }

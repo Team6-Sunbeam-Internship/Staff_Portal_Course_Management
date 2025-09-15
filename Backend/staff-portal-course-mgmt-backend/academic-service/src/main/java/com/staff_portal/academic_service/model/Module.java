@@ -38,16 +38,16 @@ public class Module {
     @JoinColumn(name = "courseTypeId", nullable = false)
     private CourseType courseType;   // Type in UI
 
-    @ManyToOne
-    @JoinColumn(name = "batchCycleId", nullable = false)
-    private BatchCycle batchCycle;   // Batch in UI
+//    @ManyToOne
+//    @JoinColumn(name = "batchCycleId", nullable = false)
+//    private BatchCycle batchCycle;   // Batch in UI
 
     @ManyToOne
     @JoinColumn(name = "courseId", nullable = false)
     private Course course;   // Course in UI
 
-    @Column(nullable = false)
-    private int staffId;
+//    @Column(nullable = false)
+//    private int staffId;
 
     @Column(nullable = false)
     private int theoryHours;

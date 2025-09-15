@@ -44,7 +44,7 @@ public class BatchCycle {
 	    private LocalDate endDate;
 	
 	 @OneToMany(mappedBy = "batchCycle", cascade = CascadeType.ALL)
-	    private List<CourseType> courseTypes;
+	    private List<Course> courses;
 	 
 	 @Enumerated(EnumType.STRING)
 	 @Column(nullable = false,name="batchcycle_status")
