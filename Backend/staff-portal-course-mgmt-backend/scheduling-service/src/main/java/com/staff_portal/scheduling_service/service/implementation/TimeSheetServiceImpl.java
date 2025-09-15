@@ -11,6 +11,7 @@ import com.staff_portal.scheduling_service.dto.request.TimeSheetCourseModuleRequ
 import com.staff_portal.scheduling_service.dto.request.TimeSheetRequestDTO;
 import com.staff_portal.scheduling_service.dto.request.TimeSheetTopicRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetResponseDTO;
+import com.staff_portal.scheduling_service.exception.ResourceNotFoundException;
 import com.staff_portal.scheduling_service.mapper.TimeSheetCourseModuleMapper;
 import com.staff_portal.scheduling_service.mapper.TimeSheetMapper;
 import com.staff_portal.scheduling_service.mapper.TimeSheetTopicMapper;
@@ -29,7 +30,7 @@ import jakarta.transaction.Transactional;
 public class TimeSheetServiceImpl implements ITimeSheetService {
 
 	@Autowired
-	private TimeSheetRepository TimeSheetRepository;
+	private TimeSheetRepository timeSheetRepository;
 
 	@Autowired
 	private TimeSheetCourseModuleRepository courseModuleRepository;
@@ -39,14 +40,19 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 
 	@Override
 	public TimeSheetResponseDTO createTimeSheet(TimeSheetRequestDTO requestDto) {
+        
+		if (requestDto == null) {
+            throw new IllegalArgumentException("TimeSheet request cannot be null");
+        }
 
+		
 		TimeSheet timeSheet = TimeSheetMapper.toEntity(requestDto);
 		TimeSheetCourseModule timeSheetCourseModule = timeSheet.getCourseModule();
 		TimeSheetCourseModule courseModule = courseModuleRepository.save(timeSheetCourseModule);
 		for (TimeSheetTopic topic : timeSheet.getTimeSheetTopics()) {
 			topic.setTimeSheet(timeSheet); // 🔁 Set the parent
 		}
-		TimeSheet saved = TimeSheetRepository.save(timeSheet);
+		TimeSheet saved = timeSheetRepository.save(timeSheet);
 
 		return TimeSheetMapper.toDto(saved);
 	}
@@ -54,22 +60,26 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 	@Override
 	public List<TimeSheetResponseDTO> getAllTimeSheets() {
 
-		return TimeSheetRepository.findAll().stream().map(TimeSheetMapper::toDto).collect(Collectors.toList());
+		return timeSheetRepository.findAll().stream().map(TimeSheetMapper::toDto).collect(Collectors.toList());
 
 	}
 
 	@Override
 	public TimeSheetResponseDTO getTimeSheetById(Long id) {
 
-		TimeSheet TimeSheet = TimeSheetRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("TimeSheet not found"));
-		return TimeSheetMapper.toDto(TimeSheet);
+		 TimeSheet timeSheet = timeSheetRepository.findById(id)
+	                .orElseThrow(() -> new ResourceNotFoundException("TimeSheet not found with ID: " + id));
+	        return TimeSheetMapper.toDto(timeSheet);
 	}
 
 	@Override
 	public TimeSheetResponseDTO updateTimeSheet(Long id, TimeSheetRequestDTO requestDto) {
-		TimeSheet existing = TimeSheetRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("TimeSheet not found"));
+		
+		if (requestDto == null) {
+            throw new IllegalArgumentException("TimeSheet request cannot be null");
+        }
+		TimeSheet existing = timeSheetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TimeSheet not found with ID: " + id));
 //        TimeSheet updated = TimeSheetMapper.toEntity(requestDto);
 //        TimeSheetCourseModule module1 = updated.getCourseModule();
 //        updated.setId(id); // maintain the same ID
@@ -86,7 +96,7 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 
 		existing.setAssignment(requestDto.getAssignment());
 		TimeSheetCourseModule module = courseModuleRepository.findById(existing.getCourseModule().getId())
-				.orElseThrow(() -> new RuntimeException("CourseModule not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("CourseModule not found with ID" + existing.getCourseModule().getId()));
 		module.setCourseId(requestDto.getCourseModule().getCourseId());
 		module.setModuleId(requestDto.getCourseModule().getModuleId());
 		existing.setDurationHours(requestDto.getDurationHours());
@@ -109,7 +119,8 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 			TimeSheetTopic topic = new TimeSheetTopic();
 			TimeSheetTopicRequestDTO topicDTO = requestDto.getTimeSheetTopics().get(i);
 			if((i+1)<=topics.size()) {
-	        topic = topicRepository.findById(topics.get(i).getId()).orElseThrow(() -> new RuntimeException("TimeSheetTopic not found"));
+				Long idTopic = topics.get(i).getId();
+	        topic = topicRepository.findById(topics.get(i).getId()).orElseThrow(() -> new ResourceNotFoundException("TimeSheetTopic not found with ID" + idTopic));
 			
 	        topic.setTopicId(topicDTO.getTopicId());
 	        topic.setTimeSheet(existing);
@@ -122,13 +133,16 @@ public class TimeSheetServiceImpl implements ITimeSheetService {
 //			}
 	    }
 		existing.setCourseModule(module);
-		TimeSheet saved = TimeSheetRepository.save(existing);
+		TimeSheet saved = timeSheetRepository.save(existing);
 		return TimeSheetMapper.toDto(saved);
 	}
 
 	@Override
 	public void deleteTimesheet(Long id) {
-		TimeSheetRepository.deleteById(id);
+		if (!timeSheetRepository.existsById(id)) {
+            throw new ResourceNotFoundException("TimeSheet not found with ID: " + id);
+        }
+        timeSheetRepository.deleteById(id);
 	}
 
 }
