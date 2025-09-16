@@ -1,11 +1,7 @@
-import React from 'react'
-import CourseTypePage from './pages/courses/CourseTypePage'
-const App = () => {
-  return (
-   <div className="App">
-      <CourseTypePage />
-    </div>
-  )
+import AppRoutes from "./routes/AppRoutes";
+
+function App() {
+  return <AppRoutes />;
 }
 
-export default App
+export default App;
