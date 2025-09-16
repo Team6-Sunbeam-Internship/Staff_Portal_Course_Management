@@ -1,33 +1,124 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import CourseTypeTable from "../../components/features/courses/components/CourseTypes/CourseTypeTable";
 import AddCourseTypeForm from "../../components/features/courses/components/CourseTypes/AddCourseTypeForm";
+import courseTypeService from "../../services/api/courseTypeService";
+import premisesService from "../../services/api/premisesService";
 
-export default function CourseTypePage() {
-  const [open, setOpen] = useState(false);
+const CourseTypePage = () => {
+  const [courseTypes, setCourseTypes] = useState([]);
+  const [premises, setPremises] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editData, setEditData] = useState(null);
+
+  // Fetch all course types from BE
+  const fetchCourseTypes = async () => {
+    setLoading(true);
+    try {
+      const res = await courseTypeService.getAll();
+      setCourseTypes(res.data.result || []);
+    } catch (err) {
+      console.error("Error fetching course types:", err);
+      setError("Failed to load course types");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch all premises from BE
+  const fetchPremises = async () => {
+    try {
+      const res = await premisesService.getAll();
+      setPremises(res.data || []);
+    } catch (err) {
+      console.error("Error fetching premises:", err);
+      setPremises([]);
+    }
+  };
+
+  // Load course types on mount
+  useEffect(() => {
+    fetchCourseTypes();
+  }, []);
+
+  // Open form for adding new course type
+  const handleAdd = async () => {
+    await fetchPremises();
+    setEditData(null);
+    setShowForm(true);
+  };
+
+  // Open form for editing
+  const handleEdit = async (courseType) => {
+    await fetchPremises();
+    setEditData(courseType);
+    setShowForm(true);
+  };
+
+  // Add new course type
+  const handleAddCourseType = async (newCourseType) => {
+    await fetchCourseTypes(); // refresh table
+    setShowForm(false);
+  };
+
+  // Update existing course type
+  const handleUpdateCourseType = async (updatedCourseType) => {
+    await fetchCourseTypes(); // refresh table
+    setShowForm(false);
+    setEditData(null);
+  };
+
+  // Delete course type
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this course type?")) return;
+    try {
+      await courseTypeService.remove(id);
+      await fetchCourseTypes(); // refresh table after deletion
+    } catch (err) {
+      console.error("Error deleting course type:", err);
+      alert("Failed to delete course type. It may already be removed.");
+    }
+  };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold">Course Types</h1>
+        <h1 className="text-2xl font-bold text-teal-700">Course Types</h1>
         <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md"
+          onClick={handleAdd}
+          className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700"
         >
           + Add Course Type
         </button>
       </div>
 
-      {/* List of course types */}
-      {/* Example: <CourseTypeList /> */}
+      {loading ? (
+        <p className="text-gray-500">Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <CourseTypeTable
+          courseTypes={courseTypes}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
 
-      {open && (
+      {showForm && (
         <AddCourseTypeForm
-          onClose={() => setOpen(false)}
-          onSuccess={() => {
-            setOpen(false);
-            // 🔄 Refresh list after adding
+          onClose={() => {
+            setShowForm(false);
+            setEditData(null);
           }}
+          onAdd={handleAddCourseType}
+          onUpdate={handleUpdateCourseType}
+          editData={editData}
+          premises={premises} // pass premises list
         />
       )}
     </div>
   );
-}
+};
+
+export default CourseTypePage;
