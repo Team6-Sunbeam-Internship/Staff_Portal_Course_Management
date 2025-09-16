@@ -1,179 +1,130 @@
-import React, { useState } from "react";
-import { useDropdowns } from "../../../../../context/DropdownContext.jsx";
+import React, { useState, useEffect } from "react";
+import courseTypeService from "../../../../../services/api/courseTypeService";
 
-const AddCourseTypeForm = ({ onClose, onSuccess }) => {
-  const { batchCycles, premises, loading } = useDropdowns();
+const AddCourseTypeForm = ({ onClose, onAdd, onUpdate, editData, premises }) => {
   const [formData, setFormData] = useState({
     typeName: "",
-    batchCycleId: "",
-    premisesId: "",
     description: "",
     status: "ACTIVE",
+    premisesId: "",
   });
+
+  // Fill form when editing
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        typeName: editData.typeName || "",
+        description: editData.description || "",
+        status: editData.status || "ACTIVE",
+        premisesId: editData.premisesId || "",
+      });
+    } else {
+      setFormData({
+        typeName: "",
+        description: "",
+        status: "ACTIVE",
+        premisesId: "",
+      });
+    }
+  }, [editData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]:
-        name === "batchCycleId" || name === "premisesId"
-          ? parseInt(value)
-          : value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/coursetypes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        alert("✅ Course Type added successfully!");
-        setFormData({
-          typeName: "",
-          batchCycleId: "",
-          premisesId: "",
-          description: "",
-          status: "ACTIVE",
-        });
-        if (onSuccess) onSuccess();
+      let response;
+      if (editData) {
+        response = await courseTypeService.update(editData.courseTypeId, formData);
+        onUpdate(response.data);
       } else {
-        const errorData = await response.json();
-        alert(`❌ Error: ${errorData.message || "Failed to add Course Type"}`);
+        response = await courseTypeService.add(formData);
+        onAdd(response.data);
       }
+      onClose();
     } catch (err) {
-      console.error(err);
-      alert("Something went wrong.");
+      console.error("Error saving course type:", err);
+      alert(
+        err.response?.data?.message || "Failed to save course type. Check premises selection."
+      );
     }
   };
 
-  if (loading) return <p className="text-gray-500">Loading dropdowns...</p>;
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white w-full max-w-lg p-6 rounded-2xl shadow-lg relative">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
-        >
-          ✕
-        </button>
-{/* console.log("✅ AddCourseTypeForm rendered"); */}
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Add Course Type
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 className="text-xl font-bold mb-4">
+          {editData ? "Edit Course Type" : "Add Course Type"}
         </h2>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Course Type Name */}
+          {/* Type Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Course Type Name
-            </label>
+            <label>Type Name</label>
             <input
               type="text"
               name="typeName"
-              placeholder="Enter Course Type"
               value={formData.typeName}
               onChange={handleChange}
               required
-              className="mt-1 w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-300"
+              className="w-full border rounded p-2"
             />
           </div>
 
-          {/* Batch Cycle */}
+          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Batch Cycle
-            </label>
-            <select
-              name="batchCycleId"
-              value={formData.batchCycleId}
+            <label>Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
               onChange={handleChange}
-              required
-              className="mt-1 w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-300"
-            >
-              <option value="">Select Batch Cycle</option>
-              {batchCycles.map((bc) => (
-                <option key={bc.id} value={bc.id}>
-                  {bc.name}
-                </option>
-              ))}
-            </select>
+              className="w-full border rounded p-2"
+              rows={2}
+            />
           </div>
 
-          {/* Premises */}
+          {/* Premises Dropdown */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Premise
-            </label>
+            <label>Premises</label>
             <select
               name="premisesId"
               value={formData.premisesId}
               onChange={handleChange}
               required
-              className="mt-1 w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-300"
+              className="w-full border rounded p-2"
             >
-              <option value="">Select Premise</option>
+              <option value="">Select Premises</option>
               {premises.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
+                <option key={p.premisesId} value={p.premisesId}>
+                  {p.name || p.address}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              name="description"
-              placeholder="Enter Description"
-              value={formData.description}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-300"
-            />
-          </div>
-
           {/* Status */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Status
-            </label>
+            <label>Status</label>
             <select
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-300"
+              className="w-full border rounded p-2"
             >
               <option value="ACTIVE">ACTIVE</option>
               <option value="INACTIVE">INACTIVE</option>
             </select>
           </div>
 
-          {/* Submit + Cancel */}
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
-            >
+          {/* Buttons */}
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={
-                !formData.typeName || !formData.batchCycleId || !formData.premisesId
-              }
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              Add Course Type
+            <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded">
+              {editData ? "Update" : "Add"}
             </button>
           </div>
         </form>
