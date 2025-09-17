@@ -12,5 +12,6 @@ public interface IStaffMenuAccessService {
 	List<StaffMenuAccessDTO> getAccessByStaffId(UUID staffId);
     StaffMenuAccessDTO updateStatus(UUID id, String status);
     String deleteAccess(UUID id);
+    List<StaffMenuAccessDTO> searchByStaffName(String name);
 
 }
