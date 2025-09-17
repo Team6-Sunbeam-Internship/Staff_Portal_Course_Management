@@ -83,4 +83,13 @@ public class MenuItemServiceImpl implements IMenuItemService {
 					)
 			.collect(Collectors.toList());
 	}
+	
+	@Override
+    public List<MenuItem> searchMenuItems(String title) {
+        List<MenuItem> results = menuItemRepository.searchByTitle(title);
+        if (results.isEmpty()) {
+            throw new ResourceNotFoundException("No menu items found for title: " + title);
+        }
+        return results;
+    }
 }
