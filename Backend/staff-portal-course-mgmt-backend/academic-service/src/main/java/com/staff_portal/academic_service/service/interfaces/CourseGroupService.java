@@ -15,14 +15,5 @@ public interface CourseGroupService  {
  // getting all course groups
     List<CourseGroupResponse> getAllCourseGroups();
     
-    //for getting course group by status
-    List<CourseGroupResponse> getCourseGroupsByStatus(CourseGroupStatus status);
-    
- // Fetch course groups by batch cycle name
-    List<CourseGroupResponse> getCourseGroupsByBatchCycleName(String cycleName);
-
-    // get course group by course type
-    List<CourseGroupResponse> getCourseGroupsByCourseType(String typeName);
-
    
 }
