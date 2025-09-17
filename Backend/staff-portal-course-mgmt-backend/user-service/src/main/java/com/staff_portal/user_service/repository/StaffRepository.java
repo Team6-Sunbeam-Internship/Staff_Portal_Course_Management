@@ -16,15 +16,6 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
 
 	Optional<Staff> findByStaffIdAndIsDeletedFalse(UUID staffId);
 	
-//	@Query(value = """
-//	        SELECT s.*
-//	        FROM staff s
-//	        WHERE s.is_deleted = false 
-//	        AND (LOWER(s.first_name) LIKE LOWER(CONCAT('%', :name, '%'))
-//	        OR LOWER(s.last_name) LIKE LOWER(CONCAT('%', :name, '%')))
-//	        """, nativeQuery = true)
-//	    List<Staff> searchByStaffName(@Param("name") String name);
-	
 	 @Query(value = """
 		        SELECT s.*
 		        FROM staff s
