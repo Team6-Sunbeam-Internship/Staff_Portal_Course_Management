@@ -12,4 +12,5 @@ public interface IStaffService {
     List<StaffDTO> getAllStaff();
     StaffDTO updateStaff(UUID staffId, StaffDTO staffDTO);
     String deleteStaff(UUID staffId);
+    List<StaffDTO> searchStaffByName(String name);
 }
