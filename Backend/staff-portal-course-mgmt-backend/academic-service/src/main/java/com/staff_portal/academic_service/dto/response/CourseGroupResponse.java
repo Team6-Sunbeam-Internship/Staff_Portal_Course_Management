@@ -19,7 +19,7 @@ public class CourseGroupResponse {
     private Integer capacity;
     private CourseGroupStatus status;
     private int courseId;
-   // private String courseName;
+    private String courseName;
 
 
 }
