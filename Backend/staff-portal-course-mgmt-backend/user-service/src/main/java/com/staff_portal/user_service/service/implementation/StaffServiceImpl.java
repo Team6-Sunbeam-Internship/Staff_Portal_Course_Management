@@ -2,6 +2,7 @@ package com.staff_portal.user_service.service.implementation;
 
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import com.staff_portal.user_service.dto.request.StaffDTO;
 import com.staff_portal.user_service.exception.ResourceNotFoundException;
@@ -77,6 +78,55 @@ public class StaffServiceImpl implements IStaffService {
         staffRepository.save(staff);
 
         return "Staff record deleted successfully";
+    }
+    
+//    @Override
+//    public List<StaffDTO> searchStaffByName(String name) {
+//        try {
+//            if (name == null || name.trim().isEmpty()) {
+//                throw new IllegalArgumentException("Name cannot be null or empty");
+//            }
+//            List<Staff> staffList = staffRepository.searchByStaffName(name.trim());
+//            if (staffList.isEmpty()) {
+//                throw new ResourceNotFoundException(
+//                    "No staff found for name: " + name
+//                );
+//            }
+//            return staffList.stream()
+//                    .map(this::mapToDTO)
+//                    .toList();
+//        } catch (IllegalArgumentException ex) {
+//            throw ex;
+//        } catch (ResourceNotFoundException ex) {
+//            throw ex;
+//        } catch (Exception ex) {
+//            throw new RuntimeException("Failed to search staff by name", ex);
+//        }
+//    }
+    
+    @Override
+    public List<StaffDTO> searchStaffByName(String name) {
+        try {
+            if (name == null || name.trim().isEmpty()) {
+                throw new IllegalArgumentException("Name cannot be null or empty");
+            }
+            
+            String trimmedName = name.trim();
+            // Replace multiple spaces with single space and handle special characters
+            String cleanedName = trimmedName.replaceAll("\\s+", " ");
+            
+            List<Staff> staffList = staffRepository.searchByStaffName(cleanedName);
+            return staffList.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+        } catch (IllegalArgumentException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            // Log the actual error for debugging
+            System.err.println("Error in searchStaffByName: " + ex.getMessage());
+            ex.printStackTrace();
+            throw new RuntimeException("Failed to search staff by name: " + ex.getMessage(), ex);
+        }
     }
 
     private StaffDTO mapToDTO(Staff staff) {
