@@ -49,42 +49,11 @@ public class CourseGroupController {
         return ResponseEntity.ok("Course group deleted successfully");
 }
     // for getting all course groups
-    @GetMapping("/{batchCycleId}")
-    public ResponseEntity<List<CourseGroupResponse>> getAllCourseGroups(@PathVariable String batchCycleId) {
+    @GetMapping
+    public ResponseEntity<List<CourseGroupResponse>> getAllCourseGroups() {
         List<CourseGroupResponse> responses = courseGroupService.getAllCourseGroups();
         return ResponseEntity.ok(responses);
     }
+  
     
-    //for getting all courses related to status(status wise filtering)
-    
-    @GetMapping("/status-options")
-    public ResponseEntity<CourseGroupStatus[]> getStatusOptions() {
-        return ResponseEntity.ok(CourseGroupStatus.values());
-    }
-    
-    // Return course groups filtered by status
-    @GetMapping("/filter")
-    public ResponseEntity<List<CourseGroupResponse>> getCourseGroupsByStatus(
-            @RequestParam("status") CourseGroupStatus status) {
-        List<CourseGroupResponse> response = courseGroupService.getCourseGroupsByStatus(status);
-        return ResponseEntity.ok(response);
-    }
-    
-    
-    //Get course groups filtered by batch cycle name
-    
-    @GetMapping("/by-batch-cycle-name")
-    public ResponseEntity<List<CourseGroupResponse>> getCourseGroupsByBatchCycleName(
-            @RequestParam String cycleName) {
-        List<CourseGroupResponse> groups = courseGroupService.getCourseGroupsByBatchCycleName(cycleName);
-        return ResponseEntity.ok(groups);
-    
-    }
-    
-    //for getting groups by course types
-    @GetMapping("/by-course-type")
-    public ResponseEntity<List<CourseGroupResponse>> getCourseGroupsByCourseType(@RequestParam String courseTypeName) {
-        List<CourseGroupResponse> response = courseGroupService.getCourseGroupsByCourseType(courseTypeName);
-        return ResponseEntity.ok(response);
-    }
 }
