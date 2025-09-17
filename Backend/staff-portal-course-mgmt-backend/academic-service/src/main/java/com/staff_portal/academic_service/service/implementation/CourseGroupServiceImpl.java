@@ -62,11 +62,10 @@ public class CourseGroupServiceImpl implements CourseGroupService {
                 saved.getDescription(),
                 saved.getCapacity(),
                 saved.getStatus(),
-                saved.getCourse().getCourseId()
+                saved.getCourse().getCourseId(),
+                saved.getCourse().getCourseName()
         );
     }
-
-
 
 
 	@Override
@@ -91,8 +90,8 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	                updated.getDescription(),
 	                updated.getCapacity(),
 	                updated.getStatus(),
-	                updated.getCourse().getCourseId()
-	              //  updated.getCourse().getCourseName()
+	                updated.getCourse().getCourseId(),
+	                updated.getCourse().getCourseName()
 	        );
 		
 	}
@@ -112,29 +111,7 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 
 	@Override
 	public List<CourseGroupResponse> getAllCourseGroups() {
-		
-		 List<CourseGroup> courseGroups = courseGroupRepository.findAll();
-
-	        
-	        return courseGroups.stream()
-	                .map(cg -> new CourseGroupResponse(
-	                        cg.getGroupId(),
-	                        cg.getGroupName(),
-	                        cg.getDescription(),
-	                        cg.getCapacity(),
-	                        cg.getStatus(),
-	                        cg.getCourse().getCourseId()
-	                      //  cg.getCourse().getCourseName()
-	                ))
-	                .toList();
-
-	}
-
-	@Override
-	public List<CourseGroupResponse> getCourseGroupsByStatus(CourseGroupStatus status) {
-		List<CourseGroup> courseGroups = courseGroupRepository.findByStatus(status);
-
-	    // Map to response DTO
+	    List<CourseGroup> courseGroups = courseGroupRepository.findAll();
 	    return courseGroups.stream()
 	            .map(cg -> new CourseGroupResponse(
 	                    cg.getGroupId(),
@@ -142,45 +119,12 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	                    cg.getDescription(),
 	                    cg.getCapacity(),
 	                    cg.getStatus(),
-	                    cg.getCourse().getCourseId()
-	                    // cg.getCourse().getCourseName()  
+	                    cg.getCourse().getCourseId(),
+	                    cg.getCourse().getCourseName()
 	            ))
 	            .toList();
 	}
 
-	
-	@Override
-	public List<CourseGroupResponse> getCourseGroupsByBatchCycleName(String cycleName) {
-		 List<CourseGroup> courseGroups = courseGroupRepository.findByBatchCycle_CycleName(cycleName);
-		    return courseGroups.stream()
-		            .map(cg -> new CourseGroupResponse(
-		                    cg.getGroupId(),
-		                    cg.getGroupName(),
-		                    cg.getDescription(),
-		                    cg.getCapacity(),
-		                    cg.getStatus(),
-		                    cg.getCourse().getCourseId()
-		            ))
-		            .toList();
-	}
 
-
-
-	@Override
-	public List<CourseGroupResponse> getCourseGroupsByCourseType(String typeName) {
-		 List<CourseGroup> courseGroups = courseGroupRepository.findByCourseType_TypeName(typeName);
-
-		    return courseGroups.stream()
-		            .map(cg -> new CourseGroupResponse(
-		                    cg.getGroupId(),
-		                    cg.getGroupName(),
-		                    cg.getDescription(),
-		                    cg.getCapacity(),
-		                    cg.getStatus(),
-		                    cg.getCourse().getCourseId()
-		                    //  cg.getCourseType().getTypeName()
-		            ))
-		            .collect(Collectors.toList());
-	}
 	
 }
