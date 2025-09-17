@@ -66,27 +66,6 @@ public class StaffMenuAccessServiceImpl implements IStaffMenuAccessService {
                 .map(this::mapToDTO)
                 .toList();
     }
-
-//	@Override
-//	public StaffMenuAccessDTO updateStatus(Long id, String newStatus) {
-//		StaffMenuAccess access = staffMenuAccessRepository.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Access record not found with ID: " + id));
-//
-//        access.setStatus(AccessStatus.valueOf(newStatus.toUpperCase()));
-//        StaffMenuAccess updated =staffMenuAccessRepository.save(access);
-//
-//        return mapToDTO(updated);	        
-//	}
-//
-//	@Override
-//	public String deleteAccess(Long id) {
-//		if (!staffMenuAccessRepository.existsById(id)) {
-//            throw new ResourceNotFoundException("Access record not found with ID: " + id);
-//        }
-//		staffMenuAccessRepository.deleteById(id);
-//        
-//		return "Menu item deleted successfully with ID: " + id;		
-//	}
     
     @Override
     public StaffMenuAccessDTO updateStatus(UUID staffAccessId, String newStatus) {
@@ -108,13 +87,42 @@ public class StaffMenuAccessServiceImpl implements IStaffMenuAccessService {
         return "Menu item deleted successfully with ID: " + staffAccessId;		
     }
 
+    @Override
+    public List<StaffMenuAccessDTO> searchByStaffName(String name) {
+        try {
+            if (name == null || name.trim().isEmpty()) {
+                throw new IllegalArgumentException("Name cannot be null or empty");
+            }
+            List<StaffMenuAccess> accessList = staffMenuAccessRepository.searchByStaffName(name.trim());
+            if (accessList.isEmpty()) {
+                // Raise an exception so any caller knows it’s “not found”
+                throw new ResourceNotFoundException(
+                    "No staff menu access records found for name: " + name
+                );
+            }
+            return accessList.stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException ex) {
+            throw ex;
+        }
+        catch(ResourceNotFoundException ex) {
+        	throw ex;
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to search staff menu access by name", ex);
+        }
+    }
+
     
 //     Private mapper
     private StaffMenuAccessDTO mapToDTO(StaffMenuAccess entity) {
         return StaffMenuAccessDTO.builder()
                 .staffAccessId(entity.getStaffAccessId())   
-                .staffId(entity.getStaff().getStaffId())   
+                .staffId(entity.getStaff().getStaffId())  
+                .staffFirstName(entity.getStaff().getFirstName())
+                .staffLastName(entity.getStaff().getLastName())
                 .menuItemId(entity.getMenuItem().getMenuItemId())
+                .menuItemTitle(entity.getMenuItem().getTitle())
                 .status(entity.getStatus())
                 .build();
     }
