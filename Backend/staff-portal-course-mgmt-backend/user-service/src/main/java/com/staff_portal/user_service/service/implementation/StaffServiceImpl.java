@@ -80,30 +80,6 @@ public class StaffServiceImpl implements IStaffService {
         return "Staff record deleted successfully";
     }
     
-//    @Override
-//    public List<StaffDTO> searchStaffByName(String name) {
-//        try {
-//            if (name == null || name.trim().isEmpty()) {
-//                throw new IllegalArgumentException("Name cannot be null or empty");
-//            }
-//            List<Staff> staffList = staffRepository.searchByStaffName(name.trim());
-//            if (staffList.isEmpty()) {
-//                throw new ResourceNotFoundException(
-//                    "No staff found for name: " + name
-//                );
-//            }
-//            return staffList.stream()
-//                    .map(this::mapToDTO)
-//                    .toList();
-//        } catch (IllegalArgumentException ex) {
-//            throw ex;
-//        } catch (ResourceNotFoundException ex) {
-//            throw ex;
-//        } catch (Exception ex) {
-//            throw new RuntimeException("Failed to search staff by name", ex);
-//        }
-//    }
-    
     @Override
     public List<StaffDTO> searchStaffByName(String name) {
         try {
