@@ -14,5 +14,6 @@ public class RoleMenuAccessDTO {
 	private Long accessId;
 	private String roleName;
     private Long menuItemId;
+    private String menuItemTitle;
     private AccessStatus status;
 }

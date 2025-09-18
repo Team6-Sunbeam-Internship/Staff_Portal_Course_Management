@@ -16,6 +16,9 @@ public class StaffMenuAccessDTO {
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private UUID staffAccessId;
 	private UUID staffId;
+	private String staffFirstName;
+	private String staffLastName;
 	private Long menuItemId;
+	private String menuItemTitle;
 	private AccessStatus status;
 }

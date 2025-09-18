@@ -2,6 +2,7 @@ package com.staff_portal.user_service.service.implementation;
 
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import com.staff_portal.user_service.dto.request.StaffDTO;
 import com.staff_portal.user_service.exception.ResourceNotFoundException;
@@ -28,6 +29,7 @@ public class StaffServiceImpl implements IStaffService {
                 .designation(staffDTO.getDesignation())
                 .staffType(staffDTO.getStaffType())
                 .staffRole(staffDTO.getStaffRole())
+                .courseSpecialization(staffDTO.getCourseSpecialization())
                 .build();
 
         return mapToDTO(staffRepository.save(staff));
@@ -62,6 +64,7 @@ public class StaffServiceImpl implements IStaffService {
         if (staffDTO.getDesignation() != null) staff.setDesignation(staffDTO.getDesignation());
         if (staffDTO.getStaffType() != null) staff.setStaffType(staffDTO.getStaffType());
         if (staffDTO.getStaffRole() != null) staff.setStaffRole(staffDTO.getStaffRole());
+        if (staffDTO.getCourseSpecialization() != null) staff.setCourseSpecialization(staffDTO.getCourseSpecialization());
 
         return mapToDTO(staffRepository.save(staff));
     }
@@ -71,11 +74,35 @@ public class StaffServiceImpl implements IStaffService {
         Staff staff = staffRepository.findByStaffIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + id));
 
-//        staff.setIsDeleted(true);
         staff.setDeleted(true);
         staffRepository.save(staff);
 
         return "Staff record deleted successfully";
+    }
+    
+    @Override
+    public List<StaffDTO> searchStaffByName(String name) {
+        try {
+            if (name == null || name.trim().isEmpty()) {
+                throw new IllegalArgumentException("Name cannot be null or empty");
+            }
+            
+            String trimmedName = name.trim();
+            // Replace multiple spaces with single space and handle special characters
+            String cleanedName = trimmedName.replaceAll("\\s+", " ");
+            
+            List<Staff> staffList = staffRepository.searchByStaffName(cleanedName);
+            return staffList.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+        } catch (IllegalArgumentException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            // Log the actual error for debugging
+            System.err.println("Error in searchStaffByName: " + ex.getMessage());
+            ex.printStackTrace();
+            throw new RuntimeException("Failed to search staff by name: " + ex.getMessage(), ex);
+        }
     }
 
     private StaffDTO mapToDTO(Staff staff) {
@@ -90,6 +117,7 @@ public class StaffServiceImpl implements IStaffService {
                 .designation(staff.getDesignation())
                 .staffType(staff.getStaffType())
                 .staffRole(staff.getStaffRole())
+                .courseSpecialization(staff.getCourseSpecialization())
                 .build();
     }
 }

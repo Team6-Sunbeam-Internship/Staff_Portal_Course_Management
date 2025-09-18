@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.staff_portal.user_service.dto.request.StaffMenuAccessDTO;
+import com.staff_portal.user_service.exception.ResourceNotFoundException;
 import com.staff_portal.user_service.service.interfaces.IStaffMenuAccessService;
 
 @RestController
 @RequestMapping("/api/staff-menu-access")
+@CrossOrigin
 public class StaffMenuAccessController {
 
 	@Autowired
@@ -50,11 +53,25 @@ public class StaffMenuAccessController {
 	                                                       @RequestParam String status) {
 	    return ResponseEntity.ok(staffMenuAccessService.updateStatus(staffAccessId, status));
 	}
-
+	
 	@DeleteMapping("/delete/{staffAccessId}")
 	public ResponseEntity<Void> delete(@PathVariable UUID staffAccessId) {
 	    staffMenuAccessService.deleteAccess(staffAccessId);
 	    return ResponseEntity.noContent().build();
+	}
+	
+	@GetMapping("/search")
+	public ResponseEntity<?> searchByStaffName(@RequestParam String name) {
+	    try {
+	        List<StaffMenuAccessDTO> results = staffMenuAccessService.searchByStaffName(name);
+	        return ResponseEntity.ok(results);
+	    } catch (ResourceNotFoundException ex) {
+	        return ResponseEntity.status(404).body(ex.getMessage());
+	    } catch (IllegalArgumentException ex) {
+	        return ResponseEntity.badRequest().body(ex.getMessage());
+	    } catch (Exception ex) {
+	        return ResponseEntity.internalServerError().body(ex.getMessage());
+	    }
 	}
 	
 	private UUID parseUUID(String id) {

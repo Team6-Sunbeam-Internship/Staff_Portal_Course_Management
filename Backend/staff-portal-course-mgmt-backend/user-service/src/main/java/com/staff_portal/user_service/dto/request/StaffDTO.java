@@ -14,20 +14,21 @@ import java.util.UUID;
 @Builder
 public class StaffDTO {
 
-	// Used in response only
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	private UUID staffId;
+    // Used in response only
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private UUID staffId;
 
-	// Used in request only
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private UUID authUserId;
+    // Used in request only
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private UUID authUserId;
 
-	private String firstName;
-	private String lastName;
-	private String email;
-	private String phone;
-	private String address;
-	private String designation;
-	private StaffType staffType;
-	private StaffRole staffRole;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phone;
+    private String address;
+    private String designation;
+    private StaffType staffType;
+    private StaffRole staffRole;
+    private String courseSpecialization;
 }
