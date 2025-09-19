@@ -11,6 +11,8 @@ import {
   getInactiveStudents,
   getActiveStudents,
 } from "../../../../services/api/StudentService";
+import Pagination from "../../../common/Pagination/Pagination";
+import Table from "../../../common/Table/Table";
 
 function ManageStudents() {
   const [registrationNumber, setRegistrationNumber] = useState("");
@@ -30,6 +32,23 @@ function ManageStudents() {
   const [studentToDelete, setStudentToDelete] = useState(null);
 
   const [statusFilter, setStatusFilter] = useState(""); // ACTIVE, INACTIVE
+
+  // Columns for the table
+  const columns = [
+  { key: "registrationNumber", label: "Reg. No", className: "w-28" },
+  { key: "studentName", label: "Name", className: "w-56" },
+  { key: "email", label: "Email", className: "w-48" },
+  { key: "mobileNumber", label: "Mobile", className: "w-28" },
+  { key: "batchCycleName", label: "BatchCycle", className: "w-28" },
+  { key: "courseName", label: "Course", className: "w-28" },
+  {
+    key: "status",
+    label: "Status",
+    className: "w-24",
+    render: (item) => (item.status === "ACTIVE" ? "Active" : "Inactive"),
+  },
+  { key: "address", label: "Address", className: "w-68" },
+];
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 20;
@@ -238,18 +257,6 @@ function ManageStudents() {
   const cancelDelete = () => {
     setShowDeleteModal(false);
     setStudentToDelete(null);
-  };
-
-  // Function to display status in user-friendly format
-  const formatStatus = (status) => {
-    switch (status) {
-      case "ACTIVE":
-        return "Active";
-      case "INACTIVE":
-        return "Inactive";
-      default:
-        return status;
-    }
   };
 
   return (
@@ -499,7 +506,15 @@ function ManageStudents() {
       <hr className="mb-4" />
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <Table
+  columns={columns}
+  data={currentRecords}
+  loading={loading}
+  onEdit={onUpdate}
+  onDelete={onDelete}
+  indexOffset={indexOfFirstRecord}
+/>
+      {/* <div className="overflow-x-auto">
         <table className="w-full table-auto border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>
@@ -573,46 +588,14 @@ function ManageStudents() {
             )}
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4 space-x-1">
-          <button
-            className={`px-3 py-1 border ${
-              currentPage === 1
-                ? "bg-gray-200 cursor-not-allowed"
-                : "hover:bg-gray-100"
-            }`}
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
-            Previous
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i + 1}
-              className={`px-3 py-1 border ${
-                currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => handlePageChange(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <button
-            className={`px-3 py-1 border ${
-              currentPage === totalPages
-                ? "bg-gray-200 cursor-not-allowed"
-                : "hover:bg-gray-100"
-            }`}
-            onClick={() => handlePageChange(currentPage + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
