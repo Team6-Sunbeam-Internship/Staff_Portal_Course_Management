@@ -8,6 +8,8 @@ import {
   deleteStaff,
   searchStaffByName,
 } from "../../../../services/api/StaffService";
+import Pagination from "../../../common/Pagination/Pagination";
+import Table from "../../../common/Table/Table";
 
 function ManageStaff() {
   const [staff, setStaff] = useState([]);
@@ -37,6 +39,21 @@ function ManageStaff() {
   const [staffTypeFilter, setStaffTypeFilter] = useState("");
   const [staffRoleFilter, setStaffRoleFilter] = useState("");
   const [hasActiveFilters, setHasActiveFilters] = useState(false);
+ 
+  //Columns for the table
+  const columns = [
+    {
+      key: "fullName",
+      label: "Name",
+      className: "w-48",
+      render: (s) => `${s.firstName} ${s.lastName}`,
+    },
+    { key: "email", label: "Email", className: "w-48" },
+    { key: "phone", label: "Mobile" },
+    { key: "courseSpecialization", label: "Course Specialization" },
+    { key: "staffType", label: "Type" },
+    { key: "staffRole", label: "Role" },
+  ];
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -316,7 +333,7 @@ function ManageStaff() {
   const roleOptions = ["ADMIN", "COURSE_COORDINATOR", "GENERAL_USER"];
 
   return (
-      <div className="max-w-7xl mx-auto mt-6 px-4">
+    <div className="max-w-7xl mx-auto mt-6 px-4">
       <h2 className="text-2xl font-bold text-center mb-6">Manage Staff</h2>
 
       {/* Add button */}
@@ -610,122 +627,21 @@ function ManageStaff() {
       )}
 
       {/* Staff Table */}
-      <div className="overflow-x-auto mt-6">
-        <table className="w-full table-auto border-collapse border border-gray-200 text-sm">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr>
-              <th className="border p-2">#</th>
-              <th className="border p-2 w-48">Name</th>
-              <th className="border p-2 w-48">Email</th>
-              <th className="border p-2">Mobile</th>
-              <th className="border p-2">Course Specialization</th>
-              <th className="border p-2">Type</th>
-              <th className="border p-2">Role</th>
-              <th className="border p-2 w-36">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="8" className="text-center p-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : staff.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="text-center p-4">
-                  No staff found
-                </td>
-              </tr>
-            ) : (
-              currentRecords.map((s, idx) => (
-                <tr key={s.staffId} className="hover:bg-gray-50 text-center">
-                  <td className="border p-2">{indexOfFirst + idx + 1}</td>
-                  <td className="border p-2">{`${s.firstName} ${s.lastName}`}</td>
-                  <td className="border p-2">{s.email}</td>
-                  <td className="border p-2">{s.phone}</td>
-                  <td className="border p-2">{s.courseSpecialization}</td>
-                  <td className="border p-2">{s.staffType}</td>
-                  <td className="border p-2">{s.staffRole}</td>
-                  <td className="border p-2">
-                    <div className="flex justify-center gap-1">
-                      <button
-                        className="bg-yellow-400 hover:bg-green-500 text-white px-2 py-1 rounded"
-                        onClick={() => onEdit(s)}
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        className="bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded"
-                        onClick={() => requestDelete(s)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        data={currentRecords}
+        loading={loading}
+        onEdit={onEdit}
+        onDelete={requestDelete}
+        indexOffset={indexOfFirst}
+      />
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <nav className="mt-6 flex justify-center">
-          <ul className="inline-flex items-center -space-x-px">
-            <li>
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-3 py-2 border rounded-l-lg ${
-                  currentPage === 1
-                    ? "bg-gray-100 text-gray-400"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                Previous
-              </button>
-            </li>
-            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
-              let pageNum = i + 1;
-              if (totalPages > 10) {
-                if (currentPage <= 5) pageNum = i + 1;
-                else if (currentPage >= totalPages - 4)
-                  pageNum = totalPages - 9 + i;
-                else pageNum = currentPage - 5 + i;
-              }
-              return (
-                <li key={pageNum}>
-                  <button
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-2 border ${
-                      currentPage === pageNum
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                </li>
-              );
-            })}
-            <li>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-2 border rounded-r-lg ${
-                  currentPage === totalPages
-                    ? "bg-gray-100 text-gray-400"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </nav>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
