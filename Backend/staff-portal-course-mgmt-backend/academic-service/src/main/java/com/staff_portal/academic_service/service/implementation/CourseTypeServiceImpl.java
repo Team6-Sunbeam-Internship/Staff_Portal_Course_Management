@@ -71,16 +71,24 @@ public class CourseTypeServiceImpl implements CourseTypeService {
        
     }
 
+//    @Override
+//    public void deleteCourseType(int id) {
+//        if (!courseTypeRepository.existsById(id)) {
+//            throw new RuntimeException("CourseType not found");
+//        }
+//        courseTypeRepository.deleteById(id);
+//        CourseType courseType = courseTypeRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+//        courseTypeRepository.delete(courseType);
+//    }
     @Override
     public void deleteCourseType(int id) {
         if (!courseTypeRepository.existsById(id)) {
             throw new RuntimeException("CourseType not found");
         }
         courseTypeRepository.deleteById(id);
-        CourseType courseType = courseTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("CourseType not found"));
-        courseTypeRepository.delete(courseType);
     }
+
 
     @Override
     public List<CourseTypeResponseDTO> getAllCourseTypes() {
