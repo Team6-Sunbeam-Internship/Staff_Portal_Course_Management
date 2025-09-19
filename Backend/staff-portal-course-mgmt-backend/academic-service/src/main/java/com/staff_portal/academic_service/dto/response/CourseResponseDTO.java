@@ -24,7 +24,7 @@ public class CourseResponseDTO {
     private String premisesName;    // from Premises (through CourseType)
     private LocalDate startDate;
     private LocalDate endDate;
-    private int studentCount;
-    private int groupCount;
+//    private int studentCount;
+//    private int groupCount;
 }
 
