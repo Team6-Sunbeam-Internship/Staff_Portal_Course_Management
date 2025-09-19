@@ -7,6 +7,8 @@ import {
   updateMenuItem,
   deleteMenuItem,
 } from "../../../../services/api/MenuItemService";
+import Pagination from "../../../common/Pagination/Pagination";
+import Table from "../../../common/Table/Table";
 
 function MenuItem() {
   const [menuItems, setMenuItems] = useState([]);
@@ -21,6 +23,13 @@ function MenuItem() {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [menuItemToDelete, setMenuItemToDelete] = useState(null);
+
+  // Columns for the table
+  const columns = [
+    { key: "title", label: "Title", className: "w-40" },
+    { key: "description", label: "Description", className: "w-64" },
+    { key: "path", label: "Path", className: "w-40" },
+  ];
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 20;
@@ -266,107 +275,21 @@ function MenuItem() {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 text-center">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="py-2 px-3 border">#</th>
-              <th className="py-2 px-3 border">Title</th>
-              <th className="py-2 px-3 border">Description</th>
-              <th className="py-2 px-3 border">Path</th>
-              <th className="py-2 px-3 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="py-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : menuItems.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="py-4">
-                  No menu items found
-                </td>
-              </tr>
-            ) : (
-              currentRecords.map((item, idx) => (
-                <tr key={item.menuItemId} className="hover:bg-gray-50">
-                  <td className="py-2 px-3 border">
-                    {indexOfFirstRecord + idx + 1}
-                  </td>
-                  <td className="py-2 px-3 border">{item.title}</td>
-                  <td className="py-2 px-3 border">{item.description}</td>
-                  <td className="py-2 px-3 border">{item.path}</td>
-                  <td className="py-2 px-3 border flex justify-center gap-2">
-                    <button
-                      className="bg-yellow-400 hover:bg-green-500 text-white px-2 py-1 rounded"
-                      onClick={() => onEdit(item)}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded"
-                      onClick={() => requestDelete(item)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        data={currentRecords}
+        loading={loading}
+        onEdit={onEdit}
+        onDelete={requestDelete}
+        indexOffset={indexOfFirstRecord}
+      />
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex justify-center">
-          <ul className="flex gap-1">
-            <li>
-              <button
-                className={`px-3 py-1 rounded border ${
-                  currentPage === 1
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-200"
-                }`}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </button>
-            </li>
-
-            {Array.from({ length: totalPages }, (_, i) => (
-              <li key={i + 1}>
-                <button
-                  className={`px-3 py-1 rounded border ${
-                    currentPage === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-gray-200"
-                  }`}
-                  onClick={() => handlePageChange(i + 1)}
-                >
-                  {i + 1}
-                </button>
-              </li>
-            ))}
-
-            <li>
-              <button
-                className={`px-3 py-1 rounded border ${
-                  currentPage === totalPages
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-200"
-                }`}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
