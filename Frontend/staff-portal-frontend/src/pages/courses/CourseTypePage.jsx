@@ -83,14 +83,16 @@ const CourseTypePage = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-teal-700">Course Types</h1>
-        <button
-          onClick={handleAdd}
-          className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700"
-        >
-          + Add Course Type
-        </button>
+      <div className="flex flex-col items-center mb-6">
+        <h1 className="text-2xl font-bold text-green-700 mb-4 ">Course Types </h1>
+        <div className="w-full flex justify-end max-w-5xl">
+            <button
+            onClick={handleAdd}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+            >
+            + Add Course Type
+            </button>
+        </div>
       </div>
 
       {loading ? (
