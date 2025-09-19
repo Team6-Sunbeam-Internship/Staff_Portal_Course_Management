@@ -125,6 +125,58 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	            .toList();
 	}
 
+	@Override
+	public List<CourseGroupResponse> getGroupsByBatchCycle(Long batchCycleId) {
+	    List<CourseGroup> groups = courseGroupRepository.findByBatchCycle_BatchCycleId(batchCycleId);
+
+	    return groups.stream()
+	            .map(cg -> new CourseGroupResponse(
+	                    cg.getGroupId(),
+	                    cg.getGroupName(),
+	                    cg.getDescription(),
+	                    cg.getCapacity(),
+	                    cg.getStatus(),
+	                    cg.getCourse().getCourseId(),
+	                    cg.getCourse().getCourseName()
+	            ))
+	            .toList();
+	}
+
+	@Override
+	public List<CourseGroupResponse> getGroupsByCourse(Long courseId) {
+	    List<CourseGroup> groups = courseGroupRepository.findByCourse_CourseId(courseId);
+
+	    return groups.stream()
+	            .map(cg -> new CourseGroupResponse(
+	                    cg.getGroupId(),
+	                    cg.getGroupName(),
+	                    cg.getDescription(),
+	                    cg.getCapacity(),
+	                    cg.getStatus(),
+	                    cg.getCourse().getCourseId(),
+	                    cg.getCourse().getCourseName()
+	            ))
+	            .toList();
+	}
+
+	@Override
+	public List<CourseGroupResponse> getGroupsByStatus(String status) {
+	    CourseGroupStatus groupStatus = CourseGroupStatus.valueOf(status.toUpperCase());
+
+	    List<CourseGroup> groups = courseGroupRepository.findByStatus(groupStatus);
+
+	    return groups.stream()
+	            .map(cg -> new CourseGroupResponse(
+	                    cg.getGroupId(),
+	                    cg.getGroupName(),
+	                    cg.getDescription(),
+	                    cg.getCapacity(),
+	                    cg.getStatus(),
+	                    cg.getCourse().getCourseId(),
+	                    cg.getCourse().getCourseName()
+	            ))
+	            .toList();
+	}
 
 	
 }
