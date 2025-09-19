@@ -55,5 +55,22 @@ public class CourseGroupController {
         return ResponseEntity.ok(responses);
     }
   
+ // Get groups by BatchCycle
+    @GetMapping("/by-batch/{batchCycleId}")
+    public ResponseEntity<List<CourseGroupResponse>> getGroupsByBatch(@PathVariable Long batchCycleId) {
+        return ResponseEntity.ok(courseGroupService.getGroupsByBatchCycle(batchCycleId));
+    }
+
+    // Get groups by Course
+    @GetMapping("/by-course/{courseId}")
+    public ResponseEntity<List<CourseGroupResponse>> getGroupsByCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(courseGroupService.getGroupsByCourse(courseId));
+    }
+
+    // Get groups by Status
+    @GetMapping("/by-status/{status}")
+    public ResponseEntity<List<CourseGroupResponse>> getGroupsByStatus(@PathVariable String status) {
+        return ResponseEntity.ok(courseGroupService.getGroupsByStatus(status));
+    }
     
 }
