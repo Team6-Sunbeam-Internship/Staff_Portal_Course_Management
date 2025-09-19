@@ -10,6 +10,8 @@ import {
 } from "../../../../services/api/StaffMenuAccess";
 import SearchableStaffSelect from "./SearchableStaffSelect";
 import SearchableMenuItemSelect from "./SearchableMenuItemSelect";
+import Pagination from "../../../common/Pagination/Pagination";
+import Table from "../../../common/Table/Table";
 
 function StaffMenuAccess() {
   const [accessList, setAccessList] = useState([]);
@@ -26,6 +28,29 @@ function StaffMenuAccess() {
   const [itemToDelete, setItemToDelete] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Columns for the table
+  const columns = [
+    {
+      key: "staffName",
+      label: "Staff Name",
+      render: (item) => `${item.staffFirstName} ${item.staffLastName}`,
+    },
+    { key: "menuItemTitle", label: "Menu Item" },
+    {
+      key: "status",
+      label: "Status",
+      render: (item) => (
+        <span
+          className={`px-2 py-1 rounded text-white ${
+            item.status === "ALLOWED" ? "bg-green-800" : "bg-red-800"
+          }`}
+        >
+          {item.status}
+        </span>
+      ),
+    },
+  ];
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 20;
@@ -331,128 +356,21 @@ function StaffMenuAccess() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 text-center">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="py-2 px-3 border">#</th>
-              <th className="py-2 px-3 border">Staff Name</th>
-              <th className="py-2 px-3 border">MenuItem Title</th>
-              <th className="py-2 px-3 border">Status</th>
-              <th className="py-2 px-3 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="py-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : !Array.isArray(accessList) || accessList.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="py-4">
-                  No data found
-                </td>
-              </tr>
-            ) : (
-              currentRecords.map((item, idx) => (
-                <tr key={item.staffAccessId} className="hover:bg-gray-50">
-                  <td className="py-2 px-3 border">{indexOfFirst + idx + 1}</td>
-                  <td className="py-2 px-3 border">
-                    {item.staffFirstName} {item.staffLastName}
-                  </td>
-                  <td className="py-2 px-3 border">
-                    {item.menuItemTitle || item.menuItemId}
-                  </td>
-                  <td className="py-2 px-3 border">
-                    <span
-                      className={`px-2 py-1 rounded text-white ${
-                        item.status === "ALLOWED"
-                          ? "bg-green-800"
-                          : "bg-red-800"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 border flex justify-center gap-2">
-                    <button
-                      className="bg-yellow-400 hover:bg-green-500 text-white px-2 py-1 rounded"
-                      onClick={() => onEdit(item)}
-                      title="Edit"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded"
-                      onClick={() => requestDelete(item)}
-                      title="Delete"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        data={currentRecords}
+        loading={loading}
+        onEdit={onEdit}
+        onDelete={requestDelete}
+        indexOffset={indexOfFirst}
+      />
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex justify-center">
-          <ul className="flex gap-1">
-            <li>
-              <button
-                className={`px-3 py-1 rounded border ${
-                  currentPage === 1
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-200"
-                }`}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </button>
-            </li>
-            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
-              let pageNum = i + 1;
-              if (totalPages > 10) {
-                if (currentPage <= 5) pageNum = i + 1;
-                else if (currentPage >= totalPages - 4)
-                  pageNum = totalPages - 9 + i;
-                else pageNum = currentPage - 5 + i;
-              }
-              return (
-                <li key={pageNum}>
-                  <button
-                    className={`px-3 py-1 rounded border ${
-                      currentPage === pageNum
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-gray-200"
-                    }`}
-                    onClick={() => handlePageChange(pageNum)}
-                  >
-                    {pageNum}
-                  </button>
-                </li>
-              );
-            })}
-            <li>
-              <button
-                className={`px-3 py-1 rounded border ${
-                  currentPage === totalPages
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-200"
-                }`}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
