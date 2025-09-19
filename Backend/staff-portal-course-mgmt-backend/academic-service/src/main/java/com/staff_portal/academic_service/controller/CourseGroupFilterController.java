@@ -24,10 +24,11 @@ public class CourseGroupFilterController {
         return ResponseEntity.ok(filterService.getBatchCycles());
     }
 
-    @GetMapping("/course-types")
-    public ResponseEntity<List<CourseGroupFilterDTO>> getCourseTypes() {
-        return ResponseEntity.ok(filterService.getCourseTypes());
+    @GetMapping("/courses")   
+    public ResponseEntity<List<CourseGroupFilterDTO>> getCourses() {
+        return ResponseEntity.ok(filterService.getCourses());
     }
+
 
     @GetMapping("/status")
     public ResponseEntity<List<CourseGroupFilterDTO>> getStatuses() {
