@@ -19,4 +19,5 @@ public interface TopicService {
             Integer subjectId,
             Integer sectionId
     );
+    List<TopicResponseDTO> getTopicsBySection(int sectionId);
 }

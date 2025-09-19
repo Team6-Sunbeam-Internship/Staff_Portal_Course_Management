@@ -97,6 +97,14 @@ public class TopicServiceImpl implements TopicService {
         		.map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+ // ✅ New method: fetch all topics by sectionId
+    @Override
+    public List<TopicResponseDTO> getTopicsBySection(int sectionId) {
+        List<Topic> topics = topicRepository.findBySection_SectionId(sectionId);
+        return topics.stream()
+                     .map(this::mapToResponse)
+                     .collect(Collectors.toList());
+    }
 
     private TopicResponseDTO mapToResponse(Topic topic) {
         TopicResponseDTO response = new TopicResponseDTO();

@@ -31,4 +31,8 @@ public interface TopicRepository extends JpaRepository<Topic, Integer> {
     	        @Param("sectionId") Integer sectionId
     	);
 
+    // Find all topics in a given section
+    List<Topic> findBySection_SectionId(int sectionId);
+
+
 }
