@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.response.CourseGroupFilterDTO;
 import com.staff_portal.academic_service.enums.CourseGroupStatus;
 import com.staff_portal.academic_service.repository.BatchCycleRepository;
-import com.staff_portal.academic_service.repository.CourseTypeRepository;
+import com.staff_portal.academic_service.repository.CourseRepository;
 import com.staff_portal.academic_service.service.interfaces.CourseGroupFilterService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class CourseGroupFilterServiceImpl implements CourseGroupFilterService {
 
     private final BatchCycleRepository batchCycleRepository;
-    private final CourseTypeRepository courseTypeRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     public List<CourseGroupFilterDTO> getBatchCycles() {
@@ -27,12 +27,11 @@ public class CourseGroupFilterServiceImpl implements CourseGroupFilterService {
     }
 
     @Override
-    public List<CourseGroupFilterDTO> getCourseTypes() {
-        return courseTypeRepository.findAll().stream()
-                .map(ct -> new CourseGroupFilterDTO(ct.getCourseTypeId(), ct.getTypeName()))
+    public List<CourseGroupFilterDTO> getCourses() {   // ✅ changed method
+        return courseRepository.findAll().stream()
+                .map(c -> new CourseGroupFilterDTO(c.getCourseId(), c.getCourseName()))
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<CourseGroupFilterDTO> getStatuses() {
         return Arrays.stream(CourseGroupStatus.values())
