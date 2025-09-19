@@ -8,6 +8,8 @@ import {
   deleteRoleMenuAccess,
   getRoleMenuAccessByRole,
 } from "../../../../services/api/RoleMenuAccess";
+import Pagination from "../../../common/Pagination/Pagination";
+import Table from "../../../common/Table/Table";
 
 import SearchableMenuItemSelect from "./SearchableMenuItemSelect";
 
@@ -26,6 +28,31 @@ function RoleMenuAccess() {
   const [itemToDelete, setItemToDelete] = useState(null);
 
   const [roleFilter, setRoleFilter] = useState("");
+
+  // Columns for the table
+  const columns = [
+    { key: "roleName", label: "Role Name", className: "w-32" },
+    {
+      key: "menuItemTitle",
+      label: "Menu Item",
+      className: "w-48",
+      render: (item) => item.menuItem?.title || item.menuItemTitle,
+    },
+    {
+      key: "status",
+      label: "Status",
+      className: "w-28",
+      render: (item) => (
+        <span
+          className={`px-2 py-1 rounded text-white ${
+            item.status === "ALLOWED" ? "bg-green-800" : "bg-red-800"
+          }`}
+        >
+          {item.status}
+        </span>
+      ),
+    },
+  ];
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 20;
@@ -354,7 +381,15 @@ function RoleMenuAccess() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <Table
+        columns={columns}
+        data={currentRecords}
+        loading={loading}
+        onEdit={onEdit}
+        onDelete={requestDelete}
+        indexOffset={indexOfFirst}
+      />
+      {/* <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-200 text-center">
           <thead className="bg-gray-100">
             <tr>
@@ -416,62 +451,14 @@ function RoleMenuAccess() {
             )}
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex justify-center">
-          <ul className="flex gap-1">
-            <li>
-              <button
-                className={`px-3 py-1 rounded border ${
-                  currentPage === 1
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-200"
-                }`}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </button>
-            </li>
-            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
-              let pageNum = i + 1;
-              if (totalPages > 10) {
-                if (currentPage <= 5) pageNum = i + 1;
-                else if (currentPage >= totalPages - 4)
-                  pageNum = totalPages - 9 + i;
-                else pageNum = currentPage - 5 + i;
-              }
-              return (
-                <li key={pageNum}>
-                  <button
-                    className={`px-3 py-1 rounded border ${
-                      currentPage === pageNum
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-gray-200"
-                    }`}
-                    onClick={() => handlePageChange(pageNum)}
-                  >
-                    {pageNum}
-                  </button>
-                </li>
-              );
-            })}
-            <li>
-              <button
-                className={`px-3 py-1 rounded border ${
-                  currentPage === totalPages
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-200"
-                }`}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
