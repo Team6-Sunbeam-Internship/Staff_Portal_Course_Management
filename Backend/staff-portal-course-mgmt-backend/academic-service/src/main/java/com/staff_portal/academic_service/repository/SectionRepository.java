@@ -30,4 +30,6 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
     );
     
     List<Section> findBySubject_SubjectId(Integer subjectId);
+    
+    
 }

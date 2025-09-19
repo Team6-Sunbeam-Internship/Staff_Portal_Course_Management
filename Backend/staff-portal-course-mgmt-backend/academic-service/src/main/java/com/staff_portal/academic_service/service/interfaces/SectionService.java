@@ -23,5 +23,7 @@ public interface SectionService {
             Integer moduleId,
             Integer subjectId
     );
+    List<SectionResponseDTO> getSectionsBySubject(Integer subjectId);
+
 }
 

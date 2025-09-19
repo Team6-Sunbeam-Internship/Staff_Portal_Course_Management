@@ -95,6 +95,14 @@ public class SectionServiceImpl implements SectionService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<SectionResponseDTO> getSectionsBySubject(Integer subjectId) {
+        List<Section> sections = sectionRepository.findBySubject_SubjectId(subjectId);
+
+        return sections.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
 
     private SectionResponseDTO mapToResponse(Section section) {
