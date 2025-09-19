@@ -15,5 +15,10 @@ public interface CourseGroupService  {
  // getting all course groups
     List<CourseGroupResponse> getAllCourseGroups();
     
+    List<CourseGroupResponse> getGroupsByBatchCycle(Long batchCycleId);
+    List<CourseGroupResponse> getGroupsByCourse(Long courseId);
+    List<CourseGroupResponse> getGroupsByStatus(String status);
+
+    
    
 }
