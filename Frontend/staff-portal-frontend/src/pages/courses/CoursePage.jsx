@@ -95,24 +95,27 @@ const CoursePage = () => {
 
   return (
     <div className="p-6 min-h-screen">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-green-700">Courses</h1>
-        <button
-          onClick={handleAdd}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-teal-700"
-        >
-          + Add Course
-        </button>
+      {/* Header */}
+      <div className="flex flex-col items-center mb-6">
+        <h1 className="text-2xl font-bold text-green-700 mb-4 ">Courses</h1>
+        <div className="w-full flex justify-end max-w-5xl">
+            <button
+            onClick={handleAdd}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+            >
+            + Add Course
+            </button>
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex justify-center flex gap-4 mb-6">
         <select
           value={selectedBatch}
           onChange={(e) =>
             handleFilterChange(Number(e.target.value) || "", selectedCourseType)
           }
-          className="border px-3 py-2 rounded"
+          className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
         >
           <option value="">Select Batch Cycle</option>
           {batchCycles.map((b) => (
@@ -127,7 +130,7 @@ const CoursePage = () => {
           onChange={(e) =>
             handleFilterChange(selectedBatch, Number(e.target.value) || "")
           }
-          className="border px-3 py-2 rounded"
+          className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
         >
           <option value="">Select Course Type</option>
           {courseTypes.map((ct) => (
@@ -140,20 +143,30 @@ const CoursePage = () => {
 
       {/* Table */}
       {loading ? (
-        <p className="text-gray-500">Loading courses...</p>
+        <p className="text-gray-500 text-center">Loading courses...</p>
       ) : courses.length > 0 ? (
-        <CourseTable courses={courses} onEdit={handleEdit} onDelete={handleDelete} />
+        <div className="flex justify-center">
+          <div className="w-full max-w-5xl">
+            <CourseTable
+              courses={courses}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </div>
+        </div>
       ) : (
         selectedBatch &&
         selectedCourseType && (
-          <p className="text-gray-500">No courses found for selected filters.</p>
+          <p className="text-gray-500 text-center">
+            No courses found for selected filters.
+          </p>
         )
       )}
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
+        <div className="fixed inset-0 flex items-center justify-center bg-white/40 backdrop-blur-sm z-50 transition-opacity animate-fadeIn">
+          <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-lg">
             <CourseForm
               editData={editData}
               onSubmit={handleFormSubmit}
