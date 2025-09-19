@@ -12,4 +12,7 @@ public interface DropdownService {
     List<DropdownDTO> getSubjectsByModule(Integer moduleId);
     List<DropdownDTO> getSectionsBySubject(Integer subjectId);
     List<DropdownDTO> getTopicsBySection(Integer sectionId);
+    
+    List<DropdownDTO> getCoursesByBatchAndType(Integer batchCycleId, Integer courseTypeId);
+
 }

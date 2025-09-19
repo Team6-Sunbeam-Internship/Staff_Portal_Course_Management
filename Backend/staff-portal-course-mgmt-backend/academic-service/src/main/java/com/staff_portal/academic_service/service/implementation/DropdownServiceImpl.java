@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.staff_portal.academic_service.dto.response.DropdownDTO;
+import com.staff_portal.academic_service.model.Course;
 import com.staff_portal.academic_service.repository.BatchCycleRepository;
 import com.staff_portal.academic_service.repository.CourseRepository;
 import com.staff_portal.academic_service.repository.CourseTypeRepository;
@@ -51,6 +52,18 @@ public class DropdownServiceImpl implements DropdownService {
                 .map(c -> new DropdownDTO(c.getCourseId(), c.getCourseName()))
                 .collect(Collectors.toList());
     }
+    
+
+    
+    @Override
+    public List<DropdownDTO> getCoursesByBatchAndType(Integer batchCycleId, Integer courseTypeId) {
+        List<Course> courses = courseRepository
+                .findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(batchCycleId, courseTypeId);
+
+        return courses.stream()
+                .map(c -> new DropdownDTO(c.getCourseId(), c.getCourseName()))
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<DropdownDTO> getModulesByCourse(Integer courseId) {
@@ -58,6 +71,7 @@ public class DropdownServiceImpl implements DropdownService {
                 .map(m -> new DropdownDTO(m.getModuleId(), m.getModuleName()))
                 .collect(Collectors.toList());
     }
+    
 
     @Override
     public List<DropdownDTO> getSubjectsByModule(Integer moduleId) {
