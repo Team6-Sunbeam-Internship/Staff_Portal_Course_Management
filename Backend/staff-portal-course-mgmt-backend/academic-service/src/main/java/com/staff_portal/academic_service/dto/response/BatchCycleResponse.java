@@ -13,10 +13,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BatchCycleResponse {
-	 private int batchCycleId;
-	    private String cycleName;
-	    private String description;
-	    private LocalDate startDate;
-	    private LocalDate endDate;
-	    private BatchStatus status;
+	private int batchCycleId;
+	private String cycleName;
+	private String description;
+	private LocalDate startDate;
+	private LocalDate endDate;
+	private BatchStatus status;
 }
