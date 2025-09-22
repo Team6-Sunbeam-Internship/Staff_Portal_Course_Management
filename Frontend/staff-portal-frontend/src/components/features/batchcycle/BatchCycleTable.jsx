@@ -2,12 +2,14 @@ import React from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
 const BatchCycleTable = ({ data, onEdit, onDelete }) => {
+  const visibleData = data.filter((item) => item.status !== "DELETED");
+
   return (
     <div className="overflow-x-auto shadow rounded bg-white p-4 border border-gray-300">
       <table className="min-w-full table-auto text-gray-800">
         <thead className="bg-gray-100 border-b">
           <tr>
-            <th className="px-4 py-2 text-left">S.No</th>
+            <th className="px-4 py-2 text-left">Cycle No</th>
             <th className="px-4 py-2 text-left">Title</th>
             <th className="px-4 py-2 text-left">Description</th>
             <th className="px-4 py-2 text-left">Start Date</th>
@@ -17,14 +19,14 @@ const BatchCycleTable = ({ data, onEdit, onDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {data.length === 0 ? (
+          {visibleData.length === 0 ? (
             <tr>
               <td colSpan="7" className="text-center py-4 text-gray-500">
                 No Batch Cycles
               </td>
             </tr>
           ) : (
-            data.map((item, idx) => (
+            visibleData.map((item, idx) => (
               <tr key={item.batchCycleId} className="border-t">
                 <td className="px-4 py-2">{item.batchCycleId}</td>
                 <td className="px-4 py-2">{item.cycleName}</td>
