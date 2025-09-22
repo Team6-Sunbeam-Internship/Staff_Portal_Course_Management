@@ -1,7 +1,6 @@
 package com.staff_portal.academic_service.controller;
 
 import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,21 +16,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CourseGroupFilterController {
 
-    private final CourseGroupFilterService filterService;
+	private final CourseGroupFilterService filterService;
 
-    @GetMapping("/batch-cycles")
-    public ResponseEntity<List<CourseGroupFilterDTO>> getBatchCycles() {
-        return ResponseEntity.ok(filterService.getBatchCycles());
-    }
+	@GetMapping("/batch-cycles")
+	public ResponseEntity<List<CourseGroupFilterDTO>> getBatchCycles() {
+		return ResponseEntity.ok(filterService.getBatchCycles());
+	}
 
-    @GetMapping("/courses")   
-    public ResponseEntity<List<CourseGroupFilterDTO>> getCourses() {
-        return ResponseEntity.ok(filterService.getCourses());
-    }
+	@GetMapping("/courses")
+	public ResponseEntity<List<CourseGroupFilterDTO>> getCourses() {
+		return ResponseEntity.ok(filterService.getCourses());
+	}
 
-
-    @GetMapping("/status")
-    public ResponseEntity<List<CourseGroupFilterDTO>> getStatuses() {
-        return ResponseEntity.ok(filterService.getStatuses());
-    }
+	@GetMapping("/status")
+	public ResponseEntity<List<CourseGroupFilterDTO>> getStatuses() {
+		return ResponseEntity.ok(filterService.getStatuses());
+	}
 }
