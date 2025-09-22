@@ -16,26 +16,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CourseGroupFilterServiceImpl implements CourseGroupFilterService {
 
-    private final BatchCycleRepository batchCycleRepository;
-    private final CourseRepository courseRepository;
+	private final BatchCycleRepository batchCycleRepository;
+	private final CourseRepository courseRepository;
 
-    @Override
-    public List<CourseGroupFilterDTO> getBatchCycles() {
-        return batchCycleRepository.findAll().stream()
-                .map(bc -> new CourseGroupFilterDTO(bc.getBatchCycleId(), bc.getCycleName()))
-                .collect(Collectors.toList());
-    }
+	@Override
+	public List<CourseGroupFilterDTO> getBatchCycles() {
+		return batchCycleRepository.findAll().stream()
+				.map(bc -> new CourseGroupFilterDTO(bc.getBatchCycleId(), bc.getCycleName()))
+				.collect(Collectors.toList());
+	}
 
-    @Override
-    public List<CourseGroupFilterDTO> getCourses() {   // ✅ changed method
-        return courseRepository.findAll().stream()
-                .map(c -> new CourseGroupFilterDTO(c.getCourseId(), c.getCourseName()))
-                .collect(Collectors.toList());
-    }
-    @Override
-    public List<CourseGroupFilterDTO> getStatuses() {
-        return Arrays.stream(CourseGroupStatus.values())
-                .map(status -> new CourseGroupFilterDTO(status.ordinal(), status.name()))
-                .collect(Collectors.toList());
-    }
+	@Override
+	public List<CourseGroupFilterDTO> getCourses() { 
+		return courseRepository.findAll().stream()
+				.map(c -> new CourseGroupFilterDTO(c.getCourseId(), c.getCourseName())).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<CourseGroupFilterDTO> getStatuses() {
+		return Arrays.stream(CourseGroupStatus.values())
+				.map(status -> new CourseGroupFilterDTO(status.ordinal(), status.name())).collect(Collectors.toList());
+	}
 }
