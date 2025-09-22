@@ -71,28 +71,20 @@ public class CourseTypeServiceImpl implements CourseTypeService {
        
     }
 
-//    @Override
-//    public void deleteCourseType(int id) {
-//        if (!courseTypeRepository.existsById(id)) {
-//            throw new RuntimeException("CourseType not found");
-//        }
-//        courseTypeRepository.deleteById(id);
-//        CourseType courseType = courseTypeRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("CourseType not found"));
-//        courseTypeRepository.delete(courseType);
-//    }
+
+
+    
+    // Soft delete
     @Override
     public void deleteCourseType(int id) {
-        if (!courseTypeRepository.existsById(id)) {
-            throw new RuntimeException("CourseType not found");
-        }
-        courseTypeRepository.deleteById(id);
+        CourseType courseType = courseTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+        courseType.setStatus(CourseTypeStatus.DELETED);
+        courseTypeRepository.save(courseType);
     }
-
-
     @Override
     public List<CourseTypeResponseDTO> getAllCourseTypes() {
-        return courseTypeRepository.findAll()
+        return courseTypeRepository.findByStatusNot(CourseTypeStatus.DELETED)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -102,18 +94,16 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     public CourseTypeResponseDTO getCourseTypeById(int id) {
         CourseType courseType = courseTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("CourseType not found"));
+
+        if (courseType.getStatus() == CourseTypeStatus.DELETED) {
+            throw new RuntimeException("CourseType not found");
+        }
+
         return mapToResponse(courseType);
     }
+
+
     
-       
-//    @Override
-//    public List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId) {
-//        List<CourseType> courseTypes = courseTypeRepository.findByBatchCycle_BatchCycleId(batchCycleId);
-//
-//        return courseTypes.stream()
-//                .map(this::mapToResponse)
-//                .collect(Collectors.toList());
-//    }
 
 
     private CourseTypeResponseDTO mapToResponse(CourseType courseType) {
