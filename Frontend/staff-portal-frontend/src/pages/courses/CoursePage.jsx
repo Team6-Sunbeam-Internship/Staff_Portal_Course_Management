@@ -78,20 +78,27 @@ const CoursePage = () => {
   };
 
   const handleFormSubmit = async (formData) => {
-    try {
-      if (editData) {
-        await courseService.update(editData.courseId, formData);
-      } else {
-        await courseService.add(formData);
-      }
-      fetchCourses(selectedBatch, selectedCourseType);
-      setShowForm(false);
-      setEditData(null);
-    } catch (err) {
-      console.error("Error saving course:", err);
-      alert("Failed to save course");
-    }
+  const finalPayload = {
+    ...formData,
+    batchCycleId: selectedBatch,
+    courseTypeId: selectedCourseType,
   };
+
+  try {
+    if (editData) {
+      await courseService.update(editData.courseId, finalPayload);
+    } else {
+      await courseService.add(finalPayload);
+    }
+    fetchCourses(selectedBatch, selectedCourseType);
+    setShowForm(false);
+    setEditData(null);
+  } catch (err) {
+    console.error("Error saving course:", err);
+    alert("Failed to save course");
+  }
+};
+
 
   return (
     <div className="p-6 min-h-screen">
