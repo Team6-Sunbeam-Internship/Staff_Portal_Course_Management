@@ -7,7 +7,7 @@ const PremiseTable = ({ data, onEdit, onDelete }) => {
       <table className="min-w-full table-auto text-gray-800">
         <thead className="bg-gray-100 border-b">
           <tr>
-            <th className="px-4 py-2 text-left">S.No</th>
+            <th className="px-4 py-2 text-left">Premise Id</th>
             <th className="px-4 py-2 text-left">Name</th>
             <th className="px-4 py-2 text-left">Type</th>
             <th className="px-4 py-2 text-left">Address</th>
