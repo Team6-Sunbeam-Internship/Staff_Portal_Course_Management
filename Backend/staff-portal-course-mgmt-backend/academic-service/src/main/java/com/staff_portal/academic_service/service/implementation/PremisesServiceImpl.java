@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.PremisesRequest;
 import com.staff_portal.academic_service.dto.response.PremisesResponse;
+import com.staff_portal.academic_service.enums.PremisesStatus;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.Premises;
 import com.staff_portal.academic_service.repository.PremisesRepository;
@@ -19,19 +20,24 @@ public class PremisesServiceImpl implements PremisesService {
 
 	@Override
 	public PremisesResponse createPremises(PremisesRequest request) {
-		Premises entity = new Premises();
-		entity.setName(request.getName());
-		entity.setType(request.getType());
-		entity.setAddress(request.getAddress());
-		entity.setCity(request.getCity());
-		entity.setState(request.getState());
-		entity.setPostalCode(request.getPostalCode());
-		entity.setStatus(request.getStatus());
+		try {
+			Premises entity = new Premises();
+			entity.setName(request.getName());
+			entity.setType(request.getType());
+			entity.setAddress(request.getAddress());
+			entity.setCity(request.getCity());
+			entity.setState(request.getState());
+			entity.setPostalCode(request.getPostalCode());
+			entity.setStatus(request.getStatus() != null ? request.getStatus() : PremisesStatus.ACTIVE);
+			entity.setDeleted(false);
 
-		Premises saved = premisesRepository.save(entity);
+			Premises saved = premisesRepository.save(entity);
 
-		return new PremisesResponse(saved.getPremisesId(), saved.getName(), saved.getType(), saved.getAddress(),
-				saved.getCity(), saved.getState(), saved.getPostalCode(), saved.getStatus());
+			return new PremisesResponse(saved.getPremisesId(), saved.getName(), saved.getType(), saved.getAddress(),
+					saved.getCity(), saved.getState(), saved.getPostalCode(), saved.getStatus());
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to save premises: " + e.getMessage());
+		}
 	}
 
 	@Override
@@ -39,7 +45,6 @@ public class PremisesServiceImpl implements PremisesService {
 		Premises existingPremises = premisesRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
 
-		// Update fields from request
 		existingPremises.setName(request.getName());
 		existingPremises.setType(request.getType());
 		existingPremises.setAddress(request.getAddress());
