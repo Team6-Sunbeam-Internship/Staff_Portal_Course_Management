@@ -56,14 +56,13 @@ public class SubjectController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<SubjectResponseDTO>> getSubjectsByFilters(
-            @RequestParam(required = false) String batchCycleName,
-            @RequestParam(required = false) String courseTypeName,
-            @RequestParam(required = false) String courseName,
-            @RequestParam(required = false) String moduleName) {
+    public ResponseEntity<?> getSubjectsByFilters(
+            @RequestParam Integer batchCycleId,
+            @RequestParam Integer courseTypeId,
+            @RequestParam Integer courseId,
+            @RequestParam Integer moduleId) {
 
-        return ResponseEntity.ok(
-                subjectService.getSubjectsByFilters(batchCycleName, courseTypeName, courseName, moduleName)
-        );
+        List<SubjectResponseDTO> response = subjectService.getSubjectsByFilters(batchCycleId, courseTypeId, courseId, moduleId);
+        return ResponseEntity.ok(new CustomResponse<>(false, "Subjects fetched successfully", response));
     }
 }

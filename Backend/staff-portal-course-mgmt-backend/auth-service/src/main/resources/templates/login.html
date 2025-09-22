@@ -133,12 +133,12 @@
 <body>
 <div class="login-container">
     <div class="login-header">
-        <h2>Welcome Back</h2>
+        <h2>Welcome To Sunbeam Staff Portal</h2>
         <p>Please sign in to your account</p>
     </div>
 
     <div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
-    <div th:if="${logoutMessage}" class="success" th:text="${logoutMessage}"></div>
+    <div th:if="${changePassword}" class="success" th:text="${changePasswordMessage}"></div>
 
     <form th:action="@{/login}" method="post">
         <div class="form-group">
@@ -155,13 +155,6 @@
 
         <button type="submit" class="login-btn">Sign In</button>
     </form>
-
-    <div class="demo-users">
-        <h4>Demo Users:</h4>
-        <p><strong>Admin:</strong> admin / admin123</p>
-        <p><strong>User:</strong> user / user123</p>
-        <p><strong>John:</strong> john / password</p>
-    </div>
 </div>
 </body>
 </html>

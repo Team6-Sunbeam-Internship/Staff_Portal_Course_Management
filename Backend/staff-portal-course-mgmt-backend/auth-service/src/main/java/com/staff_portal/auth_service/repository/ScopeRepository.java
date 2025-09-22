@@ -1,28 +1,23 @@
 package com.staff_portal.auth_service.repository;
 
-import com.staff_portal.auth_service.model.user.RoleName;
-import com.staff_portal.auth_service.model.user.Scope;
-import com.staff_portal.auth_service.model.user.ScopeName;
+import com.staff_portal.auth_service.model.users.Scope;
+import com.staff_portal.auth_service.model.users.ScopeType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
-@Repository
-public interface ScopeRepository extends JpaRepository<Scope, UUID> {
+public interface ScopeRepository extends JpaRepository<Scope, Long> {
+    Set<Scope> findByNameIn(Set<ScopeType> names);
+    
+    Optional<Scope> findByName(ScopeType scopeType);
+    
+    List<Scope> findByActiveTrue();
 
-    Optional<Scope> findByName(String name);
+    boolean existsByName(ScopeType name);
 
-    boolean existsByName(ScopeName name);
+    Optional<Scope> findByNameAndActiveTrue(ScopeType name);
+    List<Scope> findAllByActiveTrue();
 
-    // Find all scopes assigned to a role
-    @Query("SELECT s FROM Role r JOIN r.scopes s WHERE r.name = :roleName")
-    Set<Scope> findScopesByRoleName(RoleName roleName);
-
-    <T> Collection<? extends Scope> findByNameIn(List<T> attr0);
 }

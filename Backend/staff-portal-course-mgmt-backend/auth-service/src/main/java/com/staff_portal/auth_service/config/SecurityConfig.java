@@ -1,6 +1,8 @@
 package com.staff_portal.auth_service.config;
 
-import com.staff_portal.auth_service.security.ICustomUserDetailsService;
+import com.staff_portal.auth_service.handler.CustomAuthenticationFailureHandler;
+import com.staff_portal.auth_service.handler.CustomAuthenticationSuccessHandler;
+import com.staff_portal.auth_service.security.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -36,15 +38,18 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) throws Exception {
         http
-                .securityMatcher("/admin/**", "/createAuthUser")
+                .securityMatcher("/admin/**", "/createAuthUser", "/auth/**")
                 .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests.anyRequest().authenticated()
+                        authorizeRequests
+                                .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2ResourceServer ->
-                        oauth2ResourceServer.jwt(jwt ->
-                                jwt.decoder(jwtDecoder)
-                                        .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                        )
+                        oauth2ResourceServer.
+                                jwt(jwt ->
+                                        jwt.decoder(jwtDecoder)
+                                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+
+                                )
                                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
                 .sessionManagement(sessionManagement ->
@@ -58,27 +63,36 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain appFilterChain(HttpSecurity http, CustomAuthenticationFailureHandler failureHandler) throws Exception {
+    public SecurityFilterChain appFilterChain(HttpSecurity http,
+                                              CustomAuthenticationFailureHandler failureHandler,
+                                              CustomAuthenticationSuccessHandler successHandler) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/login", "/connect/v1/logout", "/css/**", "/js/**", "/images/**", "/admin/**", "/error").permitAll()
+                        .requestMatchers("/oauth2-error", "/favicon.ico", "/login", "/v3/api-docs", "/swagger-ui/index.html", "/css/**", "/js/**", "/images/**", "/admin/**", "/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                                 .loginPage("/login")
+                                .successHandler(successHandler)
                                 .failureHandler(failureHandler)
+//                                .successHandler(successHandler)
 //                        .loginProcessingUrl("/login")
 //                                .failureUrl("/login?error=true")
                                 .permitAll()
                 )
                 .logout(logout -> logout
-                                .logoutUrl("/connect/v1/logout")
-//                        .logoutSuccessUrl("/login?logout=true")
-                                .invalidateHttpSession(true)
-                                .deleteCookies("JSESSIONID")
-                                .permitAll()
+                        .clearAuthentication(true)
+//                        .invalidateHttpSession(true)
+                        .deleteCookies("AS_SESSION")
                 )
+//                .logout(logout -> logout
+//                                .logoutUrl("/connect/v1/logout")
+//                                .logoutSuccessUrl("/login?logout=true")
+//                                .invalidateHttpSession(true)
+//                                .deleteCookies("JSESSIONID")
+//                                .permitAll()
+//                )
         ;
 
         return http.build();
@@ -89,7 +103,7 @@ public class SecurityConfig {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
                     Collection<GrantedAuthority> authorities = new ArrayList<>();
-
+                    jwtAuthenticationConverter.setPrincipalClaimName("email");
                     // Map 'roles' claim to ROLE_ prefixed authorities
                     jwt.getClaimAsStringList("roles")
                             .stream()
@@ -99,7 +113,7 @@ public class SecurityConfig {
                     // Map 'scopes' claim to authorities (without SCOPE_ prefix for clean usage)
                     jwt.getClaimAsStringList("scopes")
                             .stream()
-                            .map(scope -> new SimpleGrantedAuthority(scope))
+                            .map(SimpleGrantedAuthority::new)
                             .forEach(authorities::add);
                     return authorities;
                 }
@@ -114,7 +128,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(ICustomUserDetailsService customUserDetailsService) {
+    public DaoAuthenticationProvider authenticationProvider(CustomUserDetailsService customUserDetailsService) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(customUserDetailsService);
         authenticationProvider.setHideUserNotFoundExceptions(false);
         authenticationProvider.setPasswordEncoder(passwordEncoder());

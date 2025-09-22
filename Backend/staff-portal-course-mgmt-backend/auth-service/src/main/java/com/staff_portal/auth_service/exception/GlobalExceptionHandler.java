@@ -13,6 +13,13 @@ import java.nio.file.AccessDeniedException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(UnAuthenticatedUserException.class)
+    public ResponseEntity<ApiResponse<String>> handleUnAuthenticatedUserException(UnAuthenticatedUserException ex) {
+        log.error(ex.getMessage(), ex.getClass().getName(), ex.getStackTrace());
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(ApiResponse.onError("failure", ex.getMessage()));
+    }
+
     @ExceptionHandler(PasswordMismatchException.class)
     public ResponseEntity<ApiResponse<String>> handlePasswordMismatchException(PasswordMismatchException e) {
         log.error(e.getMessage(), e.getClass().getName());
@@ -51,7 +58,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<String>> handleGenericException(Exception e) {
-        log.error(e.getMessage(), e.getClass().getName());
+        log.error(e.getMessage(), e.getClass().getName(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.onError(null, "An unexpected error occurred: " + e.getMessage()));
     }

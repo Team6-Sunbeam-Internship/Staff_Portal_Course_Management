@@ -1,123 +1,116 @@
 package com.staff_portal.auth_service.security;
 
-import com.fasterxml.jackson.annotation.*;
-import com.staff_portal.auth_service.model.user.AuthUser;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.staff_portal.auth_service.model.users.AuthUser;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.time.Instant;
+import java.util.*;
 
-@JsonTypeName("CustomUserDetails")
-@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
-@Getter
-@Setter
-@NoArgsConstructor // This is crucial for Jackson deserialization
-@AllArgsConstructor
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-
-    @JsonProperty("authUser")
-    @JsonIgnore // Ignore during serialization to prevent lazy loading issues
-    private AuthUser authUser;
-
-    @JsonProperty("authorities")
-    private Set<GrantedAuthority> authorities;
-
-    // Store basic user info for serialization
-    @JsonProperty("username")
-    private String username;  // store the email(used for login)
-
-    @JsonProperty("password")
-    @JsonIgnore // Don't serialize password for security
+    
+    private UUID id;
+    private String firstName;
+    private String username;
+    @JsonIgnore
     private String password;
-
-    @JsonProperty("userId")
-    private UUID userId; // Store the user ID for JWT 'sub' claim
-
-    @JsonProperty("email")
-    private String email; // Store email for JWT claims
-
-    @JsonProperty("firstName")
-    private String firstName; // Store firstName for ID token
-
-    @JsonCreator
-    public CustomUserDetails(@JsonProperty("authorities") Set<GrantedAuthority> authorities,
-                             @JsonProperty("username") String username) {
-        this.authorities = authorities;
-        this.username = username;
+    private Boolean active;
+    private Boolean emailVerified;
+    private Boolean passwordChangeRequired;
+    private Instant lastLoginAt;
+    @JsonIgnore
+    private Set<String> roles;
+    @JsonIgnore
+    private Set<String> scopes;
+    @JsonIgnore
+    private Collection<? extends GrantedAuthority> authorities;
+    
+    public static CustomUserDetails from(AuthUser user) {
+        Set<String> roleNames = user.getRoleNames();
+        Set<String> scopeNames = user.getScopeNames();
+        
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        
+        // Add role authorities
+        roleNames.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role)));
+        
+        // Add scope authorities
+        scopeNames.forEach(scope -> authorities.add(new SimpleGrantedAuthority("SCOPE_" + scope)));
+        
+        return CustomUserDetails.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .active(user.getActive())
+                .emailVerified(user.getEmailVerified())
+                .passwordChangeRequired(user.getPasswordChangeRequired())
+                .lastLoginAt(user.getLastLoginAt())
+                .roles(roleNames)
+                .scopes(scopeNames)
+                .authorities(authorities)
+                .build();
     }
-
-    // Constructor for creating from AuthUser
-    public CustomUserDetails(AuthUser authUser) {
-        this.authUser = authUser;
-        this.username = authUser.getEmail();
-        this.password = authUser.getPassword();
-        this.authorities = mapToGrantedAuthorities(authUser);
-        this.userId = authUser.getId();
-        this.firstName = authUser.getFirstName();
-    }
-
-    private Set<GrantedAuthority> mapToGrantedAuthorities(AuthUser authUser) {
-        if (authUser == null || authUser.getRoles() == null) {
-            return Set.of();
-        }
-
-        return authUser.getRoles().stream()
-                .flatMap(role -> {
-                    // Authorities for ROLE_ + role
-                    Stream<GrantedAuthority> roleAuthorities = Stream.of(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-
-                    // Authorities for SCOPE_ + scopes of the role
-                    Stream<GrantedAuthority> scopeAuthorities = role.getScopes().stream()
-                            .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope.getName()));
-                    return Stream.concat(roleAuthorities, scopeAuthorities);
-                })
-                .collect(Collectors.toSet());
-    }
-
+    
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return authorities != null ? authorities : Collections.emptyList();
     }
-
+    
     @Override
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
-
+    
     @Override
     public String getUsername() {
         return username;
     }
-
+    
     @Override
-    @JsonIgnore
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return true;
     }
-
+    
     @Override
-    @JsonIgnore
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return true;
     }
-
+    
     @Override
-    @JsonIgnore
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+        // Credentials expire if password change is required
+        return passwordChangeRequired == null || !passwordChangeRequired;
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
+
     @Override
-    @JsonIgnore
-    public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+    public String toString() {
+        return "CustomUserDetails{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", active=" + active +
+                ", emailVerified=" + emailVerified +
+                ", passwordChangeRequired=" + passwordChangeRequired +
+                ", roles=" + roles +
+                ", scopes=" + scopes +
+                '}';
     }
 }

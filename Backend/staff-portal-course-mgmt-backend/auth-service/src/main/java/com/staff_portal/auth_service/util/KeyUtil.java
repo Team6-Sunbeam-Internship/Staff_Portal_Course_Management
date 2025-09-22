@@ -31,7 +31,7 @@ public class KeyUtil {
                    @Value("${auth-service.jwt.rsa-key-size}") int keySize) {
         this.keyDirectory = keyDirectory;
         this.KEY_SIZE = keySize;
-        createKeyDirectoryIfNotExists();
+        createKeyDirectoryIfNotExists(); // Now keyDirectory has the proper value
     }
 
     public KeyPair generateKeyPair() {
