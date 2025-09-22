@@ -15,88 +15,60 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PremisesServiceImpl implements PremisesService {
 
-	 private final PremisesRepository premisesRepository;
-	
-	  @Override
-	    public PremisesResponse createPremises(PremisesRequest request) {
-	        Premises entity = new Premises();
-	        entity.setName(request.getName());
-	        entity.setType(request.getType());
-	        entity.setAddress(request.getAddress());
-	        entity.setCity(request.getCity());
-	        entity.setState(request.getState());
-	        entity.setPostalCode(request.getPostalCode());
-	        entity.setStatus(request.getStatus());
+	private final PremisesRepository premisesRepository;
 
-	        Premises saved = premisesRepository.save(entity);
+	@Override
+	public PremisesResponse createPremises(PremisesRequest request) {
+		Premises entity = new Premises();
+		entity.setName(request.getName());
+		entity.setType(request.getType());
+		entity.setAddress(request.getAddress());
+		entity.setCity(request.getCity());
+		entity.setState(request.getState());
+		entity.setPostalCode(request.getPostalCode());
+		entity.setStatus(request.getStatus());
 
-	        return new PremisesResponse(
-	                saved.getPremisesId(),
-	                saved.getName(),
-	                saved.getType(),
-	                saved.getAddress(),
-	                saved.getCity(),
-	                saved.getState(),
-	                saved.getPostalCode(),
-	                saved.getStatus() 
-	        );
-	    }
+		Premises saved = premisesRepository.save(entity);
+
+		return new PremisesResponse(saved.getPremisesId(), saved.getName(), saved.getType(), saved.getAddress(),
+				saved.getCity(), saved.getState(), saved.getPostalCode(), saved.getStatus());
+	}
 
 	@Override
 	public PremisesResponse updatePremises(int id, PremisesRequest request) {
 		Premises existingPremises = premisesRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
 
-		    // Update fields from request
-		    existingPremises.setName(request.getName());
-		    existingPremises.setType(request.getType());
-		    existingPremises.setAddress(request.getAddress());
-		    existingPremises.setCity(request.getCity());
-		    existingPremises.setState(request.getState());
-		    existingPremises.setPostalCode(request.getPostalCode());
+		// Update fields from request
+		existingPremises.setName(request.getName());
+		existingPremises.setType(request.getType());
+		existingPremises.setAddress(request.getAddress());
+		existingPremises.setCity(request.getCity());
+		existingPremises.setState(request.getState());
+		existingPremises.setPostalCode(request.getPostalCode());
 
-		   
-		    if (request.getStatus() != null) {
-		        existingPremises.setStatus(request.getStatus());
-		    }
+		if (request.getStatus() != null) {
+			existingPremises.setStatus(request.getStatus());
+		}
 
-		    Premises updated = premisesRepository.save(existingPremises);
+		Premises updated = premisesRepository.save(existingPremises);
 
-		    return new PremisesResponse(
-		            updated.getPremisesId(),
-		            updated.getName(),
-		            updated.getType(),
-		            updated.getAddress(),
-		            updated.getCity(),
-		            updated.getState(),
-		            updated.getPostalCode(),
-		            updated.getStatus()
-		    );
+		return new PremisesResponse(updated.getPremisesId(), updated.getName(), updated.getType(), updated.getAddress(),
+				updated.getCity(), updated.getState(), updated.getPostalCode(), updated.getStatus());
 	}
 
 	@Override
 	public void deletePremises(int id) {
-		 Premises premises = premisesRepository.findById(id)
-	                .orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
-	        premisesRepository.delete(premises);
+		Premises premises = premisesRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
+		premisesRepository.delete(premises);
 	}
 
 	@Override
 	public List<PremisesResponse> findAll() {
-	    List<Premises> premisesList = premisesRepository.findAll();
-	    return premisesList.stream()
-	            .map(p -> new PremisesResponse(
-	                    p.getPremisesId(),
-	                    p.getName(),
-	                    p.getType(),
-	                    p.getAddress(),
-	                    p.getCity(),
-	                    p.getState(),
-	                    p.getPostalCode(),
-	                    p.getStatus()
-	            ))
-	            .toList();
+		List<Premises> premisesList = premisesRepository.findAll();
+		return premisesList.stream().map(p -> new PremisesResponse(p.getPremisesId(), p.getName(), p.getType(),
+				p.getAddress(), p.getCity(), p.getState(), p.getPostalCode(), p.getStatus())).toList();
 	}
-
 
 }
