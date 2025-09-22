@@ -52,6 +52,8 @@ const PremisePage = () => {
 
   const handleFormSubmit = async (formData) => {
     try {
+      formData.status = formData.status.toUpperCase();
+
       if (editData) {
         await PremiseService.update(editData.premisesId, formData);
         toast.success("Premise updated");
@@ -75,7 +77,6 @@ const PremisePage = () => {
 
   return (
     <div className="flex">
-      {/* Sidebar space (like BatchCyclePage) */}
       <div className="w-64 bg-gray-100 border-r min-h-screen"></div>
 
       <main className="flex-1 p-6 relative">
