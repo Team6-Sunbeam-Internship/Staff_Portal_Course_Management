@@ -8,7 +8,4 @@ import com.staff_portal.academic_service.model.Premises;
 @Repository
 public interface PremisesRepository extends JpaRepository<Premises, Integer> {
 
-	
 }
-
-
