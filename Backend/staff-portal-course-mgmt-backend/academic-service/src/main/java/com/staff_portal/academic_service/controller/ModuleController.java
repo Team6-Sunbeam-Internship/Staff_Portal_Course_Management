@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:5176")
 @RestController
 @RequestMapping("/api/modules")
 @RequiredArgsConstructor
