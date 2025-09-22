@@ -47,7 +47,7 @@ public class BatchCycle {
 	private List<CourseType> courseTypes;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, name = "batchcycle_status")
+	@Column(nullable = false, name = "batchcycle_status",length=20)
 	private BatchStatus status;
 
 }
