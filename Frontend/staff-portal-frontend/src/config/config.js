@@ -1,6 +1,5 @@
-// Backend config
 const config = {
-  baseURL: "http://localhost:8080", // Change to your backend URL
+  baseURL: "http://localhost:8080",
   timeout: 10000,
 };
 
