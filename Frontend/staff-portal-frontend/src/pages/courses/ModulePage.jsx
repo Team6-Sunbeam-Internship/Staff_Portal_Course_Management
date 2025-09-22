@@ -121,20 +121,28 @@ const ModulePage = () => {
   };
 
   const handleFormSubmit = async (formData) => {
-    try {
-      if (editData) {
-        await moduleService.update(editData.moduleId, formData);
-      } else {
-        await moduleService.add(formData);
-      }
-      fetchModules();
-      setShowForm(false);
-      setEditData(null);
-    } catch (err) {
-      console.error("Error saving module:", err);
-      alert("Failed to save module.");
-    }
+  const finalPayload = {
+    ...formData,
+    batchCycleId: selectedBatch,
+    courseTypeId: selectedCourseType,
+    courseId: selectedCourse,
   };
+
+  try {
+    if (editData) {
+      await moduleService.update(editData.moduleId, finalPayload);
+    } else {
+      await moduleService.add(finalPayload);
+    }
+    fetchModules();
+    setShowForm(false);
+    setEditData(null);
+  } catch (err) {
+    console.error("Error saving module:", err);
+    alert("Failed to save module.");
+  }
+};
+
 
   return (
     <div className="p-6 min-h-screen">
