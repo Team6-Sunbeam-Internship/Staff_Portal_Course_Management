@@ -10,7 +10,8 @@ import com.staff_portal.academic_service.model.BatchCycle;
 
 @Repository
 public interface BatchCycleRepository extends JpaRepository<BatchCycle, Integer> {
-	 boolean existsByCycleName(String cycleName);
-	 @Query("SELECT b.cycleName FROM BatchCycle b")
-	    List<String> findAllCycleNames();
+	boolean existsByCycleName(String cycleName);
+
+	@Query("SELECT b.cycleName FROM BatchCycle b")
+	List<String> findAllCycleNames();
 }

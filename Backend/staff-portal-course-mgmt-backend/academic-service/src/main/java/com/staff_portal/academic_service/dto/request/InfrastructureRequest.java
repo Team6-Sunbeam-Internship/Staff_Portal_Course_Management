@@ -11,13 +11,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InfrastructureRequest {
-	
+
 	@NotBlank
-	 private String roomName;
-	    private String type;
-	    private String location;
-	    private int capacity;
-	    private String description;
-	    private int premisesId;
+	private String roomName;
+	private String type;
+	private String location;
+	private int capacity;
+	private String description;
+	private int premisesId;
 
 }

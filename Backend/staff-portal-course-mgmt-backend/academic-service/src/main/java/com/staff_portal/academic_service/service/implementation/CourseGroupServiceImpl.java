@@ -42,20 +42,18 @@ public class CourseGroupServiceImpl implements CourseGroupService {
     	    if (course.getCourseType() == null) {
     	        throw new ResourceNotFoundException("Course type is missing for this course. Please set it.");
     	    }
-        // ✅ Create new CourseGroup entity
+    
         CourseGroup courseGroup = new CourseGroup();
         courseGroup.setCourse(course);
-        courseGroup.setCourseType(course.getCourseType());  // derive from course
+        courseGroup.setCourseType(course.getCourseType());  
         courseGroup.setBatchCycle(batchCycle);
         courseGroup.setGroupName(request.getGroupName());
         courseGroup.setDescription(request.getDescription());
         courseGroup.setCapacity(request.getCapacity());
         courseGroup.setStatus(request.getStatus() != null ? request.getStatus() : CourseGroupStatus.ACTIVE);
 
-        // ✅ Save to DB
         CourseGroup saved = courseGroupRepository.save(courseGroup);
-
-        // ✅ Return response DTO
+ 
         return new CourseGroupResponse(
                 saved.getGroupId(),
                 saved.getGroupName(),

@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseGroupFilterDTO {
-    private Integer id;
-    private String name;
+	private Integer id;
+	private String name;
 
 }
