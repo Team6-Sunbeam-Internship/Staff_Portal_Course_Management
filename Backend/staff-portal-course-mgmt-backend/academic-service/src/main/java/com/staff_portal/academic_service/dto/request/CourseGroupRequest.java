@@ -16,18 +16,18 @@ import lombok.Setter;
 public class CourseGroupRequest {
 
 	@NotNull
-    private Integer courseId;
+	private Integer courseId;
 
-    @NotBlank
-    private String groupName;
+	@NotBlank
+	private String groupName;
 
-    @NotNull
-    private Integer capacity;
+	@NotNull
+	private Integer capacity;
 
-    private String description;
-    
-    private Integer batchCycleId; 
+	private String description;
 
-    @NotNull
-    private CourseGroupStatus status;
+	private Integer batchCycleId;
+
+	@NotNull
+	private CourseGroupStatus status;
 }
