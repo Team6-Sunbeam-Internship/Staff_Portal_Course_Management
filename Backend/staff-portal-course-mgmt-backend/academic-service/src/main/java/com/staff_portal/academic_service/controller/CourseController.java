@@ -22,7 +22,7 @@ import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.service.interfaces.CourseService;
 
 import lombok.RequiredArgsConstructor;
-//@CrossOrigin(origins = "http://localhost:5176")
+@CrossOrigin(origins = "http://localhost:5176")
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
