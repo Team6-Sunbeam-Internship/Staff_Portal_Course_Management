@@ -13,12 +13,19 @@ const PremiseForm = ({ onSubmit, onCancel, defaultValues }) => {
 
   useEffect(() => {
     if (defaultValues) {
-      setFormData(defaultValues);
+      setFormData({
+        ...defaultValues,
+        status: defaultValues.status?.toUpperCase() || "ACTIVE",
+      });
     }
   }, [defaultValues]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "status" ? value.toUpperCase() : value, // force uppercase
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -101,6 +108,7 @@ const PremiseForm = ({ onSubmit, onCancel, defaultValues }) => {
           onChange={handleChange}
           className="border px-3 py-2 rounded"
         >
+          <option value="status">Select Status</option>
           <option value="ACTIVE">ACTIVE</option>
           <option value="INACTIVE">INACTIVE</option>
         </select>
