@@ -15,19 +15,18 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BatchCycleRequest {
-	
-		 @NotBlank(message = "Cycle name is required") 
-		 String cycleName;
-		 
-		 private String description;
 
-		    @NotNull(message = "Start date is required")
-		    private LocalDate startDate;
+	@NotBlank(message = "Cycle name is required")
+	String cycleName;
 
-		    @NotNull(message = "End date is required")
-		    private LocalDate endDate;
-	
-		    @NotNull(message = "Status is required")
-		    private BatchStatus status;
+	private String description;
+
+	@NotNull(message = "Start date is required")
+	private LocalDate startDate;
+
+	@NotNull(message = "End date is required")
+	private LocalDate endDate;
+
+	@NotNull(message = "Status is required")
+	private BatchStatus status;
 }
-
