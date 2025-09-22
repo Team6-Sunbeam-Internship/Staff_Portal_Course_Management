@@ -14,7 +14,7 @@ const BatchCyclePage = () => {
     setLoading(true);
     try {
       const res = await BatchCycleService.getAll();
-      setBatchCycles(res.data);
+      setBatchCycles(res.data.filter((batch) => batch.status !== "DELETED"));
     } catch (err) {
       toast.error("Failed to load batch cycles");
       console.error(err);
@@ -80,7 +80,7 @@ const BatchCyclePage = () => {
       <main className="flex-1 p-6 relative">
         <Toaster position="top-right" />
         <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
-          Batch Cycle
+          Manage Batch Cycle
         </h2>
 
         {loading ? (
@@ -110,7 +110,7 @@ const BatchCyclePage = () => {
             onClick={handleAdd}
             className="bg-green-600 text-white px-6 py-3 rounded-md shadow hover:bg-green-700 transition"
           >
-            + Add Batch
+            + Add Batch Cycle
           </button>
         </div>
       </main>
