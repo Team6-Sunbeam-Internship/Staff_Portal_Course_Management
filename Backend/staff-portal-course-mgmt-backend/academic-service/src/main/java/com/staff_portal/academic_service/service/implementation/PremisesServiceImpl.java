@@ -61,12 +61,14 @@ public class PremisesServiceImpl implements PremisesService {
 	public void deletePremises(int id) {
 		Premises premises = premisesRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
-		premisesRepository.delete(premises);
+		premises.setDeleted(true);
+		premisesRepository.save(premises);
 	}
 
 	@Override
 	public List<PremisesResponse> findAll() {
-		List<Premises> premisesList = premisesRepository.findAll();
+		List<Premises> premisesList = premisesRepository.findAll().stream().filter(p -> !p.isDeleted()).toList();
+
 		return premisesList.stream().map(p -> new PremisesResponse(p.getPremisesId(), p.getName(), p.getType(),
 				p.getAddress(), p.getCity(), p.getState(), p.getPostalCode(), p.getStatus())).toList();
 	}
