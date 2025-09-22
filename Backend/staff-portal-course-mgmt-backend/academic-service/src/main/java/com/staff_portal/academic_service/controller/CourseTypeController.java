@@ -12,7 +12,7 @@ import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:5176")
 @RestController
 @RequestMapping("/api/coursetypes")
 @RequiredArgsConstructor
