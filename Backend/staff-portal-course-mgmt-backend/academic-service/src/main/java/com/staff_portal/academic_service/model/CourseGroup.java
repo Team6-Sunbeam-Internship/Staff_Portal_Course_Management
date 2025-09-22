@@ -27,41 +27,36 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"courseId", "groupName"})})
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "courseId", "groupName" }) })
 public class CourseGroup {
-	
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private int groupId;
-	
-	 @ManyToOne
-	    @JoinColumn(name = "course_id", nullable = false)
-	    private Course course;
-	 
-	 @Column(name="group_name",nullable = false)
-	    private String groupName;
-	 
-	 @Column(name="description",length = 500) 
-	 private String description;
-	 
-	 @Column(nullable = false)
-	 private Integer capacity;
-	 
-	 @Enumerated(EnumType.STRING)
-	 @Column(name="coursegroup_status",nullable = false)
-	 private CourseGroupStatus status;
-	 
-	 @ManyToOne
-	 @JoinColumn(name = "course_type_id", nullable = false)
-	 private CourseType courseType;
-	 
-	 @ManyToOne
-	    @JoinColumn(name = "batchcycle_id")  
-	    private BatchCycle batchCycle;
-	 
-	 @OneToMany(mappedBy = "courseGroup", cascade = CascadeType.ALL)
-	    private List<StudentGroup> studentGroups;
-	
 
-	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int groupId;
+
+	@ManyToOne
+	@JoinColumn(name = "course_id", nullable = false)
+	private Course course;
+
+	@Column(name = "group_name", nullable = false)
+	private String groupName;
+
+	@Column(name = "description", length = 500)
+	private String description;
+
+	@Column(nullable = false)
+	private Integer capacity;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "coursegroup_status", nullable = false)
+	private CourseGroupStatus status;
+
+	@ManyToOne
+	@JoinColumn(name = "course_type_id", nullable = false)
+	private CourseType courseType;
+
+	@ManyToOne
+	@JoinColumn(name = "batchcycle_id")
+	private BatchCycle batchCycle;
+
 }

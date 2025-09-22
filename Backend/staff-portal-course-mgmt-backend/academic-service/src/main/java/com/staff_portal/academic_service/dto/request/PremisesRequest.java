@@ -15,26 +15,24 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PremisesRequest {
 
-	 @NotBlank
-	    private String name;
+	@NotBlank
+	private String name;
 
-	    private String type;
+	private String type;
 
-	    @NotBlank
-	    private String address;
+	@NotBlank
+	private String address;
 
-	    @NotBlank
-	    private String city;
+	@NotBlank
+	private String city;
 
-	    @NotBlank
-	    private String state;
+	@NotBlank
+	private String state;
 
-	    @NotBlank
-	    private String postalCode;
+	@NotBlank
+	private String postalCode;
 
-	    @NotNull
-	    private PremisesStatus status;
+	@NotNull
+	private PremisesStatus status;
 
-	
-	
 }

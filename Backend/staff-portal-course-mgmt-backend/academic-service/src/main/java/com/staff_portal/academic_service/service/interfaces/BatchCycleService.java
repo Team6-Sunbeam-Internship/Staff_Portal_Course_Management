@@ -7,12 +7,14 @@ import com.staff_portal.academic_service.dto.response.BatchCycleResponse;
 
 public interface BatchCycleService {
 
-	   
-	    List<BatchCycleResponse> findAll();
-	    BatchCycleResponse createBatchCycle(BatchCycleRequest request);
-	    BatchCycleResponse findById(int id);
-	    BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request);
-	    void deleteBatchCycle(int id);
+	List<BatchCycleResponse> findAll();
 
+	BatchCycleResponse createBatchCycle(BatchCycleRequest request);
+
+	BatchCycleResponse findById(int id);
+
+	BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request);
+
+	void deleteBatchCycle(int id);
 
 }

@@ -25,27 +25,27 @@ import lombok.RequiredArgsConstructor;
 public class PremisesController {
 
 	private final PremisesService premisesService;
-	
+
 	@PostMapping
-    public ResponseEntity<PremisesResponse> create(@RequestBody PremisesRequest request) {
-        PremisesResponse response = premisesService.createPremises(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-	
+	public ResponseEntity<PremisesResponse> create(@RequestBody PremisesRequest request) {
+		PremisesResponse response = premisesService.createPremises(request);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
 	@PutMapping("/{id}")
 	public PremisesResponse updatePremises(@PathVariable int id, @RequestBody PremisesRequest request) {
-	    return premisesService.updatePremises(id, request);
+		return premisesService.updatePremises(id, request);
 	}
-	
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> deletePremises(@PathVariable int id) {
-	    premisesService.deletePremises(id);
-	    return ResponseEntity.ok("Premises with id " + id + " deleted successfully");
+		premisesService.deletePremises(id);
+		return ResponseEntity.ok("Premises with id " + id + " deleted successfully");
 	}
-	
+
 	@GetMapping
 	public List<PremisesResponse> getAllPremises() {
-	    return premisesService.findAll();
+		return premisesService.findAll();
 	}
-	
+
 }

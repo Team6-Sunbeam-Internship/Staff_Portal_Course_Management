@@ -23,41 +23,40 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/infrastructures")
 @RequiredArgsConstructor
 public class InfrastructureController {
-	
-	 private final InfrastructureService infrastructureService;
 
-	    // Create Infrastructure
-	    @PostMapping
-	    public ResponseEntity<InfrastructureResponse> createInfrastructure(@RequestBody InfrastructureRequest request) {
-	        InfrastructureResponse response = infrastructureService.createInfrastructure(request);
-	        return new ResponseEntity<>(response, HttpStatus.CREATED);
-	    }
-	    
-	    //get Infrastructure
-	    @GetMapping("/{id}")
-	    public ResponseEntity<InfrastructureResponse> getInfrastructureById(@PathVariable int id) {
-	        return ResponseEntity.ok(infrastructureService.getInfrastructureById(id));
-	    }
-	    
-	    // updating the infrastructure
-	    @PutMapping("/{id}")
-	    public ResponseEntity<InfrastructureResponse> updateInfrastructure(
-	            @PathVariable int id,
-	            @RequestBody InfrastructureRequest request) {
-	        return ResponseEntity.ok(infrastructureService.updateInfrastructure(id, request));
-	    }
-	    
-	    // deleting the infrastructure
-	    @DeleteMapping("/{id}")
-	    public ResponseEntity<String> deleteInfrastructure(@PathVariable int id) {
-	        infrastructureService.deleteInfrastructure(id);
-	        return ResponseEntity.ok("Infrastructure deleted successfully with id: " + id);
-	    }
-	    
-	    // get all infrastructures
-	    @GetMapping
-	    public ResponseEntity<List<InfrastructureResponse>> getAllInfrastructures() {
-	        return ResponseEntity.ok(infrastructureService.getAllInfrastructures());
-	    }
+	private final InfrastructureService infrastructureService;
+
+	// Create Infrastructure
+	@PostMapping
+	public ResponseEntity<InfrastructureResponse> createInfrastructure(@RequestBody InfrastructureRequest request) {
+		InfrastructureResponse response = infrastructureService.createInfrastructure(request);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	// get Infrastructure
+	@GetMapping("/{id}")
+	public ResponseEntity<InfrastructureResponse> getInfrastructureById(@PathVariable int id) {
+		return ResponseEntity.ok(infrastructureService.getInfrastructureById(id));
+	}
+
+	// updating the infrastructure
+	@PutMapping("/{id}")
+	public ResponseEntity<InfrastructureResponse> updateInfrastructure(@PathVariable int id,
+			@RequestBody InfrastructureRequest request) {
+		return ResponseEntity.ok(infrastructureService.updateInfrastructure(id, request));
+	}
+
+	// deleting the infrastructure
+	@DeleteMapping("/{id}")
+	public ResponseEntity<String> deleteInfrastructure(@PathVariable int id) {
+		infrastructureService.deleteInfrastructure(id);
+		return ResponseEntity.ok("Infrastructure deleted successfully with id: " + id);
+	}
+
+	// get all infrastructures
+	@GetMapping
+	public ResponseEntity<List<InfrastructureResponse>> getAllInfrastructures() {
+		return ResponseEntity.ok(infrastructureService.getAllInfrastructures());
+	}
 
 }
