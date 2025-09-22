@@ -132,21 +132,22 @@ const SubjectPage = () => {
     }
   };
 
-  const handleFormSubmit = async (formData) => {
-    try {
-      if (editData) {
-        await subjectService.update(editData.subjectId, formData);
-      } else {
-        await subjectService.add(formData);
-      }
-      fetchSubjects();
-      setShowForm(false);
-      setEditData(null);
-    } catch (err) {
-      console.error("Error saving subject:", err);
-      alert("Failed to save subject");
+ const handleFormSubmit = async (formData) => {
+  try {
+    if (editData) {
+      await subjectService.update(editData.subjectId, formData);
+    } else {
+      await subjectService.add(formData);
     }
-  };
+    fetchSubjects();
+    setShowForm(false);
+    setEditData(null);
+  } catch (err) {
+    console.error("Error saving subject:", err);
+    alert("Failed to save subject");
+  }
+};
+
 
   // Navigate to SectionPage with filters
   const handleViewSections = (subject) => {
