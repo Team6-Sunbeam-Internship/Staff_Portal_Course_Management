@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
 import com.staff_portal.academic_service.dto.response.BatchCycleResponse;
+import com.staff_portal.academic_service.enums.BatchStatus;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.repository.BatchCycleRepository;
@@ -39,7 +40,9 @@ public class BatchCycleServiceImpl implements BatchCycleService {
 
 	@Override
 	public List<BatchCycleResponse> findAll() {
+
 		return repository.findAll(Sort.by("batchCycleId").ascending()).stream()
+				.filter(batch -> batch.getStatus() != BatchStatus.DELETED)
 				.map(batch -> new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName(),
 						batch.getDescription(), batch.getStartDate(), batch.getEndDate(), batch.getStatus()))
 				.toList();
@@ -71,11 +74,10 @@ public class BatchCycleServiceImpl implements BatchCycleService {
 
 	@Override
 	public void deleteBatchCycle(int id) {
-
-		if (!repository.existsById(id)) {
-			throw new ResourceNotFoundException("BatchCycle not found with id " + id);
-		}
-		repository.deleteById(id);
+		BatchCycle batch = repository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
+		batch.setStatus(BatchStatus.DELETED);
+		repository.save(batch);
 	}
 
 }
