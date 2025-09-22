@@ -9,7 +9,7 @@ const AddCourseTypeForm = ({ onClose, onAdd, onUpdate, editData, premises }) => 
     premisesId: "",
   });
 
-  // Fill form when editing
+  // Prefill when editing
   useEffect(() => {
     if (editData) {
       setFormData({
@@ -48,52 +48,61 @@ const AddCourseTypeForm = ({ onClose, onAdd, onUpdate, editData, premises }) => 
     } catch (err) {
       console.error("Error saving course type:", err);
       alert(
-        err.response?.data?.message || "Failed to save course type. Check premises selection."
+        err.response?.data?.message ||
+          "Failed to save course type. Check premises selection."
       );
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">
+    <div className="fixed inset-0 flex items-center justify-center 
+                    bg-white/20 backdrop-blur-sm z-50">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
+        <h2 className="text-xl font-bold text-green-700 mb-4">
           {editData ? "Edit Course Type" : "Add Course Type"}
         </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type Name */}
           <div>
-            <label>Type Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Type Name
+            </label>
             <input
               type="text"
               name="typeName"
               value={formData.typeName}
               onChange={handleChange}
               required
-              className="w-full border rounded p-2"
+              className="border p-2 rounded w-full"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label>Description</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full border rounded p-2"
               rows={2}
+              className="border p-2 rounded w-full"
             />
           </div>
 
           {/* Premises Dropdown */}
           <div>
-            <label>Premises</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Premises
+            </label>
             <select
               name="premisesId"
               value={formData.premisesId}
               onChange={handleChange}
               required
-              className="w-full border rounded p-2"
+              className="border p-2 rounded w-full"
             >
               <option value="">Select Premises</option>
               {premises.map((p) => (
@@ -106,25 +115,35 @@ const AddCourseTypeForm = ({ onClose, onAdd, onUpdate, editData, premises }) => 
 
           {/* Status */}
           <div>
-            <label>Status</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Status
+            </label>
             <select
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full border rounded p-2"
+              className="border p-2 rounded w-full"
+              required
             >
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
             </select>
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded bg-red-300 hover:bg-gray-400"
+            >
               Cancel
             </button>
-            <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded">
-              {editData ? "Update" : "Add"}
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-green-600 text-white hover:bg-teal-700"
+            >
+              {editData ? "Update" : "Add"} Course Type
             </button>
           </div>
         </form>
