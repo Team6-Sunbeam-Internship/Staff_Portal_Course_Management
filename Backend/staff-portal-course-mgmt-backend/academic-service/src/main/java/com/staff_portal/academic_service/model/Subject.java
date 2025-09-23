@@ -46,6 +46,9 @@ public class Subject {
     @Enumerated(EnumType.STRING)
     private SubjectStatus status;   // ACTIVE / INACTIVE
     
+    @Column(nullable = false)
+    private boolean deleted = false; 
+    
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
     private List<Section> sections;
 }
