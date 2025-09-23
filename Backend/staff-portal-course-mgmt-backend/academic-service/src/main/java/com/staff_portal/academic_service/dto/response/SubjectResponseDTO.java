@@ -13,7 +13,8 @@ public class SubjectResponseDTO {
     private int subjectId;
     private String subjectName;
     private SubjectStatus status;
-
+    private boolean deleted;
     private String moduleName;   // from Module
     private String courseName;   // from Course (via Module)
+    
 }
