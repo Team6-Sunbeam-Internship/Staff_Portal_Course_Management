@@ -80,19 +80,21 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 		Infrastructure infra = infrastructureRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
 
-		infrastructureRepository.delete(infra);
+		infra.setDeleted(true);
+		infrastructureRepository.save(infra);
 
 	}
 
 	@Override
 	public List<InfrastructureResponse> getAllInfrastructures() {
-		List<Infrastructure> infrastructures = infrastructureRepository.findAll();
+		List<Infrastructure> infrastructures = infrastructureRepository.findAll().stream()
+				.filter(infra -> !infra.isDeleted()).toList();
 
 		return infrastructures.stream()
 				.map(infra -> new InfrastructureResponse(infra.getInfrastructureId(), infra.getRoomName(),
 						infra.getType(), infra.getLocation(), infra.getCapacity(), infra.getDescription(),
 						infra.getPremises().getPremisesId(), infra.getPremises().getName()))
-				.collect(Collectors.toList());
+				.toList();
 	}
 
 }
