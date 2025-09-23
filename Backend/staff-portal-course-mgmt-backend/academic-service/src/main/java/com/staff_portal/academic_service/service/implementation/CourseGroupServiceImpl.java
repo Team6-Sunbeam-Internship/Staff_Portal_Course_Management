@@ -86,7 +86,8 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 		CourseGroup group = courseGroupRepository.findById(groupId)
 				.orElseThrow(() -> new ResourceNotFoundException("Course group not found with ID: " + groupId));
 
-		courseGroupRepository.delete(group);
+		group.setDeleted(true);
+		courseGroupRepository.save(group);
 
 	}
 
@@ -94,7 +95,10 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 
 	@Override
 	public List<CourseGroupResponse> getAllCourseGroups() {
-		List<CourseGroup> courseGroups = courseGroupRepository.findAll();
+		List<CourseGroup> courseGroups = courseGroupRepository.findAll().stream().filter(cg -> !cg.isDeleted()) // ignore
+																												// deleted
+				.toList();
+
 		return courseGroups.stream()
 				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
 						cg.getCapacity(), cg.getStatus(), cg.getCourse().getCourseId(), cg.getCourse().getCourseName()))
@@ -103,7 +107,8 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 
 	@Override
 	public List<CourseGroupResponse> getGroupsByBatchCycle(Long batchCycleId) {
-		List<CourseGroup> groups = courseGroupRepository.findByBatchCycle_BatchCycleId(batchCycleId);
+		List<CourseGroup> groups = courseGroupRepository.findByBatchCycle_BatchCycleId(batchCycleId).stream()
+				.filter(g -> !g.isDeleted()).toList();
 
 		return groups.stream()
 				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
@@ -113,7 +118,8 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 
 	@Override
 	public List<CourseGroupResponse> getGroupsByCourse(Long courseId) {
-		List<CourseGroup> groups = courseGroupRepository.findByCourse_CourseId(courseId);
+		List<CourseGroup> groups = courseGroupRepository.findByCourse_CourseId(courseId).stream()
+				.filter(g -> !g.isDeleted()).toList();
 
 		return groups.stream()
 				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
@@ -125,7 +131,8 @@ public class CourseGroupServiceImpl implements CourseGroupService {
 	public List<CourseGroupResponse> getGroupsByStatus(String status) {
 		CourseGroupStatus groupStatus = CourseGroupStatus.valueOf(status.toUpperCase());
 
-		List<CourseGroup> groups = courseGroupRepository.findByStatus(groupStatus);
+		List<CourseGroup> groups = courseGroupRepository.findByStatus(groupStatus).stream().filter(g -> !g.isDeleted())
+				.toList();
 
 		return groups.stream()
 				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
