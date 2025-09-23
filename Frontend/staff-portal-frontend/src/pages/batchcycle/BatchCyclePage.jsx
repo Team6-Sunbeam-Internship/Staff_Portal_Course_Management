@@ -14,7 +14,7 @@ const BatchCyclePage = () => {
     setLoading(true);
     try {
       const res = await BatchCycleService.getAll();
-      setBatchCycles(res.data.filter((batch) => batch.status !== "DELETED"));
+      setBatchCycles(res.data);
     } catch (err) {
       toast.error("Failed to load batch cycles");
       console.error(err);
