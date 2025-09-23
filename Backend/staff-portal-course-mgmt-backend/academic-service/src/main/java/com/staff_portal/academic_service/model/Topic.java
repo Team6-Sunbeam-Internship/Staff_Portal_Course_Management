@@ -40,5 +40,8 @@ public class Topic {
 
 	 @Enumerated(EnumType.STRING)
 	    private TopicStatus status;
+	 
+	 @Column(nullable = false)
+	    private boolean deleted = false; 
 
 }
