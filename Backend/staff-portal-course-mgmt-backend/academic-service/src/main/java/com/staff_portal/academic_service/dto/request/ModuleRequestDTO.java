@@ -10,7 +10,6 @@ import lombok.Setter;
 public class ModuleRequestDTO {
     private String moduleName;
     private int courseTypeId;
-//    private int batchCycleId;
     private int courseId;
 //    private int staffId;
     private int theoryHours;
