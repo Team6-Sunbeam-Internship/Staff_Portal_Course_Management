@@ -59,6 +59,9 @@ public class Course {
 
     @Column(nullable = true)
     private LocalDate endDate;
+    
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Module> modules = new ArrayList<>();
