@@ -38,6 +38,9 @@ public class Infrastructure {
 
 	@Column(name = "description", length = 500)
 	private String description;
+	
+	@Column(name = "is_deleted", nullable = false)
+	private boolean deleted = false;
 
 	@ManyToOne
 	@JoinColumn(name = "premises_id", nullable = false)
