@@ -15,6 +15,20 @@ const SubjectForm = ({ editData, onSubmit, onClose, selectedBatch, selectedCours
     }
   }, [editData]);
 
+//   useEffect(() => {
+//   if (editData) {
+//     setFormData({
+//       subjectName: editData.subjectName || "",
+//       status: editData.status || "ACTIVE",
+//     });
+
+//     // Update selectedModule if editing
+//     if (editData.moduleId) {
+//       selectedModule = editData.moduleId; // ⚠️ make sure your parent updates this value too
+//     }
+//   }
+// }, [editData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
