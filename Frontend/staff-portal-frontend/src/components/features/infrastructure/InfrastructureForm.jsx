@@ -1,5 +1,5 @@
-// src/components/features/infrastructure/InfrastructureForm.jsx
 import React, { useEffect, useState } from "react";
+import PremisesService from "../../../services/api/premisesService";
 
 const InfrastructureForm = ({ onSubmit, onCancel, defaultValues }) => {
   const [roomName, setRoomName] = useState("");
@@ -8,6 +8,7 @@ const InfrastructureForm = ({ onSubmit, onCancel, defaultValues }) => {
   const [capacity, setCapacity] = useState("");
   const [description, setDescription] = useState("");
   const [premisesId, setPremisesId] = useState("");
+  const [premisesList, setPremisesList] = useState([]);
 
   useEffect(() => {
     if (defaultValues) {
@@ -19,6 +20,18 @@ const InfrastructureForm = ({ onSubmit, onCancel, defaultValues }) => {
       setPremisesId(defaultValues.premisesId || "");
     }
   }, [defaultValues]);
+
+  useEffect(() => {
+    const fetchPremises = async () => {
+      try {
+        const res = await PremisesService.getAll();
+        setPremisesList(res.data || []);
+      } catch (err) {
+        console.error("Failed to load premises", err);
+      }
+    };
+    fetchPremises();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -68,14 +81,21 @@ const InfrastructureForm = ({ onSubmit, onCancel, defaultValues }) => {
         rows={2}
         className="w-full px-3 py-2 border rounded border-gray-300 focus:ring-2 focus:ring-green-300"
       />
-      <input
-        type="number"
+
+      {/* Premises dropdown */}
+      <select
         value={premisesId}
         onChange={(e) => setPremisesId(e.target.value)}
-        placeholder="Premises ID"
-        className="w-full px-3 py-2 border rounded border-gray-300 focus:ring-2 focus:ring-green-300"
         required
-      />
+        className="w-full px-3 py-2 border rounded border-gray-300 focus:ring-2 focus:ring-green-300"
+      >
+        <option value="">Select Premises</option>
+        {premisesList.map((p) => (
+          <option key={p.premisesId} value={p.premisesId}>
+            {p.name}
+          </option>
+        ))}
+      </select>
 
       <div className="flex justify-end gap-3 pt-4">
         <button
