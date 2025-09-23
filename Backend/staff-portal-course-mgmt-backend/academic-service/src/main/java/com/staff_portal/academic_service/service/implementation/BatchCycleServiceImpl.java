@@ -40,9 +40,7 @@ public class BatchCycleServiceImpl implements BatchCycleService {
 
 	@Override
 	public List<BatchCycleResponse> findAll() {
-
-		return repository.findAll(Sort.by("batchCycleId").ascending()).stream()
-				.filter(batch -> batch.getStatus() != BatchStatus.DELETED)
+		return repository.findAll().stream().filter(batch -> !batch.isDeleted())
 				.map(batch -> new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName(),
 						batch.getDescription(), batch.getStartDate(), batch.getEndDate(), batch.getStatus()))
 				.toList();
@@ -52,6 +50,9 @@ public class BatchCycleServiceImpl implements BatchCycleService {
 	public BatchCycleResponse findById(int id) {
 		BatchCycle batch = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
+		if (batch.isDeleted()) {
+			throw new ResourceNotFoundException("BatchCycle not found with id " + id);
+		}
 		return new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName(), batch.getDescription(),
 				batch.getStartDate(), batch.getEndDate(), batch.getStatus());
 	}
@@ -76,7 +77,7 @@ public class BatchCycleServiceImpl implements BatchCycleService {
 	public void deleteBatchCycle(int id) {
 		BatchCycle batch = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
-		batch.setStatus(BatchStatus.DELETED);
+		batch.setDeleted(true);
 		repository.save(batch);
 	}
 

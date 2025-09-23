@@ -42,6 +42,10 @@ public class BatchCycle {
 
 	@Column(nullable = true, name = "end_date")
 	private LocalDate endDate;
+	
+	@Column(name = "is_deleted", nullable = false)
+	private boolean deleted = false;
+
 
 	@OneToMany(mappedBy = "batchCycle", cascade = CascadeType.ALL)
 	private List<CourseType> courseTypes;
