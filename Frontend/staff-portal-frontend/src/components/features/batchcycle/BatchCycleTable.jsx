@@ -2,7 +2,7 @@ import React from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
 const BatchCycleTable = ({ data, onEdit, onDelete }) => {
-  const visibleData = data.filter((item) => item.status !== "DELETED");
+  const visibleData = data;
 
   return (
     <div className="overflow-x-auto shadow rounded bg-white p-4 border border-gray-300">
