@@ -50,6 +50,9 @@ public class CourseGroup {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "coursegroup_status", nullable = false)
 	private CourseGroupStatus status;
+	
+	@Column(name = "is_deleted", nullable = false)
+	private boolean deleted = false;
 
 	@ManyToOne
 	@JoinColumn(name = "course_type_id", nullable = false)
