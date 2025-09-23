@@ -49,6 +49,9 @@ public class CourseType {
 	    @Column(nullable = false)
 	    private CourseTypeStatus status;
 	 
+	 @Column(nullable = false)
+	    private boolean deleted = false;
+	 
 	 @OneToMany(mappedBy = "courseType", cascade = CascadeType.ALL)
 	    private List<Course> courses;
 
