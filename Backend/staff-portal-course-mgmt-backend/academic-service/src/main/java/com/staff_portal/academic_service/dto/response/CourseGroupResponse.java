@@ -12,14 +12,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourseGroupResponse {
-	
-	private int groupId;
-    private String groupName;
-    private String description;
-    private Integer capacity;
-    private CourseGroupStatus status;
-    private int courseId;
-   // private String courseName;
 
+	private int groupId;
+	private String groupName;
+	private String description;
+	private Integer capacity;
+	private CourseGroupStatus status;
+	private int courseId;
+	private String courseName;
 
 }

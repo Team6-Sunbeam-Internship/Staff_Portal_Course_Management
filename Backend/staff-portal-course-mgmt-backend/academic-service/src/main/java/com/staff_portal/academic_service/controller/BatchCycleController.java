@@ -24,31 +24,30 @@ import lombok.RequiredArgsConstructor;
 public class BatchCycleController {
 
 	private final BatchCycleService service;
-	
-	
-	 @PostMapping
-	    public BatchCycleResponse create(@RequestBody BatchCycleRequest request) {
-	        return service.createBatchCycle(request);
-	    }
-	 
-	 @GetMapping
-	 public List<BatchCycleResponse> getAllBatchCycles() {
-	     return service.findAll();
-	 }
-	 
-	 @GetMapping("/{id}")
-	    public BatchCycleResponse getById(@PathVariable int id) {
-	        return service.findById(id);
-	    }
-	 
-	 @PutMapping("/{id}")
-	 public BatchCycleResponse update(@PathVariable int id, @RequestBody BatchCycleRequest request) {
-	     return service.updateBatchCycle(id, request);
-	 }
-	
-	 @DeleteMapping("/{id}")
-	 public ResponseEntity<String> delete(@PathVariable int id) {
-	     service.deleteBatchCycle(id);
-	     return ResponseEntity.ok("BatchCycle deleted successfully!");
-	 }
+
+	@PostMapping
+	public BatchCycleResponse create(@RequestBody BatchCycleRequest request) {
+		return service.createBatchCycle(request);
+	}
+
+	@GetMapping
+	public List<BatchCycleResponse> getAllBatchCycles() {
+		return service.findAll();
+	}
+
+	@GetMapping("/{id}")
+	public BatchCycleResponse getById(@PathVariable int id) {
+		return service.findById(id);
+	}
+
+	@PutMapping("/{id}")
+	public BatchCycleResponse update(@PathVariable int id, @RequestBody BatchCycleRequest request) {
+		return service.updateBatchCycle(id, request);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<String> delete(@PathVariable int id) {
+		service.deleteBatchCycle(id);
+		return ResponseEntity.ok("BatchCycle deleted successfully!");
+	}
 }

@@ -10,11 +10,10 @@ import com.staff_portal.academic_service.model.CourseGroup;
 
 @Repository
 public interface CourseGroupRepository extends JpaRepository<CourseGroup, Integer> {
-	
+	List<CourseGroup> findByBatchCycle_BatchCycleId(Long batchCycleId);
+
+	List<CourseGroup> findByCourse_CourseId(Long courseId);
+
 	List<CourseGroup> findByStatus(CourseGroupStatus status);
-	// Get course groups by batch cycle name
-	List<CourseGroup> findByBatchCycle_CycleName(String cycleName);
-     // get course group by course type 
-	List<CourseGroup> findByCourseType_TypeName(String typeName);
-	
+
 }
