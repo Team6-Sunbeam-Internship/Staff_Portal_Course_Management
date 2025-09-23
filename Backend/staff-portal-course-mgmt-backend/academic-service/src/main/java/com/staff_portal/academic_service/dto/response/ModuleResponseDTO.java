@@ -17,4 +17,5 @@ public class ModuleResponseDTO {
     private int theoryHours;
     private int practicalHours;
     private ModuleStatus status;
+    private boolean deleted;
 }
