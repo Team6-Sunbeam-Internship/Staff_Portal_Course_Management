@@ -112,14 +112,19 @@ const SubjectPage = () => {
     setShowForm(true);
   };
 
+  // const handleEdit = (subject) => {
+  //   setEditData(subject);
+  //   setSelectedBatch(subject.batchCycleId || "");
+  //   setSelectedCourseType(subject.courseTypeId || "");
+  //   setSelectedCourse(subject.courseId || "");
+  //   setSelectedModule(subject.moduleId || "");
+  //   setShowForm(true);
+  // };
+
   const handleEdit = (subject) => {
-    setEditData(subject);
-    setSelectedBatch(subject.batchCycleId || "");
-    setSelectedCourseType(subject.courseTypeId || "");
-    setSelectedCourse(subject.courseId || "");
-    setSelectedModule(subject.moduleId || "");
-    setShowForm(true);
-  };
+  setEditData(subject); // only load the subject data for the form
+  setShowForm(true);    // open the form
+};
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this subject?")) return;
@@ -132,14 +137,39 @@ const SubjectPage = () => {
     }
   };
 
- const handleFormSubmit = async (formData) => {
+//  const handleFormSubmit = async (formData) => {
+//   try {
+//     if (editData) {
+//       await subjectService.update(editData.subjectId, formData);
+//     } else {
+//       await subjectService.add(formData);
+//     }
+//     fetchSubjects();
+//     setShowForm(false);
+//     setEditData(null);
+//   } catch (err) {
+//     console.error("Error saving subject:", err);
+//     alert("Failed to save subject");
+//   }
+// };
+const handleFormSubmit = async (formData) => {
   try {
+    // Merge current dropdown selections with form data
+    const payload = {
+      ...formData,
+      batchCycleId: selectedBatch,
+      courseTypeId: selectedCourseType,
+      courseId: selectedCourse,
+      moduleId: selectedModule,
+    };
+
     if (editData) {
-      await subjectService.update(editData.subjectId, formData);
+      await subjectService.update(editData.subjectId, payload);
     } else {
-      await subjectService.add(formData);
+      await subjectService.add(payload);
     }
-    fetchSubjects();
+
+    fetchSubjects(); // refresh table
     setShowForm(false);
     setEditData(null);
   } catch (err) {
