@@ -13,6 +13,8 @@ const CourseTable = ({ courses, onEdit, onDelete }) => {
             <th className="px-4 py-2 text-left">Batch Cycle</th>
             <th className="px-4 py-2 text-left">Course Type</th>
             <th className="px-4 py-2 text-left">Premise</th>
+            <th className="px-4 py-2 text-left">Start Date</th>
+            <th className="px-4 py-2 text-left">End Date</th>
             <th className="px-4 py-2 text-left">Status</th>
             <th className="px-4 py-2 text-center">Actions</th>
           </tr>
@@ -25,6 +27,8 @@ const CourseTable = ({ courses, onEdit, onDelete }) => {
               <td className="px-4 py-2">{c.cycleName}</td>
               <td className="px-4 py-2">{c.courseTypeName}</td>
               <td className="px-4 py-2">{c.premisesName}</td>
+              <td className="px-4 py-2">{c.startDate}</td>
+              <td className="px-4 py-2">{c.endDate}</td>
               <td className="px-4 py-2">
                 <span
                   className={`px-2 py-1 rounded text-xs font-semibold ${
