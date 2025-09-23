@@ -13,7 +13,7 @@ public class SectionResponseDTO {
     private Integer sectionId;
     private String sectionName;
     private SectionStatus status;
-
+    private boolean deleted;
                                        // Display hierarchy (only names, no IDs needed here)
     private String subjectName;
     private String moduleName;
