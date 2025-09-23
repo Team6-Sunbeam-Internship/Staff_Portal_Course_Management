@@ -58,6 +58,9 @@ public class Module {
     @Enumerated(EnumType.STRING)  // Store as string (ACTIVE, INACTIVE, etc.)
     @Column(nullable = false)
     private ModuleStatus status;   // Enum instead of String
+    
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subject> subjects;
