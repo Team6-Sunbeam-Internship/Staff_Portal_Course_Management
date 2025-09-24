@@ -1,4 +1,5 @@
 import { FaEdit, FaTrash } from "react-icons/fa";
+import NotFoundPage from "../../../../src/pages/ErrorPages/NotFoundPage";
 
 const Table = ({ columns, data, loading, onEdit, onDelete, indexOffset = 0 }) => {
   return (
@@ -29,6 +30,7 @@ const Table = ({ columns, data, loading, onEdit, onDelete, indexOffset = 0 }) =>
             <tr>
               <td colSpan={columns.length + 2} className="text-center p-4">
                 No records found
+                <NotFoundPage />
               </td>
             </tr>
           ) : (
