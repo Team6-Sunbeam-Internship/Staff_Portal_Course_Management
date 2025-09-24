@@ -560,13 +560,13 @@ function ManageStaff() {
             </div>
             <div className="flex justify-end gap-4 px-6 py-4">
               <button
-                className="border px-4 py-2 rounded-lg hover:bg-gray-100"
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition"
                 onClick={clearForm}
               >
                 Clear
               </button>
               <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
                 onClick={onSave}
                 disabled={loading}
               >
