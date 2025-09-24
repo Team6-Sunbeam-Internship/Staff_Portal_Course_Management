@@ -12,8 +12,8 @@ public class TimeSheetCourseModuleMapper {
 
 	public static TimeSheetCourseModule toEntity(TimeSheetCourseModuleRequestDTO cmDto) {
 		TimeSheetCourseModule newModule = new TimeSheetCourseModule();
-		newModule.setCourseId(cmDto.getCourseId());
-		newModule.setModuleId(cmDto.getModuleId());
+		newModule.setCourseName(cmDto.getCourseName());
+		newModule.setModuleName(cmDto.getModuleName());
 
 		return newModule;
 	}
@@ -21,8 +21,8 @@ public class TimeSheetCourseModuleMapper {
 	public static TimeSheetCourseModuleResponseDTO toDto(TimeSheetCourseModule entity) {
 		TimeSheetCourseModuleResponseDTO cmDto = new TimeSheetCourseModuleResponseDTO();
 		cmDto.setId(entity.getId());
-		cmDto.setCourseId(entity.getCourseId());
-		cmDto.setModuleId(entity.getModuleId());
+		cmDto.setCourseName(entity.getCourseName());
+		cmDto.setModuleName(entity.getModuleName());
 		
 		cmDto.setTimeSheets(entity.getTimeSheets().stream().map(TimeSheetMapper::toSimpleDto).collect(Collectors.toList()));
 		return cmDto;
