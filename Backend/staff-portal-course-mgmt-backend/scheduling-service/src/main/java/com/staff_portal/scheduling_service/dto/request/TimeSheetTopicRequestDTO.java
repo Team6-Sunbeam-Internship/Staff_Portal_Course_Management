@@ -13,5 +13,6 @@ import lombok.ToString;
 public class TimeSheetTopicRequestDTO {
 
 	@NotNull(message = "Topic ID must not be null")
-    private Long topicId;
+    private String topicName;
 }
+
