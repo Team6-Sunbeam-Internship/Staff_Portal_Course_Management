@@ -5,7 +5,6 @@ const RecordedSessionModal1 = ({
   onHide,
   onSave,
   editRow,
-  courses,
   staffList,
   selectedBatchCycleName,
   selectedCourseName
