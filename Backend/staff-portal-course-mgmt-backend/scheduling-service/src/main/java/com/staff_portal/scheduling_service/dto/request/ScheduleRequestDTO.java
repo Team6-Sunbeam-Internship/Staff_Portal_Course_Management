@@ -1,6 +1,7 @@
 package com.staff_portal.scheduling_service.dto.request;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
@@ -24,19 +25,26 @@ public class ScheduleRequestDTO {
 	 @NotBlank(message = "Activity must not be blank")
 	 private String activity;
 	
-	@NotNull(message = "Staff ID is required")
-     private Long staffId;
+	 @NotBlank(message = "Batch Cycle name is required")
+     private String batchCycleName;
      
-	@NotNull(message = "Course ID is required")
-	 private Long courseId;
+	@NotBlank(message = "Course name is required")
+	 private String courseName;
 	 
+	@NotNull(message = "staff name is required")
+	private List<String> staffNames;
+	
+	@NotNull(message = "Student Group Name is required")
+	private List<String> studentGroups;
+	
 	 @NotNull
      private TimeSlotRequestDTO timeSlot;
      
-     @NotNull(message = "Module ID is required")
-	 private Long moduleId;
+     @NotBlank(message = "Module Name is required")
+	 private String moduleName;
 	 
-	 @NotNull(message = "Infrastructure ID is required")
-	 private Long infrastructureId;
+	 @NotBlank(message = "Infrastructure ID is required")
+	 private String infrastructureName;
 	
 }
+
