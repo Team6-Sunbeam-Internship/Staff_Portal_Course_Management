@@ -14,13 +14,10 @@ public class StudentDTO {
     private String registrationNumber;
     private String studentName;
     private String email;
-
-    // used in request only
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) 
-    private String password;
-
     private String mobileNumber;
     private String address;
+    private String batchCycleName;
+    private String courseName;
     private StudentStatus status;
 
     // visible in response only
