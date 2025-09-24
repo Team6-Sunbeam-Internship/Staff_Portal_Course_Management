@@ -72,9 +72,10 @@ public class StudentImportServiceImpl implements IStudentImportService {
                             .registrationNumber(record[0].trim())
                             .studentName(record[1].trim())
                             .email(record[2].trim())
-                            .password(record[3].trim())
-                            .mobileNumber(record[4].trim())
-                            .address(record[5].trim())
+                            .mobileNumber(record[3].trim())
+                            .address(record[4].trim())
+                            .batchCycleName(record[5].trim())
+                            .courseName(record[6].trim())
                             .build();
                     students.add(student);
                 }
@@ -96,9 +97,10 @@ public class StudentImportServiceImpl implements IStudentImportService {
                             .registrationNumber(getCellValue(row.getCell(0)))
                             .studentName(getCellValue(row.getCell(1)))
                             .email(getCellValue(row.getCell(2)))
-                            .password(getCellValue(row.getCell(3)))
-                            .mobileNumber(getCellValue(row.getCell(4)))
-                            .address(getCellValue(row.getCell(5)))
+                            .mobileNumber(getCellValue(row.getCell(3)))
+                            .address(getCellValue(row.getCell(4)))
+                            .batchCycleName(getCellValue(row.getCell(5)))
+                            .courseName(getCellValue(row.getCell(6)))
                             .build();
                     students.add(student);
                 }
@@ -139,7 +141,6 @@ public class StudentImportServiceImpl implements IStudentImportService {
                 if (isBlank(dto.getRegistrationNumber()) || 
                     isBlank(dto.getStudentName()) || 
                     isBlank(dto.getEmail()) || 
-                    isBlank(dto.getPassword()) || 
                     isBlank(dto.getMobileNumber())) {
                     errors.add("Row " + rowNumber + ": Missing required fields");
                     failedRegistrationNumbers.add(dto.getRegistrationNumber() != null ? dto.getRegistrationNumber() : "UNKNOWN");
@@ -168,10 +169,11 @@ public class StudentImportServiceImpl implements IStudentImportService {
                         .registrationNumber(dto.getRegistrationNumber())
                         .studentName(dto.getStudentName())
                         .email(dto.getEmail())
-                        .password(dto.getPassword())
                         .mobileNumber(dto.getMobileNumber())
                         .address(dto.getAddress())
-                        .status(StudentStatus.INACTIVE)
+                        .batchCycleName(dto.getBatchCycleName())
+                        .courseName(dto.getCourseName())
+                        .status(StudentStatus.ACTIVE)
                         .isDeleted(false)
                         .build();
 
