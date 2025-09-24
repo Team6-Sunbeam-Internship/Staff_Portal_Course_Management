@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { FaEdit, FaTrash, FaSyncAlt } from "react-icons/fa";
+import { FaTrash, FaSyncAlt } from "react-icons/fa";
 import {
   importStudentsFile,
   getAllStudents,
@@ -35,20 +35,20 @@ function ManageStudents() {
 
   // Columns for the table
   const columns = [
-  { key: "registrationNumber", label: "Reg. No", className: "w-28" },
-  { key: "studentName", label: "Name", className: "w-56" },
-  { key: "email", label: "Email", className: "w-48" },
-  { key: "mobileNumber", label: "Mobile", className: "w-28" },
-  { key: "batchCycleName", label: "BatchCycle", className: "w-28" },
-  { key: "courseName", label: "Course", className: "w-28" },
-  {
-    key: "status",
-    label: "Status",
-    className: "w-24",
-    render: (item) => (item.status === "ACTIVE" ? "Active" : "Inactive"),
-  },
-  { key: "address", label: "Address", className: "w-68" },
-];
+    { key: "registrationNumber", label: "Reg. No", className: "w-28" },
+    { key: "studentName", label: "Name", className: "w-56" },
+    { key: "email", label: "Email", className: "w-48" },
+    { key: "mobileNumber", label: "Mobile", className: "w-28" },
+    { key: "batchCycleName", label: "BatchCycle", className: "w-28" },
+    { key: "courseName", label: "Course", className: "w-28" },
+    {
+      key: "status",
+      label: "Status",
+      className: "w-24",
+      render: (item) => (item.status === "ACTIVE" ? "Active" : "Inactive"),
+    },
+    { key: "address", label: "Address", className: "w-68" },
+  ];
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 20;
@@ -381,18 +381,6 @@ function ManageStudents() {
                   ))}
                 </select>
               </div>
-
-              <div>
-                <label className="block mb-1 font-medium">Status</label>
-                <select
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                </select>
-              </div>
               <div>
                 <label className="block mb-1 font-medium">Address</label>
                 <textarea
@@ -430,7 +418,7 @@ function ManageStudents() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
@@ -507,88 +495,13 @@ function ManageStudents() {
 
       {/* Table */}
       <Table
-  columns={columns}
-  data={currentRecords}
-  loading={loading}
-  onEdit={onUpdate}
-  onDelete={onDelete}
-  indexOffset={indexOfFirstRecord}
-/>
-      {/* <div className="overflow-x-auto">
-        <table className="w-full table-auto border border-gray-300 text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-2 py-1 text-center w-12">#</th>
-              <th className="border px-2 py-1 w-28">Reg. No</th>
-              <th className="border px-2 py-1 w-36">Name</th>
-              <th className="border px-2 py-1 w-48">Email</th>
-              <th className="border px-2 py-1 w-28">Mobile</th>
-              <th className="border px-2 py-1 w-28">BatchCycle</th>
-              <th className="border px-2 py-1 w-28">Course</th>
-              <th className="border px-2 py-1 w-24">Status</th>
-              <th className="border px-2 py-1 w-48">Address</th>
-              <th className="border px-2 py-1 text-center w-24">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="10" className="text-center p-3">
-                  Loading...
-                </td>
-              </tr>
-            ) : students.length === 0 ? (
-              <tr>
-                <td colSpan="10" className="text-center p-3">
-                  No students found
-                </td>
-              </tr>
-            ) : (
-              currentRecords.map((s, idx) => (
-                <tr key={s.registrationNumber} className="hover:bg-gray-50">
-                  <td className="border px-2 py-1 text-center">
-                    {indexOfFirstRecord + idx + 1}
-                  </td>
-                  <td className="border px-2 py-1 truncate">
-                    {s.registrationNumber}
-                  </td>
-                  <td className="border px-2 py-1 truncate">{s.studentName}</td>
-                  <td className="border px-2 py-1 truncate">{s.email}</td>
-                  <td className="border px-2 py-1 truncate">
-                    {s.mobileNumber}
-                  </td>
-                  <td className="border px-2 py-1 truncate">
-                    {s.batchCycleName}
-                  </td>
-                  <td className="border px-2 py-1 truncate">{s.courseName}</td>
-                  <td className="border px-2 py-1 truncate">
-                    {formatStatus(s.status)}
-                  </td>
-                  <td className="border px-2 py-1 truncate">{s.address}</td>
-                  <td className="border px-2 py-1 text-center">
-                    <div className="flex justify-center gap-1">
-                      <button
-                        className="bg-yellow-400 hover:bg-green-500 text-white px-2 py-1 rounded"
-                        title="Edit"
-                        onClick={() => onUpdate(s)}
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        className="bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded"
-                        title="Delete"
-                        onClick={() => onDelete(s)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div> */}
+        columns={columns}
+        data={currentRecords}
+        loading={loading}
+        onEdit={onUpdate}
+        onDelete={onDelete}
+        indexOffset={indexOfFirstRecord}
+      />
 
       {/* Pagination */}
       <Pagination
