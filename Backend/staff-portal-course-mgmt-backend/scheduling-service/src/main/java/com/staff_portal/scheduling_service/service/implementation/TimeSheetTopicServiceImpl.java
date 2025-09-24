@@ -30,7 +30,7 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
         }
 
         TimeSheetTopic topic = new TimeSheetTopic();
-        topic.setTopicId(dto.getTopicId());
+        topic.setTopicName(dto.getTopicName());
 
         TimeSheetTopic saved = topicRepository.save(topic);
         return TimeSheetTopicMapper.toDto(saved);
@@ -60,7 +60,7 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
         TimeSheetTopic existing = topicRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TimeSheet topic not found with ID: " + id));
 
-        existing.setTopicId(dto.getTopicId());
+        existing.setTopicName(dto.getTopicName());
 
         TimeSheetTopic updated = topicRepository.save(existing);
         return TimeSheetTopicMapper.toDto(updated);
@@ -74,3 +74,4 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
         topicRepository.deleteById(id);
     }
 }
+
