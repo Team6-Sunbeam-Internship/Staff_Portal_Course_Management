@@ -136,7 +136,7 @@ secrets/
 .springBeans
 .sts4-cache
 bin/
-
+.metadata
 # ================================
 # OPERATING SYSTEMS
 # ================================
