@@ -11,7 +11,7 @@ public class SessionMapper {
 	        }
 
 	        SessionReqRespDTO dto = new SessionReqRespDTO();
-	      
+	        dto.setId(session.getId());
 	        dto.setTitle(session.getTitle());
 	        dto.setStartTime(session.getStartTime());
 	        dto.setEndTime(session.getEndTime());
@@ -21,8 +21,9 @@ public class SessionMapper {
 	        dto.setDescription(session.getDescription());
 	        dto.setCodeShareToken(session.getCodeShareToken());
 	        dto.setSessionDate(session.getSessionDate());
-	        dto.setStaffId(session.getStaffId());
-	        
+	        dto.setStaffName(session.getStaffName());
+	        dto.setBatchCycleName(session.getBatchCycleName());
+	        dto.setCourseName(session.getCourseName());
 
 	        return dto;
 	    }
@@ -33,7 +34,7 @@ public class SessionMapper {
 	        }
 
 	        Session session = new Session();
-	        session.setStaffId(dto.getStaffId());
+	        session.setStaffName(dto.getStaffName());
 	        session.setTitle(dto.getTitle());
 	        session.setStartTime(dto.getStartTime());
 	        session.setEndTime(dto.getEndTime());
@@ -43,7 +44,9 @@ public class SessionMapper {
 	        session.setDescription(dto.getDescription());
 	        session.setCodeShareToken(dto.getCodeShareToken());
 	        session.setSessionDate(dto.getSessionDate());
-
+           session.setBatchCycleName(dto.getBatchCycleName());
+           session.setCourseName(dto.getCourseName());
 	        return session;
 	    }
 }
+
