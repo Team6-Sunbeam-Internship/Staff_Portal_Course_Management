@@ -1,6 +1,9 @@
 package com.staff_portal.scheduling_service.service.interfaces;
 
+import java.time.LocalDate;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
 
 import com.staff_portal.scheduling_service.dto.request.SessionReqRespDTO;
 
@@ -16,4 +19,7 @@ public interface ISessionService {
 	SessionReqRespDTO updateSession(Long id,SessionReqRespDTO dto);
 	
 	boolean deleteSession(Long id);
+
+	Page<SessionReqRespDTO> getSessionsByBatchCycleCourseAndDateRange(String batchCycleName, String courseName,
+			LocalDate startDate, LocalDate endDate, int page, int size);
 }
