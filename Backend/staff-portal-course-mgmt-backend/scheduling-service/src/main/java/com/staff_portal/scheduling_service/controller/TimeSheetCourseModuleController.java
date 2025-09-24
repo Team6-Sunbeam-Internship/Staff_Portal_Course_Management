@@ -52,11 +52,3 @@ public class TimeSheetCourseModuleController {
         TimeSheetCourseModuleResponseDTO responseDto = courseModuleService.updateTimeSheetCourseModule(id, requestDto);
         return ResponseEntity.ok(responseDto);
     }
-	
-	 @DeleteMapping("/{id}")
-	    public ResponseEntity<Void> delete(@PathVariable Long id) {
-	        courseModuleService.deleteTimeSheetCourseModule(id);
-	        return ResponseEntity.noContent().build();
-	    }
-
-}
