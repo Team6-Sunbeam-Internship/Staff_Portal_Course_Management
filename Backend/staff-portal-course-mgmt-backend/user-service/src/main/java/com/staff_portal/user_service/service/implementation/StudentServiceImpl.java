@@ -24,11 +24,11 @@ public class StudentServiceImpl implements IStudentService {
 	            .registrationNumber(studentDTO.getRegistrationNumber())
 	            .studentName(studentDTO.getStudentName())
 	            .email(studentDTO.getEmail())
-	            .password(studentDTO.getPassword())
 	            .mobileNumber(studentDTO.getMobileNumber())
 	            .address(studentDTO.getAddress())
+	            .batchCycleName(studentDTO.getBatchCycleName())
+                .courseName(studentDTO.getCourseName())
 	            .status(studentDTO.getStatus())
-//	            .isDeleted(false)
 	            .build();
 
 	    Student saved = studentRepository.save(student);
@@ -42,11 +42,10 @@ public class StudentServiceImpl implements IStudentService {
 
         existing.setStudentName(studentDTO.getStudentName());
         existing.setEmail(studentDTO.getEmail());
-        if (studentDTO.getPassword() != null) {
-            existing.setPassword(studentDTO.getPassword());
-        }
         existing.setMobileNumber(studentDTO.getMobileNumber());
         existing.setAddress(studentDTO.getAddress());
+        existing.setBatchCycleName(studentDTO.getBatchCycleName());
+        existing.setCourseName(studentDTO.getCourseName());
         existing.setStatus(studentDTO.getStatus());
 
         Student updated = studentRepository.save(existing);
@@ -102,6 +101,8 @@ public class StudentServiceImpl implements IStudentService {
                 .email(student.getEmail())
                 .mobileNumber(student.getMobileNumber())
                 .address(student.getAddress())
+                .batchCycleName(student.getBatchCycleName())
+                .courseName(student.getCourseName())         
                 .status(student.getStatus())
                 .isDeleted(student.isDeleted())
                 .build();
