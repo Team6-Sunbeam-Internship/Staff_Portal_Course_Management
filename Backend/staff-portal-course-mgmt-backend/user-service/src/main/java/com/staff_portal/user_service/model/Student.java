@@ -43,14 +43,17 @@ public class Student {
 	@Column(nullable = false, unique = true, columnDefinition = "TEXT")
 	private String email;
 
-	@Column(nullable = false, columnDefinition = "TEXT")
-	private String password;
-
 	@Column(nullable = false, unique = true, columnDefinition = "TEXT")
 	private String mobileNumber;
 
 	@Column(columnDefinition = "TEXT")
 	private String address;
+	
+	@Column(nullable = false, columnDefinition = "TEXT")
+    private String batchCycleName;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String courseName;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
