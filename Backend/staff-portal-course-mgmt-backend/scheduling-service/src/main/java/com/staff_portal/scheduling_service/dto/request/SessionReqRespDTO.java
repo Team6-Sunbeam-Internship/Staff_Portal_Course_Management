@@ -2,8 +2,10 @@ package com.staff_portal.scheduling_service.dto.request;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.staff_portal.scheduling_service.model.SessionStatus;
 
 import jakarta.validation.constraints.Future;
@@ -20,15 +22,18 @@ import lombok.ToString;
 @NoArgsConstructor
 public class SessionReqRespDTO {
 	
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	private Long id;
+	
 	    @NotBlank(message = "title must not be blank")
 	    private String title;
    
-	    @Future
+	    
 	    @NotNull(message = "Start time is required")
 	    @JsonFormat(pattern = "HH:mm")
 	    private LocalTime startTime;
 	    
-	    @Future
+	    
 	    @NotNull(message = "End time is required")
 	    @JsonFormat(pattern = "HH:mm")
 	    private LocalTime endTime;
@@ -51,7 +56,14 @@ public class SessionReqRespDTO {
 		@JsonFormat(pattern = "yyyy-MM-dd")
 	    private LocalDate sessionDate;
 		
-		@NotNull(message = "Staff ID is required")
-	    private Long staffId;
+		@NotBlank(message = "Staff ID is required")
+	    private String staffName;
+		
+		@NotBlank(message = "batchCycleName is required")
+	    private String batchCycleName;
+		
+		@NotBlank(message = "courseName is required")
+	    private String courseName;
 
 }
+
