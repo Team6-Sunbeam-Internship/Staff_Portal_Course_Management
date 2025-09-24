@@ -1,6 +1,7 @@
 package com.staff_portal.scheduling_service.dto.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -19,9 +20,13 @@ public class ScheduleSimpleDTO {
 	private LocalDate scheduleDate;
 
 	private String activity;
-	private Long staffId;
-	private Long courseId;
-	private Long moduleId;
-	private Long infrastructureId;
+	 private String batchCycleName;
+	 private List<String> staffNames;
+	 private List<String> studentGroups;
+	private String courseName;
+	private String moduleName;
+	private String infrastructureName;
+	
 
 }
+
