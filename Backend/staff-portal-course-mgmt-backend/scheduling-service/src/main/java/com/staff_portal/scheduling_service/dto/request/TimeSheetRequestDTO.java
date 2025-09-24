@@ -41,8 +41,8 @@ public class TimeSheetRequestDTO {
     @NotNull(message = "Log date is required")
     private LocalDate logDate;
     
-    @NotNull(message = "Staff ID is required")
-    private Long staffId;
+    @NotNull(message = "Staff name is required")
+    private String staffName;
 
     @Min(1)
     @NotNull(message = "Duration of topic is required")
@@ -56,5 +56,7 @@ public class TimeSheetRequestDTO {
 
     @NotNull
     private List<TimeSheetTopicRequestDTO> timeSheetTopics;
-
+    
+    @NotBlank(message = "Batch Cycle Name is required")
+    private String batchCycleName;
 }
