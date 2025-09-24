@@ -16,8 +16,8 @@ import lombok.ToString;
 public class TimeSheetCourseModuleResponseDTO {
 
 	private Long id;
-    private Long courseId;
-    private Long moduleId;
+    private String courseName;
+    private String moduleName;
 
     private List<SimpleTimeSheetResponseDTO> timeSheets;
 }
