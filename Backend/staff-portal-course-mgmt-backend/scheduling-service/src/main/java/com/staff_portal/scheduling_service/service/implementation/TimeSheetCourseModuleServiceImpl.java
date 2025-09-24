@@ -58,8 +58,8 @@ public class TimeSheetCourseModuleServiceImpl implements ITimeSheetCourseModuleS
         TimeSheetCourseModule existing = courseModuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course module not found with ID: " + id));
 
-        existing.setCourseId(dto.getCourseId());
-        existing.setModuleId(dto.getModuleId());
+        existing.setCourseName(dto.getCourseName());
+        existing.setModuleName(dto.getModuleName());
 
         TimeSheetCourseModule updated = courseModuleRepository.save(existing);
         return TimeSheetCourseModuleMapper.toDto(updated);
