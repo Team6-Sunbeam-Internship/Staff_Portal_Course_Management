@@ -6,7 +6,9 @@ import ConfirmModal from "../../../components/common/Modal/ScheduleModals/Confir
 import { API_ENDPOINTS } from "../../../config/apiEndpoints";
 import { callBackendService } from "../../../services/api/apiService";
 import "../../../components/common/Table/Schedule/ScheduleTable.css";
-
+// Added for PDF export
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable"; // this extends jsPDF with autoTable
 
 
 
@@ -136,83 +138,83 @@ const Scheduling = () => {
     };
 
     //  Add schedules for date range
-    const 
-    addScheduleForDateRange = () => {
-  if (!selectedBatchCycleName || !selectedCourseName || !startDate || !endDate) {
-    showMessage("Please fill all required fields.", "warning");
-    return;
-  }
+    const
+        addScheduleForDateRange = () => {
+            if (!selectedBatchCycleName || !selectedCourseName || !startDate || !endDate) {
+                showMessage("Please fill all required fields.", "warning");
+                return;
+            }
 
-  const batchCycleObj = batchCycles.find(
-    (b) => b.cycleName === selectedBatchCycleName
-  );
-  const courseObj = allCourses.find(
-    (c) => c.courseName === selectedCourseName
-  );
+            const batchCycleObj = batchCycles.find(
+                (b) => b.cycleName === selectedBatchCycleName
+            );
+            const courseObj = allCourses.find(
+                (c) => c.courseName === selectedCourseName
+            );
 
-  if (!batchCycleObj || !courseObj) {
-    showMessage("Invalid batch cycle or course selection.", "danger");
-    return;
-  }
+            if (!batchCycleObj || !courseObj) {
+                showMessage("Invalid batch cycle or course selection.", "danger");
+                return;
+            }
 
-  const sDate = new Date(startDate);
-  const eDate = new Date(endDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+            const sDate = new Date(startDate);
+            const eDate = new Date(endDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-  let newRows = [];
+            let newRows = [];
 
-  // keep only rows inside the new date range
-  const updatedExistingRows = scheduleData.filter((row) => {
-    const rowDate = new Date(row.scheduleDate);
-    return rowDate >= sDate && rowDate <= eDate;
-  });
+            // keep only rows inside the new date range
+            const updatedExistingRows = scheduleData.filter((row) => {
+                const rowDate = new Date(row.scheduleDate);
+                return rowDate >= sDate && rowDate <= eDate;
+            });
 
-  // now generate rows for missing dates
-  let tempDate = new Date(sDate);
-  while (tempDate <= eDate) {
-    const isoDate = tempDate.toISOString().split("T")[0];
+            // now generate rows for missing dates
+            let tempDate = new Date(sDate);
+            while (tempDate <= eDate) {
+                const isoDate = tempDate.toISOString().split("T")[0];
 
-    if (
-      !skipDates.includes(isoDate) &&
-      new Date(isoDate) >= today &&
-      !updatedExistingRows.some((r) => r.scheduleDate === isoDate)
-    ) {
-      newRows.push({
-        scheduleDate: isoDate,
-        startTime: "",
-        endTime: "",
-        staffNames: [],
-        studentGroups: "",
-        moduleName: "",
-        activity: "",
-        infrastructureName: "",
-        slotName: "",
-        cycleName: batchCycleObj.cycleName,
-        courseName: courseObj.courseName,
-        isEditing: true,
-        isAdded: false,
-      });
-    }
-    tempDate.setDate(tempDate.getDate() + 1);
-  }
+                if (
+                    !skipDates.includes(isoDate) &&
+                    new Date(isoDate) >= today &&
+                    !updatedExistingRows.some((r) => r.scheduleDate === isoDate)
+                ) {
+                    newRows.push({
+                        scheduleDate: isoDate,
+                        startTime: "",
+                        endTime: "",
+                        staffNames: [],
+                        studentGroups: "",
+                        moduleName: "",
+                        activity: "",
+                        infrastructureName: "",
+                        slotName: "",
+                        cycleName: batchCycleObj.cycleName,
+                        courseName: courseObj.courseName,
+                        isEditing: true,
+                        isAdded: false,
+                    });
+                }
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
 
-  if (newRows.length === 0 && updatedExistingRows.length === 0) {
-    showMessage("No rows available in this date range.", "warning");
-    return;
-  }
+            if (newRows.length === 0 && updatedExistingRows.length === 0) {
+                showMessage("No rows available in this date range.", "warning");
+                return;
+            }
 
-  // hide pagination when generating schedules
-  setShowPagination(false);
+            // hide pagination when generating schedules
+            setShowPagination(false);
 
-  // keep rows in range + add new rows
-  setScheduleData([...updatedExistingRows, ...newRows]);
+            // keep rows in range + add new rows
+            setScheduleData([...updatedExistingRows, ...newRows]);
 
-  showMessage(
-    `${newRows.length} new row(s) added. ${updatedExistingRows.length} existing row(s) kept.`,
-    "success"
-  );
-};
+            showMessage(
+                `${newRows.length} new row(s) added. ${updatedExistingRows.length} existing row(s) kept.`,
+                "success"
+            );
+        };
 
 
     const handleCellChange = (index, field, value) => {
@@ -517,12 +519,91 @@ const Scheduling = () => {
     };
     const today = new Date().toISOString().split("T")[0];
     const handleAction = () => {
-    if (mode === "get") {
-      fetchSchedules(0);
-    } else {
-      addScheduleForDateRange();
-    }
-  };
+        if (mode === "get") {
+            fetchSchedules(0);
+        } else {
+            addScheduleForDateRange();
+        }
+    };
+
+    const generatePDF = () => {
+        if (!scheduleData || scheduleData.length === 0) {
+            showMessage("No schedule data to export.", "warning");
+            return;
+        }
+
+        const doc = new jsPDF("p", "mm", "a4");
+
+        // === Heading Info ===
+        const batchCycleHeading = `Batch Cycle: ${selectedBatchCycleName || "-"}`;
+        const courseHeading = `Course: ${selectedCourseName || "-"}`;
+
+        doc.setFontSize(12);
+        doc.text(batchCycleHeading, 14, 15);
+        doc.text(courseHeading, 14, 22);
+
+        // === Table Columns ===
+        const columns = [
+            { header: "Date", dataKey: "scheduleDate" },
+            { header: "Start Time", dataKey: "startTime" },
+            { header: "End Time", dataKey: "endTime" },
+            { header: "Slot", dataKey: "slotName" },
+            { header: "Staff", dataKey: "staffNames" },
+            { header: "Group", dataKey: "studentGroups" },
+            { header: "Module", dataKey: "moduleName" },
+            { header: "Activity", dataKey: "activity" },
+            { header: "Venue", dataKey: "infrastructureName" },
+
+        ];
+
+        // === Map rows from scheduleData ===
+        const rows = scheduleData.map((row) => ({
+            scheduleDate: row.scheduleDate,
+            startTime: row.startTime,
+            endTime: row.endTime,
+            staffNames: Array.isArray(row.staffNames) ? row.staffNames.join(", ") : row.staffNames,
+            studentGroups: Array.isArray(row.studentGroups) ? row.studentGroups.join(", ") : row.studentGroups,
+            moduleName: row.moduleName,
+            activity: row.activity,
+            infrastructureName: row.infrastructureName,
+            slotName: row.slotName,
+        }));
+
+        // === Add Table ===
+        autoTable(doc, {
+            head: [columns.map(c => c.header)],
+            body: rows.map(r => columns.map(c => r[c.dataKey] || "")),
+            startY: 36, // start below headings
+            styles: { fontSize: 9, cellPadding: 3, overflow: 'linebreak' },
+            headStyles: { fillColor: [52, 58, 64], textColor: 255, halign: "center" },
+            columnStyles: {
+                0: { cellWidth: 22 }, // Date
+                1: { cellWidth: 18 }, // Start Time
+                2: { cellWidth: 18 }, // End Time
+                3: { cellWidth: 20 }, // Staff
+                4: { cellWidth: 28 }, // Group
+                5: { cellWidth: 18 }, // Module
+                6: { cellWidth: 18 }, // Activity
+                7: { cellWidth: 22 }, // Venue
+                8: { cellWidth: 28 }, // Slot
+            },
+            theme: "grid",
+            margin: { top: 36, left: 5, right: 10, bottom: 20 },
+            didDrawPage: (data) => {
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFontSize(9);
+                doc.text(
+                    `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`,
+                    200,
+                    290,
+                    { align: "right" }
+                );
+            },
+        });
+
+        // === Save PDF ===
+        doc.save("schedule.pdf");
+    };
 
     return (
         <div
@@ -623,7 +704,7 @@ const Scheduling = () => {
                     <button
                         className="btn btn-primary btn-sm "
                         onClick={handleAction}
-                        disabled={!selectedBatchCycleName || !selectedCourseName || !startDate || !endDate }
+                        disabled={!selectedBatchCycleName || !selectedCourseName || !startDate || !endDate}
                     >
                         {mode === "get" ? "Get Schedules" : "Generate Schedule"}
                     </button>
@@ -659,7 +740,12 @@ const Scheduling = () => {
                         onChange={(e) => handleSizeChange(e.target.value)}
                     />
                 </div>
-
+                {/* Export PDF Button */}
+                <div className="w-auto d-grid">
+                    <button className="btn btn-secondary btn-sm" onClick={generatePDF}>
+                        Export PDF
+                    </button>
+                </div>
 
             </div>
 
