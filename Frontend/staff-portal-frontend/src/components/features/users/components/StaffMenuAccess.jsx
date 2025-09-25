@@ -291,7 +291,7 @@ function StaffMenuAccess() {
 
       {/* Delete Confirmation */}
       {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full text-center">
             <h5 className="text-lg font-bold mb-2">Delete Staff Access</h5>
             {itemToDelete && (

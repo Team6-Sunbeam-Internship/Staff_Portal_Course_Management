@@ -579,7 +579,7 @@ function ManageStaff() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-center">
             <div className="flex justify-center mb-4">
               <div className="flex items-center justify-center w-20 h-20 bg-red-100 rounded-full">

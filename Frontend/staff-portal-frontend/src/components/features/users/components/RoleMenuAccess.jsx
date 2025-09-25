@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaEdit, FaSyncAlt, FaTrash } from "react-icons/fa";
+import { FaEdit, FaSyncAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import {
   getAllRoleMenuAccess,
@@ -256,7 +256,7 @@ function RoleMenuAccess() {
               <div>
                 <label className="block mb-1 font-medium">Role Name</label>
                 <select
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-100 disabled:text-gray-500"
                   value={roleName}
                   onChange={(e) => setRoleName(e.target.value)}
                   disabled={isEditMode}
@@ -315,7 +315,7 @@ function RoleMenuAccess() {
 
       {/* Delete Confirmation */}
       {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full text-center">
             <h5 className="text-lg font-bold mb-2">Delete Role Access</h5>
             {itemToDelete && (
@@ -371,7 +371,8 @@ function RoleMenuAccess() {
           ))}
         </select>
         <button
-          className="bg-gray-300 hover:bg-gray-400 text-gray-800 p-2 rounded flex items-center justify-center"
+          // className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-3 py-2 rounded"
+          className="bg-gray-300 hover:bg-gray-400 text-gray-800 h-10 w-12 rounded flex items-center justify-center"
           title="Clear Filter"
           onClick={clearFilters}
           disabled={loading}
@@ -389,70 +390,7 @@ function RoleMenuAccess() {
         onDelete={requestDelete}
         indexOffset={indexOfFirst}
       />
-      {/* <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 text-center">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="py-2 px-3 border">#</th>
-              <th className="py-2 px-3 border">Role Name</th>
-              <th className="py-2 px-3 border">Menu Item</th>
-              <th className="py-2 px-3 border">Status</th>
-              <th className="py-2 px-3 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="py-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : !Array.isArray(accessList) || accessList.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="py-4">
-                  No data found
-                </td>
-              </tr>
-            ) : (
-              currentRecords.map((item, idx) => (
-                <tr key={item.accessId} className="hover:bg-gray-50">
-                  <td className="py-2 px-3 border">{indexOfFirst + idx + 1}</td>
-                  <td className="py-2 px-3 border">{item.roleName}</td>
-                  <td className="py-2 px-3 border">{item.menuItemTitle}</td>
-                  <td className="py-2 px-3 border">
-                    <span
-                      className={`px-2 py-1 rounded text-white ${
-                        item.status === "ALLOWED"
-                          ? "bg-green-800"
-                          : "bg-red-800"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 border flex justify-center gap-2">
-                    <button
-                      className="bg-yellow-400 hover:bg-green-500 text-white px-2 py-1 rounded"
-                      onClick={() => onEdit(item)}
-                      title="Edit"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded"
-                      onClick={() => requestDelete(item)}
-                      title="Delete"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div> */}
-
+      
       {/* Pagination */}
       <Pagination
         currentPage={currentPage}

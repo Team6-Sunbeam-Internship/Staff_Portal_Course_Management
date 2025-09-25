@@ -222,7 +222,7 @@ function MenuItem() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg w-full max-w-sm p-6 text-center">
             <div className="mb-4 flex items-center justify-center mx-auto w-20 h-20 rounded-full bg-red-100">
               <FaTrash size={32} className="text-red-600" />
