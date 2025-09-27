@@ -2,7 +2,7 @@
 
 import React from "react";
 import "./ScheduleTable.css";
-
+import Select from "react-select";
 
 const ScheduleTable1 = ({
   scheduleData,
@@ -19,6 +19,8 @@ const ScheduleTable1 = ({
   venueOptions,
   timeSlotOptions,
 }) => {
+
+
   return (
     <div className="table-responsive">
       <table className="table table-bordered table-sm align-middle text-center">
@@ -121,114 +123,53 @@ const ScheduleTable1 = ({
               </td>
 
               {/* Staff */}
+              {/* Staff */}
               <td>
                 {row.isEditing ? (
-                  <div className="dropdown w-100">
-                    <button
-                      className="btn btn-sm btn-outline-body w-100 text-start"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      {row.staffNames?.length > 0
-                        ? row.staffNames.join(", ")
-                        : "Select Staff"}
-                    </button>
-                    <ul
-                      className="dropdown-menu p-2 col-3"
-                      style={{ maxHeight: "200px", overflowY: "auto" }}
-                    >
-                      {staffList.map((name, i) => (
-                        <li key={i}>
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={row.staffNames.includes(name)}
-                              onChange={(e) => {
-                                const updated = e.target.checked
-                                  ? [...row.staffNames, name]
-                                  : row.staffNames.filter((n) => n !== name);
-                                onCellChange(index, "staffNames", updated);
-                              }}
-                            />
-                            <label className="form-check-label">{name}</label>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <Select
+                    isMulti
+                    options={staffList.map(name => ({ value: name, label: name }))}
+                    value={Array.isArray(row.staffNames) ? row.staffNames.map(name => ({ value: name, label: name })) : []}
+                    onChange={(selected) => {
+                      const updatedStaff = selected ? selected.map(s => s.value) : [];
+                      onCellChange(index, "staffNames", updatedStaff);
+                    }}
+                    placeholder="Select Staff"
+                    classNamePrefix="react-select"
+                  />
                 ) : (
                   row.staffNames?.join(", ")
                 )}
               </td>
 
-              {/* Student Groups */}
 
+
+
+              {/* Student Groups */}
               <td>
                 {row.isEditing ? (
-                  <div className="dropdown w-100">
-                    <button
-                      className="btn btn-sm btn-outline-body w-100 text-start"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      {row.studentGroups?.length > 0
-                        ? row.studentGroups.join(", ")
-                        : "Select Groups"}
-                    </button>
-                    <ul
-                      className="dropdown-menu p-2 col-3"
-                      style={{ maxHeight: "200px", overflowY: "auto" }}
-                    >
-                      {/* === "All" OPTION === */}
-                      <li>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            checked={row.studentGroups?.includes("All")}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                // Only keep "All"
-                                onCellChange(index, "studentGroups", ["All"]);
-                              } else {
-                                // Uncheck → clear selection
-                                onCellChange(index, "studentGroups", []);
-                              }
-                            }}
-                          />
-                          <label className="form-check-label">All</label>
-                        </div>
-                      </li>
+                  <Select
+                    isMulti
+                    options={[{ value: "All", label: "All" }, ...groupOptions.map(g => ({ value: g, label: g }))]}
+                    value={Array.isArray(row.studentGroups) ? row.studentGroups.map(g => ({ value: g, label: g })) : []}
+                    onChange={(selected) => {
+                      let updatedGroups = selected ? selected.map(s => s.value) : [];
 
-                      {/* === INDIVIDUAL GROUP OPTIONS === */}
-                      {groupOptions.map((g, i) => (
-                        <li key={i}>
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={row.studentGroups?.includes(g)}
-                              disabled={row.studentGroups?.includes("All")} // disable when "All" is selected
-                              onChange={(e) => {
-                                const updated = e.target.checked
-                                  ? [...row.studentGroups.filter((n) => n !== "All"), g]
-                                  : row.studentGroups.filter((n) => n !== g);
-                                onCellChange(index, "studentGroups", updated);
-                              }}
-                            />
-                            <label className="form-check-label">{g}</label>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                      // If "All" is selected, override others
+                      if (updatedGroups.includes("All")) {
+                        updatedGroups = ["All"];
+                      }
+
+                      onCellChange(index, "studentGroups", updatedGroups);
+                    }}
+                    placeholder="Select Groups"
+                    classNamePrefix="react-select"
+                  />
                 ) : (
                   row.studentGroups?.join(", ")
                 )}
               </td>
+
 
 
 
