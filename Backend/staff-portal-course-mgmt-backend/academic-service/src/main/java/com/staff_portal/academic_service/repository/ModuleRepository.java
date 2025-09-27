@@ -24,6 +24,9 @@ public interface ModuleRepository extends JpaRepository<Module, Integer> {
     );
     
     List<Module> findByCourse_CourseIdAndDeletedFalse(Integer courseId);
+    
+    List<Module> findByDeletedFalse();
+
 
     List<Module> findByCourse_BatchCycle_BatchCycleIdAndCourse_CourseType_CourseTypeIdAndCourse_CourseIdAndDeletedFalse(
             Integer batchCycleId, Integer courseTypeId, Integer courseId);

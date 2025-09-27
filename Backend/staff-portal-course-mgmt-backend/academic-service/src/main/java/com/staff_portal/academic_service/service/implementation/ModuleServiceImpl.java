@@ -100,7 +100,7 @@ public class ModuleServiceImpl implements ModuleService {
     // Get all modules (only active)
     @Override
     public List<ModuleResponseDTO> getAllModules() {
-        return moduleRepository.findByCourse_CourseIdAndDeletedFalse(null).stream() // fetch active only
+        return moduleRepository.findByDeletedFalse().stream() // fetch active only
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
