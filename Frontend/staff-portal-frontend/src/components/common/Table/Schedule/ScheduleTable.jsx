@@ -19,18 +19,16 @@ const ScheduleTable1 = ({
   venueOptions,
   timeSlotOptions,
 }) => {
-
-
   return (
     <div className="table-responsive">
       <table className="table table-bordered table-sm align-middle text-center">
         <thead className="table-light">
           <tr>
             <th>Date</th>
-            <th>Time</th>
+            <th style={{ width: "120px" }}>Time</th>
             <th>Slot</th>
             <th>Activity</th>
-            <th>Staff</th>
+            <th style={{ width: "220px" }}>Staff</th>
             <th>Student Group</th>
             <th>Module</th>
             <th>Venue</th>
@@ -43,22 +41,21 @@ const ScheduleTable1 = ({
               {/* Schedule Date */}
               <td>{row.scheduleDate}</td>
 
-              {/* Start - End Time in one column */}
+              {/* Start - End Time (two lines) */}
               <td>
                 {row.isEditing ? (
-                  <div className="d-flex align-items-center justify-content-between">
+                  <div className="d-flex flex-column align-items-center">
                     <input
                       type="time"
-                      className="form-control form-control-sm me-1"
+                      className="form-control form-control-sm mb-1"
                       value={row.startTime}
                       onChange={(e) =>
                         onCellChange(index, "startTime", e.target.value)
                       }
                     />
-                    -
                     <input
                       type="time"
-                      className="form-control form-control-sm ms-1 w-auto"
+                      className="form-control form-control-sm"
                       value={row.endTime}
                       onChange={(e) =>
                         onCellChange(index, "endTime", e.target.value)
@@ -66,15 +63,18 @@ const ScheduleTable1 = ({
                     />
                   </div>
                 ) : (
-                  `${row.startTime || ""} - ${row.endTime || ""}`
-
+                  <div className="d-flex flex-column">
+                    <span>{row.startTime || ""}</span> to
+                    <span>{row.endTime || ""}</span>
+                  </div>
                 )}
-                {row.isEditing && (<i
-                  className="bi bi-chevron-double-down text-success fs-5 ms-2"
-                  role="button"
-                  onClick={() => onAddRow(index)}
-                  title="Add Row"
-                ></i>
+                {row.isEditing && (
+                  <i
+                    className="bi bi-chevron-double-down text-success fs-6 ms-1"
+                    role="button"
+                    onClick={() => onAddRow(index)}
+                    title="Add Row"
+                  ></i>
                 )}
               </td>
 
@@ -123,55 +123,127 @@ const ScheduleTable1 = ({
               </td>
 
               {/* Staff */}
-              {/* Staff */}
               <td>
                 {row.isEditing ? (
                   <Select
                     isMulti
-                    options={staffList.map(name => ({ value: name, label: name }))}
-                    value={Array.isArray(row.staffNames) ? row.staffNames.map(name => ({ value: name, label: name })) : []}
+                    options={staffList.map((name) => ({
+                      value: name,
+                      label: name,
+                    }))}
+                    value={
+                      Array.isArray(row.staffNames)
+                        ? row.staffNames.map((name) => ({
+                            value: name,
+                            label: name,
+                          }))
+                        : []
+                    }
                     onChange={(selected) => {
-                      const updatedStaff = selected ? selected.map(s => s.value) : [];
+                      const updatedStaff = selected
+                        ? selected.map((s) => s.value)
+                        : [];
                       onCellChange(index, "staffNames", updatedStaff);
                     }}
                     placeholder="Select Staff"
                     classNamePrefix="react-select"
+                    styles={{
+                      multiValue: (base) => ({
+                        ...base,
+                        fontSize: "13px",
+                        padding: "2px 4px",
+                      }),
+                      multiValueLabel: (base) => ({
+                        ...base,
+                        fontSize: "13px",
+                      }),
+                      multiValueRemove: (base) => ({
+                        ...base,
+                        fontSize: "10px",
+                        padding: "0 2px",
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        padding: "0 4px",
+                      }),
+                      clearIndicator: (base) => ({
+                        ...base,
+                        padding: "0 4px",
+                      }),
+                      valueContainer: (base) => ({
+                        ...base,
+                        maxHeight: "60px",
+                        overflowY: "auto",
+                      }),
+                    }}
                   />
                 ) : (
                   row.staffNames?.join(", ")
                 )}
               </td>
 
-
-
-
               {/* Student Groups */}
               <td>
                 {row.isEditing ? (
                   <Select
                     isMulti
-                    options={[{ value: "All", label: "All" }, ...groupOptions.map(g => ({ value: g, label: g }))]}
-                    value={Array.isArray(row.studentGroups) ? row.studentGroups.map(g => ({ value: g, label: g })) : []}
+                    options={[
+                      { value: "All", label: "All" },
+                      ...groupOptions.map((g) => ({ value: g, label: g })),
+                    ]}
+                    value={
+                      Array.isArray(row.studentGroups)
+                        ? row.studentGroups.map((g) => ({
+                            value: g,
+                            label: g,
+                          }))
+                        : []
+                    }
                     onChange={(selected) => {
-                      let updatedGroups = selected ? selected.map(s => s.value) : [];
-
-                      // If "All" is selected, override others
+                      let updatedGroups = selected
+                        ? selected.map((s) => s.value)
+                        : [];
                       if (updatedGroups.includes("All")) {
                         updatedGroups = ["All"];
                       }
-
                       onCellChange(index, "studentGroups", updatedGroups);
                     }}
                     placeholder="Select Groups"
                     classNamePrefix="react-select"
+                    styles={{
+                      multiValue: (base) => ({
+                        ...base,
+                        fontSize: "13px",
+                        padding: "2px 4px",
+                      }),
+                      multiValueLabel: (base) => ({
+                        ...base,
+                        fontSize: "13px",
+                      }),
+                      multiValueRemove: (base) => ({
+                        ...base,
+                        fontSize: "10px",
+                        padding: "0 2px",
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        padding: "0 4px",
+                      }),
+                      clearIndicator: (base) => ({
+                        ...base,
+                        padding: "0 4px",
+                      }),
+                      valueContainer: (base) => ({
+                        ...base,
+                        maxHeight: "60px",
+                        overflowY: "auto",
+                      }),
+                    }}
                   />
                 ) : (
                   row.studentGroups?.join(", ")
                 )}
               </td>
-
-
-
 
               {/* Module */}
               <td>
@@ -227,7 +299,6 @@ const ScheduleTable1 = ({
                       onClick={() => onSaveRow(index)}
                       title="Save Row"
                     />
-
                   </>
                 ) : (
                   <>
@@ -247,7 +318,6 @@ const ScheduleTable1 = ({
                   onClick={() => onDeleteRow(index)}
                   title="Delete Row"
                 />
-                {/* New Remove (UI only) */}
                 <i
                   className="bi bi-x-circle text-danger fs-5 ms-2"
                   role="button"
