@@ -47,7 +47,6 @@ const Scheduling = () => {
     const [page, setPage] = useState(0); // zero-based page index
     const [size, setSize] = useState(8); // default page size (user can change)
     const [totalPages, setTotalPages] = useState(0);
-    const [totalElements, setTotalElements] = useState(0);
 
     // Fetch all data once
     useEffect(() => {
@@ -92,9 +91,9 @@ const Scheduling = () => {
             try {
                 const studentGroups = await callBackendService(
                     "get",
-                    `${API_ENDPOINTS.STUDENTGROUPS}/${selectedBatchCycleId}`
+                    `${API_ENDPOINTS.STUDENTGROUPS}/by-batch/${selectedBatchCycleId}`
                 );
-
+                 
                 setStudentGroups(studentGroups ?? []);
             } catch (err) {
                 console.error("Error fetching student groups:", err);
@@ -161,7 +160,7 @@ const Scheduling = () => {
             const eDate = new Date(endDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-
+            
             let newRows = [];
 
             // keep only rows inside the new date range
@@ -174,13 +173,14 @@ const Scheduling = () => {
             let tempDate = new Date(sDate);
             while (tempDate <= eDate) {
                 const isoDate = tempDate.toISOString().split("T")[0];
-
+                const editable = new Date(isoDate) >= today;
                 if (
                     !skipDates.includes(isoDate) &&
                     new Date(isoDate) >= today &&
                     !updatedExistingRows.some((r) => r.scheduleDate === isoDate)
                 ) {
                     newRows.push({
+                        scheduleId: null, // new row
                         scheduleDate: isoDate,
                         startTime: "",
                         endTime: "",
@@ -194,6 +194,7 @@ const Scheduling = () => {
                         courseName: courseObj.courseName,
                         isEditing: true,
                         isAdded: false,
+                        editable, // custom flag - you may use to show/hide edit button in table
                     });
                 }
                 tempDate.setDate(tempDate.getDate() + 1);
@@ -225,7 +226,9 @@ const Scheduling = () => {
 
     const handleAddRow = (index) => {
         const row = scheduleData[index];
+        
         const newRow = {
+            scheduleId: null,
             scheduleDate: row.scheduleDate,
             moduleName: row.moduleName,
             startTime: "",
@@ -239,6 +242,7 @@ const Scheduling = () => {
             courseName: row.courseName,
             isEditing: true,
             isAdded: false,
+            editable:row.editable, // inherit editable from current row
         };
         const updated = [...scheduleData];
         updated.splice(index + 1, 0, newRow);
@@ -347,14 +351,15 @@ const Scheduling = () => {
                 });
         } else {
             // === CREATE schedule ===
-            console.log("Payload:", requestPayload);
+            
             callBackendService("post", API_ENDPOINTS.SCHEDULES, {
                 data: requestPayload,
             })
-                .then(() => {
+                .then((res) => {
                     showMessage("Schedule created successfully.", "success");
+                    const newScheduleId = res.scheduleId ?? res.id ?? res.schedule_id ?? res.id;
                     const updated = [...scheduleData];
-                    updated[index] = { ...row, isEditing: false, isAdded: true };
+                    updated[index] = { ...row, scheduleId: newScheduleId, isEditing: false, isAdded: true };
                     setScheduleData(updated);
                 })
                 .catch((err) => {
@@ -488,7 +493,7 @@ const Scheduling = () => {
 
             // Pagination meta
             setTotalPages(finalPage.totalPages ?? (finalPage.totalElements ? Math.ceil(finalPage.totalElements / size) : 1));
-            setTotalElements(finalPage.totalElements ?? incoming.length);
+            
             setPage(finalPage.number ?? pageToFetch);
             setShowPagination(true);
         } catch (err) {
@@ -589,7 +594,7 @@ const Scheduling = () => {
             },
             theme: "grid",
             margin: { top: 36, left: 5, right: 10, bottom: 20 },
-            didDrawPage: (data) => {
+            didDrawPage: () => {
                 const pageCount = doc.internal.getNumberOfPages();
                 doc.setFontSize(9);
                 doc.text(
