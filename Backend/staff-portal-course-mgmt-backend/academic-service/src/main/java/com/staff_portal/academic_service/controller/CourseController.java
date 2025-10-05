@@ -41,7 +41,7 @@ public class CourseController {
             @RequestParam(required = false) String premiseId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "72") int size
-            ) {
+    ) {
         ApiResponse<Page<PaginatedCourseResponseDTO>> paginatedCourse = courseService.getPaginatedCourse(search, UUID.fromString(courseTypeId), UUID.fromString(batchCycleId), UUID.fromString(premiseId), page, size);
         return ResponseEntity.ok(paginatedCourse);
     }
@@ -52,9 +52,8 @@ public class CourseController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCourse(@PathVariable int id, @RequestBody CourseRequestDTO requestDTO) {
-        CourseResponseDTO response = courseService.updateCourse(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Course Updated Successfully!", response));
+    public ResponseEntity<?> updateCourse(@PathVariable UUID id, @RequestBody CourseRequestDTO requestDTO) {
+        return ResponseEntity.ok(courseService.updateCourse(id, requestDTO));
     }
 
     //delete course
