@@ -33,8 +33,8 @@ bff:
           redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
           scope:
             - openid
-          #            - profile
-          client-name: BACKEND FOR FRONTEND
+            - profile
+          client-name: "BACKEND FOR FRONTEND"
           require-proof-key: true
 
       provider:
