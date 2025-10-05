@@ -1,0 +1,31 @@
+.no-arrow {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  padding-right: 0.5rem;
+}
+/* Reduce react-select spacing & make tags readable */
+.react-select__multi-value {
+  font-size: 13px ;
+  padding: 2px 4px ;
+}
+
+.react-select__multi-value__label {
+  font-size: 13px ;
+}
+
+.react-select__multi-value__remove {
+  font-size: 10px ;
+  padding: 0 2px ;
+}
+
+.react-select__indicator {
+  padding: 0 4px ;
+}
+
+.react-select__value-container {
+  max-height: 60px ;
+  overflow-y: auto ;
+}
+
