@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @RequiredArgsConstructor
 public class PaginatedCourseResponseDTO {
+    private UUID id;
     private String courseCode;
     private String courseName;
     private UUID courseTypeId;
