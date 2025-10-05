@@ -13,5 +13,7 @@ public interface IMenuItemService {
 	String deleteMenuItem(Long id);
 
 	List<MenuItem> getAllMenuItem();
+	
+	List<MenuItem> searchMenuItems(String title);
 
 }
