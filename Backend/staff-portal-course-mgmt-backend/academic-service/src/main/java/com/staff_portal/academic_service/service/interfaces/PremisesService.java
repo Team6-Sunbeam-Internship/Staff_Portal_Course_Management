@@ -3,15 +3,16 @@ package com.staff_portal.academic_service.service.interfaces;
 import java.util.List;
 
 import com.staff_portal.academic_service.dto.request.PremisesRequest;
-import com.staff_portal.academic_service.dto.response.PremisesResponse;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
+import com.staff_portal.academic_service.dto.response.PremiseResponse;
 
 public interface PremisesService {
 
-	List<PremisesResponse> findAll();
+    ApiResponse<List<PremiseResponse>> findAll();
 
-	PremisesResponse createPremises(PremisesRequest request);
+	PremiseResponse createPremises(PremisesRequest request);
 
-	PremisesResponse updatePremises(int id, PremisesRequest request);
+	PremiseResponse updatePremises(int id, PremisesRequest request);
 
 	void deletePremises(int id);
 }
