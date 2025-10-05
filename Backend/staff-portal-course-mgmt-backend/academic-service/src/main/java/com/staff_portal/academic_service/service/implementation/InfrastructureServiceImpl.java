@@ -1,8 +1,11 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
+import com.staff_portal.academic_service.model.Premise;
+import com.staff_portal.academic_service.repository.PremiseRepository;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.InfrastructureRequest;
 import com.staff_portal.academic_service.dto.response.InfrastructureResponse;
@@ -18,26 +21,25 @@ import lombok.RequiredArgsConstructor;
 public class InfrastructureServiceImpl implements InfrastructureService {
 
     private final InfrastructureRepository infrastructureRepository;
-    private final PremisesRepository premisesRepository;
+    private final PremiseRepository premiseRepository;
 
     @Override
-    public InfrastructureResponse createInfrastructure(InfrastructureRequest request) {
-        Premises premises = premisesRepository.findById(request.getPremisesId()).orElseThrow(
+    public ApiResponse<UUID> createInfrastructure(InfrastructureRequest request) {
+        UUID premiseId = UUID.fromString(request.getPremiseId());
+        Premise premise = premiseRepository.findById(premiseId).orElseThrow(
                 () -> new ResourceNotFoundException("Premises not found with id: " + request.getPremisesId()));
 
-        Infrastructure entity = new Infrastructure();
-        entity.setRoomName(request.getRoomName());
-        entity.setType(request.getType());
-        entity.setLocation(request.getLocation());
-        entity.setCapacity(request.getCapacity());
-        entity.setDescription(request.getDescription());
-        entity.setPremises(premises);
+        Infrastructure infrastructure = Infrastructure.builder()
+                .roomName(request.getTitle())
+                .type(request.getType())
+                .description(request.getDescription())
+                .capacity(request.getCapacity())
+                .premise(premise)
+                .build();
 
-        Infrastructure saved = infrastructureRepository.save(entity);
+        Infrastructure saved = infrastructureRepository.save(infrastructure);
 
-        return new InfrastructureResponse(saved.getInfrastructureId(), saved.getRoomName(), saved.getType(),
-                saved.getLocation(), saved.getCapacity(), saved.getDescription(), saved.getPremises().getPremisesId(),
-                saved.getPremises().getName());
+        return ApiResponse.onSuccess(saved.getInfrastructureId());
     }
 
     @Override
