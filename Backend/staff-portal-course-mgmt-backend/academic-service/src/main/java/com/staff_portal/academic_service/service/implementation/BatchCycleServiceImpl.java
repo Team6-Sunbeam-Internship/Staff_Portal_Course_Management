@@ -1,6 +1,8 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import java.util.List;
+
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
@@ -21,7 +23,7 @@ import lombok.Setter;
 @Setter
 public class BatchCycleServiceImpl implements BatchCycleService {
 
-	private final BatchCycleRepository repository;
+	private final BatchCycleRepository batchCycleRepository;
 
 	@Override
 	public BatchCycleResponse createBatchCycle(BatchCycleRequest request) {
@@ -39,11 +41,23 @@ public class BatchCycleServiceImpl implements BatchCycleService {
 	}
 
 	@Override
-	public List<BatchCycleResponse> findAll() {
-		return repository.findAll().stream().filter(batch -> !batch.isDeleted())
-				.map(batch -> new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName(),
-						batch.getDescription(), batch.getStartDate(), batch.getEndDate(), batch.getStatus()))
-				.toList();
+	public ApiResponse<List<BatchCycleResponse>> findAll() {
+
+        List<BatchCycleResponse> listOfBatchCycles = batchCycleRepository
+                .findAll()
+                .stream()
+                .filter(batch -> !batch.isDeleted())
+                .map(filteredBatchCycle -> BatchCycleResponse.builder()
+                        .batchCycleId(filteredBatchCycle.getBatchCycleId())
+                        .title(filteredBatchCycle.getCycleName())
+                        .description(filteredBatchCycle.getDescription())
+                        .year(filteredBatchCycle.getStartDate().getYear())
+                        .startDate(filteredBatchCycle.getStartDate())
+                        .endDate(filteredBatchCycle.getEndDate())
+                        .build()
+                ).toList();
+
+        return ApiResponse.onSuccess(listOfBatchCycles);
 	}
 
 	@Override
