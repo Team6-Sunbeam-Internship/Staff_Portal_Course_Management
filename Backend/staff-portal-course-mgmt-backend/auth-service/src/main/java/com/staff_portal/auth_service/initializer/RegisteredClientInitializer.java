@@ -45,7 +45,7 @@ public class RegisteredClientInitializer implements ApplicationRunner {
             RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
                     .clientId(clientId)
                     .clientIdIssuedAt(Instant.now(Clock.system(ZoneId.of("Asia/Kolkata"))))
-                    .clientName("staff-portal-cms")
+                    .clientName("BACKEND FOR FRONTEND")
                     .clientSecret(passwordUtil.encode("staff-portal-secret"))
                     .clientAuthenticationMethods(clientAuthenticationMethods -> {
                         clientAuthenticationMethods.add(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
