@@ -33,9 +33,9 @@ public class PremiseController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(premiseService.createPremise(request));
 	}
 
-	@PutMapping("/{id}")
-	public PremiseResponse updatePremises(@PathVariable int id, @RequestBody PremiseRequest request) {
-		return premiseService.updatePremises(id, request);
+	@PutMapping("/update/{id}")
+	public ResponseEntity<ApiResponse<String>> updatePremises(@PathVariable String id, @RequestBody PremiseRequest request) {
+		return ResponseEntity.ok(premiseService.updatePremise(UUID.fromString(id), request));
 	}
 
 	@DeleteMapping("/{id}")
