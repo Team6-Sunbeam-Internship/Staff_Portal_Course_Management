@@ -28,7 +28,7 @@ public class InfrastructureController {
     private final InfrastructureService infrastructureService;
 
     // Create Infrastructure
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<InfrastructureResponse> createInfrastructure(@RequestBody InfrastructureRequest request) {
         InfrastructureResponse response = infrastructureService.createInfrastructure(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
