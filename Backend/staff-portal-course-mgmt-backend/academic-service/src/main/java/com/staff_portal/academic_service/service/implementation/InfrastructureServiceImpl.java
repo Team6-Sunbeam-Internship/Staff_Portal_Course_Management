@@ -43,36 +43,23 @@ public class InfrastructureServiceImpl implements InfrastructureService {
     }
 
     @Override
-    public InfrastructureResponse getInfrastructureById(int id) {
-        Infrastructure infra = infrastructureRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
-
-        return new InfrastructureResponse(infra.getInfrastructureId(), infra.getRoomName(), infra.getType(),
-                infra.getLocation(), infra.getCapacity(), infra.getDescription(), infra.getPremises().getPremisesId(),
-                infra.getPremises().getName());
-    }
-
-    @Override
-    public InfrastructureResponse updateInfrastructure(int id, InfrastructureRequest request) {
+    public ApiResponse<String> updateInfrastructure(UUID id, InfrastructureRequest request) {
 
         Infrastructure infra = infrastructureRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
+        UUID premiseId = UUID.fromString(request.getPremiseId());
+        Premise premise = premiseRepository.findById(premiseId).orElseThrow(
+                () -> new ResourceNotFoundException("Premises not found with id: " + request.getPremiseId()));
 
-        Premises premises = premisesRepository.findById(request.getPremisesId()).orElseThrow(
-                () -> new ResourceNotFoundException("Premises not found with id: " + request.getPremisesId()));
-
-        infra.setRoomName(request.getRoomName());
+        infra.setRoomName(request.getTitle());
         infra.setType(request.getType());
-        infra.setLocation(request.getLocation());
         infra.setCapacity(request.getCapacity());
         infra.setDescription(request.getDescription());
-        infra.setPremises(premises);
+        infra.setPremise(premise);
 
-        Infrastructure updated = infrastructureRepository.save(infra);
+        infrastructureRepository.save(infra);
 
-        return new InfrastructureResponse(updated.getInfrastructureId(), updated.getRoomName(), updated.getType(),
-                updated.getLocation(), updated.getCapacity(), updated.getDescription(),
-                updated.getPremises().getPremisesId(), updated.getPremises().getName());
+        return ApiResponse.onSuccess(String.format("Successfully updated infrastructure with id %s", infra.getInfrastructureId()));
     }
 
     @Override
