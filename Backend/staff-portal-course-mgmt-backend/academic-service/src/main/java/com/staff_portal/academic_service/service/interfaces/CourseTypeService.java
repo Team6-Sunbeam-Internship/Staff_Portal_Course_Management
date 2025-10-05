@@ -10,7 +10,7 @@ import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 public interface CourseTypeService {
     ApiResponse<UUID> createCourseType(CourseTypeRequestDTO requestDTO);
     
-    CourseTypeResponseDTO updateCourseType(int id, CourseTypeRequestDTO requestDTO);
+    ApiResponse<String> updateCourseType(UUID id, CourseTypeRequestDTO requestDTO);
     
     void deleteCourseType(int id);
     
