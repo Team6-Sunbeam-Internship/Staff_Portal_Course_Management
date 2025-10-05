@@ -1,18 +1,18 @@
 package com.staff_portal.academic_service.service.interfaces;
 
 import java.util.List;
-
-import com.staff_portal.academic_service.dto.request.PremisesRequest;
+import java.util.UUID;
+import com.staff_portal.academic_service.dto.request.PremiseRequest;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.PremiseResponse;
 
-public interface PremisesService {
+public interface PremiseService {
 
     ApiResponse<List<PremiseResponse>> findAll();
 
-	PremiseResponse createPremises(PremisesRequest request);
+	ApiResponse<UUID> createPremise(PremiseRequest request);
 
-	PremiseResponse updatePremises(int id, PremisesRequest request);
+	PremiseResponse updatePremises(int id, PremiseRequest request);
 
 	void deletePremises(int id);
 }
