@@ -29,10 +29,11 @@ public class TimeSheetTopic {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private Long id;
 
-    @Column(name = "topic_id", nullable = false)
-    private Long topicId;
+    @Column(name = "topic_name", nullable = false)
+    private String topicName;
 
     @ManyToOne
     @JoinColumn(name = "timesheet_id", nullable = false)

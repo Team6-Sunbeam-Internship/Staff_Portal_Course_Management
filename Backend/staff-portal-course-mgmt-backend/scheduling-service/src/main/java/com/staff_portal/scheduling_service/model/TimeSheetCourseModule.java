@@ -28,13 +28,14 @@ public class TimeSheetCourseModule {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(nullable = false)
     private Long id;
 
-    @Column(name = "course_id", nullable = false)
-    private Long courseId;
+    @Column(name = "course_name", nullable = false)
+    private String courseName;
 
-    @Column(name = "module_id", nullable = false)
-    private Long moduleId;
+    @Column(name = "module_Name", nullable = false)
+    private String moduleName;
 
     @OneToMany(mappedBy = "courseModule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimeSheet> timeSheets = new ArrayList<>();

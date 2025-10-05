@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSheetCourseModuleRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetCourseModuleResponseDTO;
+import com.staff_portal.scheduling_service.exception.ResourceNotFoundException;
 import com.staff_portal.scheduling_service.mapper.TimeSheetCourseModuleMapper;
 import com.staff_portal.scheduling_service.model.TimeSheetCourseModule;
 import com.staff_portal.scheduling_service.repository.TimeSheetCourseModuleRepository;
@@ -19,49 +20,56 @@ import jakarta.transaction.Transactional;
 @Service
 public class TimeSheetCourseModuleServiceImpl implements ITimeSheetCourseModuleService {
 
-	@Autowired
-	private TimeSheetCourseModuleRepository courseModuleRepository;
+    @Autowired
+    private TimeSheetCourseModuleRepository courseModuleRepository;
 
-	@Override
-	public TimeSheetCourseModuleResponseDTO createTimeSheetCourseModule(TimeSheetCourseModuleRequestDTO dto) {
+    @Override
+    public TimeSheetCourseModuleResponseDTO createTimeSheetCourseModule(TimeSheetCourseModuleRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Course module request cannot be null");
+        }
 
-		TimeSheetCourseModule entity = TimeSheetCourseModuleMapper.toEntity(dto);
-		TimeSheetCourseModule saved = courseModuleRepository.save(entity);
-		return TimeSheetCourseModuleMapper.toDto(saved);
+        TimeSheetCourseModule entity = TimeSheetCourseModuleMapper.toEntity(dto);
+        TimeSheetCourseModule saved = courseModuleRepository.save(entity);
+        return TimeSheetCourseModuleMapper.toDto(saved);
+    }
 
-	}
+    @Override
+    public List<TimeSheetCourseModuleResponseDTO> getAllTimeSheetCourseModule() {
+        return courseModuleRepository.findAll()
+                .stream()
+                .map(TimeSheetCourseModuleMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public List<TimeSheetCourseModuleResponseDTO> getAllTimeSheetCourseModule() {
+    @Override
+    public TimeSheetCourseModuleResponseDTO getTimeSheetCourseModuleById(Long id) {
+        TimeSheetCourseModule entity = courseModuleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course module not found with ID: " + id));
+        return TimeSheetCourseModuleMapper.toDto(entity);
+    }
 
-		return courseModuleRepository.findAll().stream().map(TimeSheetCourseModuleMapper::toDto)
-				.collect(Collectors.toList());
-	}
+    @Override
+    public TimeSheetCourseModuleResponseDTO updateTimeSheetCourseModule(Long id, TimeSheetCourseModuleRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Course module request cannot be null");
+        }
 
-	@Override
-	public TimeSheetCourseModuleResponseDTO getTimeSheetCourseModuleById(Long id) {
-		TimeSheetCourseModule entity = courseModuleRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Course module not found with id: " + id));
-		return TimeSheetCourseModuleMapper.toDto(entity);
+        TimeSheetCourseModule existing = courseModuleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course module not found with ID: " + id));
 
-	}
-
-	@Override
-	public TimeSheetCourseModuleResponseDTO updateTimeSheetCourseModule(Long id, TimeSheetCourseModuleRequestDTO dto) {
-		TimeSheetCourseModule existing = courseModuleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course module not found with id: " + id));
-
-        existing.setCourseId(dto.getCourseId());
-        existing.setModuleId(dto.getModuleId());
+        existing.setCourseName(dto.getCourseName());
+        existing.setModuleName(dto.getModuleName());
 
         TimeSheetCourseModule updated = courseModuleRepository.save(existing);
         return TimeSheetCourseModuleMapper.toDto(updated);
-		
-	}
-	
-	@Override
-    public void deleteTimeSheetCourseModule(Long id) {
-        courseModuleRepository.deleteById(id);
     }
 
+    @Override
+    public void deleteTimeSheetCourseModule(Long id) {
+        if (!courseModuleRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Course module not found with ID: " + id);
+        }
+        courseModuleRepository.deleteById(id);
+    }
 }

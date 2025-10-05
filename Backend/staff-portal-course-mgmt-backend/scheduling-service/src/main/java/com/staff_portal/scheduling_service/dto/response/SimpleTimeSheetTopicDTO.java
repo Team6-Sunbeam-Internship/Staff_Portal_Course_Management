@@ -11,5 +11,5 @@ import lombok.ToString;
 @NoArgsConstructor
 public class SimpleTimeSheetTopicDTO {
 	private Long id;
-    private Long topicId;
+    private String topicName;
 }

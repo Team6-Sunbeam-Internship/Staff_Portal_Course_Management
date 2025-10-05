@@ -15,8 +15,9 @@ import lombok.ToString;
 public class TimeSheetCourseModuleRequestDTO {
 
 	@NotNull(message = "Course ID must not be null")
-    private Long courseId;
+    private String courseName;
 
     @NotNull(message = "Module ID must not be null")
-    private Long moduleId;
+    private String moduleName;
 }
+

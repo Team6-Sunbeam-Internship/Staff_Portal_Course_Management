@@ -2,13 +2,13 @@ package com.staff_portal.scheduling_service.service.implementation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.staff_portal.scheduling_service.dto.request.TimeSlotRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSlotResponseDTO;
+import com.staff_portal.scheduling_service.exception.ResourceNotFoundException;
 import com.staff_portal.scheduling_service.mapper.TimeSlotMapper;
 import com.staff_portal.scheduling_service.model.TimeSlot;
 import com.staff_portal.scheduling_service.repository.TimeSlotRepository;
@@ -20,47 +20,49 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class TimeSlotServiceImpl implements ITimeSlotService {
 
-	@Autowired
-	private TimeSlotRepository timeSlotRepository;
+    @Autowired
+    private TimeSlotRepository timeSlotRepository;
 
-	@Override
-	public List<TimeSlotResponseDTO> getAllTimeSlots() {
-		List<TimeSlot> slots = timeSlotRepository.findAll();
-		List<TimeSlotResponseDTO> dtoList = new ArrayList<>();
+    @Override
+    public List<TimeSlotResponseDTO> getAllTimeSlots() {
+        List<TimeSlot> slots = timeSlotRepository.findAll();
+        List<TimeSlotResponseDTO> dtoList = new ArrayList<>();
 
-		for (TimeSlot slot : slots) {
-			dtoList.add(TimeSlotMapper.toTimeSlotResponseDTO(slot));
+        for (TimeSlot slot : slots) {
+            dtoList.add(TimeSlotMapper.toTimeSlotResponseDTO(slot));
+        }
+        return dtoList;
+    }
 
-		}
-		return dtoList;
-	}
+    @Override
+    public TimeSlotResponseDTO getTimeSlotById(Long id) {
+        TimeSlot timeSlot = timeSlotRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TimeSlot not found with ID: " + id));
+        return TimeSlotMapper.toTimeSlotResponseDTO(timeSlot);
+    }
 
-	@Override
-	public TimeSlotResponseDTO getTimeSlotById(Long id) {
-		Optional<TimeSlot> optional = timeSlotRepository.findById(id);
-		if (optional.isEmpty()) {
-			throw new RuntimeException("TimeSlot not found with ID: " + id);
-		}
+    @Override
+    public TimeSlotResponseDTO createTimeSlot(TimeSlotRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("TimeSlot request cannot be null");
+        }
+       
 
-		return TimeSlotMapper.toTimeSlotResponseDTO(optional.get());
-	}
+        TimeSlot entity = TimeSlotMapper.fromTimeSlotRequestDTO(dto);
+        TimeSlot saved = timeSlotRepository.save(entity);
+        return TimeSlotMapper.toTimeSlotResponseDTO(saved);
+    }
 
-	@Override
-	public TimeSlotResponseDTO createTimeSlot(TimeSlotRequestDTO dto) {
-		TimeSlot entity = TimeSlotMapper.fromTimeSlotRequestDTO(dto);
-		TimeSlot saved = timeSlotRepository.save(entity);
-		return TimeSlotMapper.toTimeSlotResponseDTO(saved);
-	}
-	
-	@Transactional
+    @Transactional
     @Override
     public TimeSlotResponseDTO updateTimeSlot(Long id, TimeSlotRequestDTO dto) {
-        Optional<TimeSlot> optional = timeSlotRepository.findById(id);
-        if (optional.isEmpty()) {
-            throw new RuntimeException("TimeSlot not found with ID: " + id);
+        if (dto == null) {
+            throw new IllegalArgumentException("TimeSlot request cannot be null");
         }
 
-        TimeSlot existing = optional.get();
+        TimeSlot existing = timeSlotRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TimeSlot not found with ID: " + id));
+
         existing.setStartTime(dto.getStartTime());
         existing.setEndTime(dto.getEndTime());
         existing.setSlotName(dto.getSlotName());
@@ -68,11 +70,11 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
         TimeSlot updated = timeSlotRepository.save(existing);
         return TimeSlotMapper.toTimeSlotResponseDTO(updated);
     }
-	
-	@Override
+
+    @Override
     public void deleteTimeSlot(Long id) {
         if (!timeSlotRepository.existsById(id)) {
-            throw new RuntimeException("TimeSlot not found with ID: " + id);
+            throw new ResourceNotFoundException("TimeSlot not found with ID: " + id);
         }
         timeSlotRepository.deleteById(id);
     }

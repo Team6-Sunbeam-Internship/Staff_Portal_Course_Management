@@ -14,6 +14,7 @@ import lombok.ToString;
 public class SimpleTimeSheetCourseModuleDTO {
 
 	private Long id;
-    private Long courseId;
-    private Long moduleId;
+    private String courseName;
+    private String moduleName;
 }
+

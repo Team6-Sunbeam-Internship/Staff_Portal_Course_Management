@@ -14,7 +14,7 @@ import lombok.ToString;
 public class TimeSheetTopicResponseDTO {
 	
 	private Long id;
-    private Long topicId;
+    private String topicName;
     
 	private SimpleTimeSheetResponseDTO timesheet;
 }

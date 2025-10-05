@@ -17,12 +17,13 @@ public class ScheduleMapper {
 		dto.setId(schedule.getId());
 		dto.setScheduleDate(schedule.getScheduleDate());
 		dto.setActivity(schedule.getActivity());
-		dto.setInfrastructureId(schedule.getInfrastructureId());
-		dto.setStaffId(schedule.getStaffId());
-		dto.setModuleId(schedule.getModuleId());
-		dto.setCourseId(schedule.getCourseId());
+		dto.setInfrastructureName(schedule.getInfrastructureName());
+		dto.setStaffNames(schedule.getStaffNames());
+		dto.setModuleName(schedule.getModuleName());
+		dto.setCourseName(schedule.getCourseName());
 		dto.setTimeSlot(TimeSlotMapper.toTimeSlotSimpleDTO(schedule.getTimeSlot()));
-
+        dto.setBatchCycleName(schedule.getBatchCycleName());
+        dto.setStudentGroups(schedule.getStudentGroups());
 		return dto;
 	}
 
@@ -34,12 +35,13 @@ public class ScheduleMapper {
 		Schedule schedule = new Schedule();
 		schedule.setActivity(dto.getActivity());
 		schedule.setScheduleDate(dto.getScheduleDate());
-		schedule.setInfrastructureId(dto.getInfrastructureId());
-		schedule.setStaffId(dto.getStaffId());
-		schedule.setModuleId(dto.getModuleId());
-		schedule.setCourseId(dto.getCourseId());
+		schedule.setInfrastructureName(dto.getInfrastructureName());
+		schedule.setStaffNames(dto.getStaffNames());
+		schedule.setModuleName(dto.getModuleName());
+		schedule.setCourseName(dto.getCourseName());
 		schedule.setTimeSlot(timeSlot);
-	
+	    schedule.setBatchCycleName(dto.getBatchCycleName());
+	    schedule.setStudentGroups(dto.getStudentGroups());
 		return schedule;
 	}
 
@@ -53,14 +55,18 @@ public class ScheduleMapper {
 		dto.setId(schedule.getId());
 		dto.setScheduleDate(schedule.getScheduleDate());
 		dto.setActivity(schedule.getActivity());
-		dto.setInfrastructureId(schedule.getInfrastructureId());
-		dto.setStaffId(schedule.getStaffId());
-		dto.setModuleId(schedule.getModuleId());
-		dto.setCourseId(schedule.getCourseId());
-
+		dto.setInfrastructureName(schedule.getInfrastructureName());
+		dto.setStaffNames(schedule.getStaffNames());
+		dto.setModuleName(schedule.getModuleName());
+		dto.setCourseName(schedule.getCourseName());
+		dto.setBatchCycleName(schedule.getBatchCycleName());
+        dto.setStudentGroups(schedule.getStudentGroups());
+        
 		return dto;
 
 		
 	}
 }
+
+
 

@@ -19,10 +19,12 @@ public class SimpleTimeSheetResponseDTO {
 	private Long id;
     private LocalTime startTime;
     private LocalTime endTime;
-    private Long staffId;
+    private String staffName;
     private String extraTopic;
     private String assignment;
     private LocalDate logDate;
     private int durationHours;
     private TimeSheetStatus status;
+    private String batchCycleName;
 }
+

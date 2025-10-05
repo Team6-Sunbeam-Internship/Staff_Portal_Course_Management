@@ -26,10 +26,10 @@ public class TimeSheetMapper {
 		entity.setExtraTopic(dto.getExtraTopic());
 		entity.setAssignment(dto.getAssignment());
 		entity.setLogDate(dto.getLogDate());
-		entity.setStaffId(dto.getStaffId());
+		entity.setStaffName(dto.getStaffName());
 		entity.setDurationHours(dto.getDurationHours());
 		entity.setStatus(dto.getStatus());
-
+        entity.setBatchCycleName(dto.getBatchCycleName());
 		TimeSheetCourseModule courseModule = TimeSheetCourseModuleMapper.toEntity(dto.getCourseModule());
 
 		entity.setCourseModule(courseModule);
@@ -44,18 +44,19 @@ public class TimeSheetMapper {
 		TimeSheetResponseDTO dto = new TimeSheetResponseDTO();
 		dto.setId(entity.getId());
 		dto.setStartTime(entity.getStartTime());
-		dto.setStaffId(entity.getStaffId());
+		dto.setStaffName(entity.getStaffName());
 		dto.setEndTime(entity.getEndTime());
 		dto.setExtraTopic(entity.getExtraTopic());
 		dto.setAssignment(entity.getAssignment());
 		dto.setLogDate(entity.getLogDate());
 		dto.setDurationHours(entity.getDurationHours());
 		dto.setStatus(entity.getStatus());
+		dto.setBatchCycleName(entity.getBatchCycleName());
 
 		SimpleTimeSheetCourseModuleDTO cmDto = new SimpleTimeSheetCourseModuleDTO();
 		cmDto.setId( entity.getCourseModule().getId());
-		cmDto.setModuleId( entity.getCourseModule().getModuleId());
-		cmDto.setCourseId( entity.getCourseModule().getCourseId());
+		cmDto.setModuleName( entity.getCourseModule().getModuleName());
+		cmDto.setCourseName( entity.getCourseModule().getCourseName());
 		dto.setCourseModule(cmDto);
  
 		dto.setTopics(entity.getTimeSheetTopics().stream().map(TimeSheetTopicMapper::toSimpleDto).collect(Collectors.toList()));
@@ -66,14 +67,14 @@ public class TimeSheetMapper {
 		SimpleTimeSheetResponseDTO dto = new SimpleTimeSheetResponseDTO();
 		dto.setId(entity.getId());
 		dto.setStartTime(entity.getStartTime());
-		dto.setStaffId(entity.getStaffId());
+		dto.setStaffName(entity.getStaffName());
 		dto.setEndTime(entity.getEndTime());
 		dto.setExtraTopic(entity.getExtraTopic());
 		dto.setAssignment(entity.getAssignment());
 		dto.setLogDate(entity.getLogDate());
 		dto.setDurationHours(entity.getDurationHours());
 		dto.setStatus(entity.getStatus());
-		
+		dto.setBatchCycleName(entity.getBatchCycleName());
 		return dto;
 		
 }

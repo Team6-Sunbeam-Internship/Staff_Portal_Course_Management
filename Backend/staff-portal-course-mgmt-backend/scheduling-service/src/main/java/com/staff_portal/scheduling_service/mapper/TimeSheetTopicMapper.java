@@ -10,7 +10,7 @@ public class TimeSheetTopicMapper {
 
 	public static TimeSheetTopic toEntity(TimeSheetTopicRequestDTO topicDto) {
 		TimeSheetTopic newTopic = new TimeSheetTopic();
-		newTopic.setTopicId(topicDto.getTopicId());
+		newTopic.setTopicName(topicDto.getTopicName());
 
 		return newTopic;
 	}
@@ -18,7 +18,7 @@ public class TimeSheetTopicMapper {
 	public static TimeSheetTopicResponseDTO toDto(TimeSheetTopic entity) {
 		TimeSheetTopicResponseDTO topicDto = new TimeSheetTopicResponseDTO();
 		topicDto.setId(entity.getId());
-		topicDto.setTopicId(entity.getTopicId());
+		topicDto.setTopicName(entity.getTopicName());
 		topicDto.setTimesheet(TimeSheetMapper.toSimpleDto(entity.getTimeSheet()));
 
 		return topicDto;
@@ -27,8 +27,9 @@ public class TimeSheetTopicMapper {
 	public static SimpleTimeSheetTopicDTO toSimpleDto(TimeSheetTopic entity) {
 		SimpleTimeSheetTopicDTO topicDto = new SimpleTimeSheetTopicDTO();
 		topicDto.setId(entity.getId());
-		topicDto.setTopicId(entity.getTopicId());
+		topicDto.setTopicName(entity.getTopicName());
 
 		return topicDto;
 	}
 }
+
