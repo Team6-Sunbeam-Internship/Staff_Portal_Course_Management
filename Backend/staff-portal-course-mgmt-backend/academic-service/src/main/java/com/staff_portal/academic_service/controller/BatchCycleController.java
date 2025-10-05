@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import org.hibernate.engine.jdbc.batch.spi.Batch;
@@ -40,19 +41,15 @@ public class BatchCycleController {
         return ResponseEntity.status(HttpStatus.OK).body(allBatchCycles);
     }
 
-    @GetMapping("/{id}")
-    public BatchCycleResponse getById(@PathVariable int id) {
-        return service.findById(id);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<String>> update(@PathVariable String id, @RequestBody BatchCycleRequest request) {
+        UUID uuid = UUID.fromString(id);
+        return ResponseEntity.status(HttpStatus.OK).body(service.updateBatchCycle(uuid, request));
     }
 
-    @PutMapping("/{id}")
-    public BatchCycleResponse update(@PathVariable int id, @RequestBody BatchCycleRequest request) {
-        return service.updateBatchCycle(id, request);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable int id) {
-        service.deleteBatchCycle(id);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> delete(@PathVariable String id) {
+        service.deleteBatchCycle(UUID.fromString(id));
         return ResponseEntity.ok("BatchCycle deleted successfully!");
     }
 }
