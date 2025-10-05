@@ -9,11 +9,9 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CourseTypeRequestDTO {
-    private String typeName;
-//    private int batchCycleId;
-    private int premisesId;
-
+    private String title;
     private String description;
     private CourseTypeStatus status;
 }
