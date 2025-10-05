@@ -26,32 +26,33 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/batch-cycle")
 public class BatchCycleController {
 
-	private final BatchCycleService service;
+    private final BatchCycleService service;
 
-	@PostMapping("/create")
-	public ResponseEntity<ApiResponse<BatchCycleResponse>> create(@RequestBody BatchCycleRequest request) {
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<BatchCycleResponse>> create(@RequestBody BatchCycleRequest request) {
         ApiResponse<BatchCycleResponse> batchCycleCreateResponse = service.createBatchCycle(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(batchCycleCreateResponse);
-	}
+    }
 
-	@GetMapping
-	public List<BatchCycleResponse> getAllBatchCycles() {
-		return service.findAll();
-	}
+    @GetMapping("/getAll")
+    public ResponseEntity<ApiResponse<List<BatchCycleResponse>>> getAllBatchCycles() {
+        ApiResponse<List<BatchCycleResponse>> allBatchCycles = service.findAll();
+        return ResponseEntity.status(HttpStatus.OK).body(allBatchCycles);
+    }
 
-	@GetMapping("/{id}")
-	public BatchCycleResponse getById(@PathVariable int id) {
-		return service.findById(id);
-	}
+    @GetMapping("/{id}")
+    public BatchCycleResponse getById(@PathVariable int id) {
+        return service.findById(id);
+    }
 
-	@PutMapping("/{id}")
-	public BatchCycleResponse update(@PathVariable int id, @RequestBody BatchCycleRequest request) {
-		return service.updateBatchCycle(id, request);
-	}
+    @PutMapping("/{id}")
+    public BatchCycleResponse update(@PathVariable int id, @RequestBody BatchCycleRequest request) {
+        return service.updateBatchCycle(id, request);
+    }
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<String> delete(@PathVariable int id) {
-		service.deleteBatchCycle(id);
-		return ResponseEntity.ok("BatchCycle deleted successfully!");
-	}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> delete(@PathVariable int id) {
+        service.deleteBatchCycle(id);
+        return ResponseEntity.ok("BatchCycle deleted successfully!");
+    }
 }
