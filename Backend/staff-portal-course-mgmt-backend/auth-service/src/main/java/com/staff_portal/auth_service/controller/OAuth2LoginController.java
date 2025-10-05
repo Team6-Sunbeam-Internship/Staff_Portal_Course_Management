@@ -16,10 +16,10 @@ public class OAuth2LoginController {
     @GetMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error,
                         Model model,
-                        @ModelAttribute("changePassword") Boolean changePassword,
                         HttpServletRequest request) {
         log.info("LoginController.login() called from: {}", request.getRequestURI());
         log.info("Request parameters - error: {}", error);
+        Boolean changePassword = (Boolean) model.asMap().get("changePassword");
         if (Boolean.TRUE.equals(changePassword)) {
             model.addAttribute("changePasswordMessage",
                     "Password changed successfully! " +
