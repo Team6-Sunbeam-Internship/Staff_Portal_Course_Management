@@ -12,7 +12,7 @@ public interface PremiseService {
 
 	ApiResponse<UUID> createPremise(PremiseRequest request);
 
-	PremiseResponse updatePremises(int id, PremiseRequest request);
+	ApiResponse<String> updatePremise(UUID id, PremiseRequest request);
 
 	void deletePremises(int id);
 }
