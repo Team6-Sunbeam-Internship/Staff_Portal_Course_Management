@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/bff")
 @RequiredArgsConstructor
 @Slf4j
 public class SessionController {
