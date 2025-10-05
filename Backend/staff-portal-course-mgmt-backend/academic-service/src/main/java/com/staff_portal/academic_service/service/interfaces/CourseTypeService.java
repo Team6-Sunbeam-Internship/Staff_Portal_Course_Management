@@ -12,11 +12,7 @@ public interface CourseTypeService {
     
     ApiResponse<String> updateCourseType(UUID id, CourseTypeRequestDTO requestDTO);
     
-    void deleteCourseType(int id);
+    void deleteCourseType(UUID id);
     
     ApiResponse<List<CourseTypeResponseDTO>> getAllCourseTypes();
-    
-    CourseTypeResponseDTO getCourseTypeById(int id);
-    
-//    List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId);
 }
