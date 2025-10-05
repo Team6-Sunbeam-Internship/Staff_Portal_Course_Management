@@ -5,7 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.staff_portal.academic_service.model.Infrastructure;
 
+import java.util.UUID;
+
 @Repository
-public interface InfrastructureRepository extends JpaRepository<Infrastructure, Integer> {
+public interface InfrastructureRepository extends JpaRepository<Infrastructure, UUID> {
 
 }
