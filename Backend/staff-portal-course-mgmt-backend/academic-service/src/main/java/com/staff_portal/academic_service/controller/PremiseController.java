@@ -7,7 +7,6 @@ import com.staff_portal.academic_service.dto.request.PremiseRequest;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +39,7 @@ public class PremiseController {
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deletePremises(@PathVariable String id) {
-		premiseService.deletePremises(UUID.fromString(id));
+		premiseService.deletePremise(UUID.fromString(id));
 		return ResponseEntity.ok("Premises with id " + id + " deleted successfully");
 	}
 
