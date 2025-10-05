@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -41,10 +42,10 @@ public class InfrastructureController {
     }
 
     // updating the infrastructure
-    @PutMapping("/{id}")
-    public ResponseEntity<InfrastructureResponse> updateInfrastructure(@PathVariable int id,
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<String>> updateInfrastructure(@PathVariable String id,
                                                                        @RequestBody InfrastructureRequest request) {
-        return ResponseEntity.ok(infrastructureService.updateInfrastructure(id, request));
+        return ResponseEntity.ok(infrastructureService.updateInfrastructure(UUID.fromString(id), request));
     }
 
     // deleting the infrastructure
