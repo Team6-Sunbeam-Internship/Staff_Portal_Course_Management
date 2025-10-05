@@ -3,7 +3,7 @@ package com.staff_portal.academic_service.service.implementation;
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
-import com.staff_portal.academic_service.enums.CourseTypeStatus;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.CourseType;
 import com.staff_portal.academic_service.repository.*;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
@@ -39,21 +39,14 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     }
 
     @Override
-    public CourseTypeResponseDTO updateCourseType(int id, CourseTypeRequestDTO requestDTO) {
+    public ApiResponse<String> updateCourseType(UUID id, CourseTypeRequestDTO requestDTO) {
         CourseType courseType = courseTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("createCourseType not found"));
-
-        courseType.setTypeName(requestDTO.getTypeName());
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course type with id: %s not found", id)));
+        courseType.setTypeName(requestDTO.getTitle());
         courseType.setDescription(requestDTO.getDescription());
         courseType.setStatus(requestDTO.getStatus());
-
-        Premises premises = premisesRepository.findById(requestDTO.getPremisesId())
-                .orElseThrow(() -> new RuntimeException("Premises not found"));
-
-        courseType.setPremises(premises);
         courseTypeRepository.save(courseType);
-
-        return mapToResponse(courseType);
+        return ApiResponse.onSuccess("Successfully updated course type with id: " + id);
     }
 
     @Override
