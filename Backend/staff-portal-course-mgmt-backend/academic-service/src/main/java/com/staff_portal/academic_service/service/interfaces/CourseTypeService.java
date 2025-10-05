@@ -3,6 +3,7 @@ package com.staff_portal.academic_service.service.interfaces;
 import java.util.List;
 
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 
 public interface CourseTypeService {
@@ -12,7 +13,7 @@ public interface CourseTypeService {
     
     void deleteCourseType(int id);
     
-    List<CourseTypeResponseDTO> getAllCourseTypes();
+    ApiResponse<List<CourseTypeResponseDTO>> getAllCourseTypes();
     
     CourseTypeResponseDTO getCourseTypeById(int id);
     
