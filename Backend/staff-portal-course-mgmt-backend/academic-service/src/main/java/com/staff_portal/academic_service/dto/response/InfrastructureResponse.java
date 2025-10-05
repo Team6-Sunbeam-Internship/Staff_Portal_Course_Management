@@ -1,22 +1,20 @@
 package com.staff_portal.academic_service.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.UUID;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class InfrastructureResponse {
-
-	private int infrastructureId;
-    private String roomName;
+	private UUID id;
+    private String title;
     private String type;
-    private String location;
     private int capacity;
     private String description;
-    private int premisesId;
-    private String premisesName;
+    private UUID premisesId;
+    private String premisesTitle;
 }
