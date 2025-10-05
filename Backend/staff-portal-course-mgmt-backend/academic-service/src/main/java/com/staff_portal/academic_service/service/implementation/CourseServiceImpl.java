@@ -1,8 +1,6 @@
 package com.staff_portal.academic_service.service.implementation;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
@@ -123,12 +121,29 @@ public class CourseServiceImpl implements CourseService {
 
     // Get All Courses (excluding deleted)
     @Override
-    public List<CourseResponseDTO> getAllCourses() {
-        return courseRepository.findAll()
-                .stream()
-                .filter(c -> !c.isDeleted())
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+    public ApiResponse<Map<UUID, Map<UUID, List<CourseResponseDTO>>>> getAllCourses() {
+        List<CourseResponseDTO> allCourseDetails = courseRepository.findAllCourseDetails();
+
+        Map<UUID, Map<UUID, List<CourseResponseDTO>>> typeMap = new HashMap<>();
+
+        for(CourseResponseDTO dto : allCourseDetails) {
+            UUID courseTypeId = dto.getCourseTypeId();
+            UUID batchCycleId = dto.getBatchCycleId();
+
+            Map<UUID, List<CourseResponseDTO>> batchMap = typeMap.get(courseTypeId);
+            if(batchMap == null) {
+                batchMap = new HashMap<>();
+                typeMap.put(courseTypeId, batchMap);
+            }
+
+            List<CourseResponseDTO> courseDetails = batchMap.get(batchCycleId);
+            if(courseDetails == null) {
+                courseDetails = new ArrayList<>();
+                batchMap.put(batchCycleId, courseDetails);
+            }
+            courseDetails.add(dto);
+        }
+        return ApiResponse.onSuccess(typeMap);
     }
 
     // Soft Delete Course and cascade

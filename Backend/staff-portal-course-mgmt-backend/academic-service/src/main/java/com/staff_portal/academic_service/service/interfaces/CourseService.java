@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.service.interfaces;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.request.CourseRequestDTO;
@@ -18,6 +19,6 @@ public interface CourseService {
 
     void deleteCourse(UUID id);
 
-    List<CourseResponseDTO> getAllCourses();
+    ApiResponse<Map<UUID, Map<UUID, List<CourseResponseDTO>>>>getAllCourses();
 }
 
