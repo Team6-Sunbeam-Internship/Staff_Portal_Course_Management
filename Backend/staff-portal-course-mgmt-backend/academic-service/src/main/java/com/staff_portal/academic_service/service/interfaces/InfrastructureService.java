@@ -11,9 +11,7 @@ public interface InfrastructureService {
 
     ApiResponse<UUID> createInfrastructure(InfrastructureRequest request);
 
-    InfrastructureResponse getInfrastructureById(int id);
-
-    InfrastructureResponse updateInfrastructure(int id, InfrastructureRequest request);
+    ApiResponse<String> updateInfrastructure(UUID id, InfrastructureRequest request);
 
     void deleteInfrastructure(int id);
 
