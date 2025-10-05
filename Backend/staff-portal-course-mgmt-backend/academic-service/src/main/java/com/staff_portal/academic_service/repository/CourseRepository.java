@@ -1,41 +1,72 @@
 package com.staff_portal.academic_service.repository;
 
 import java.util.List;
+import java.util.UUID;
 
+import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.staff_portal.academic_service.model.Course;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, Integer> {
+public interface CourseRepository extends JpaRepository<Course, UUID> {
 
-	
+
     boolean existsByCourseCode(String courseCode);
-    
-    
-//    List<Course> findByCourseType_CourseTypeId(Integer courseTypeId);
-//    
+
     List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
             Integer batchCycleId,
             Integer courseTypeId
-        );
-    
-    
-    //  Fetch all non-deleted courses
+    );
+
     List<Course> findByDeletedFalse();
 
-    //  Fetch by ID if not deleted
     Course findByCourseIdAndDeletedFalse(int courseId);
 
-    //  Fetch courses by courseType if not deleted
     List<Course> findByCourseType_CourseTypeIdAndDeletedFalse(Integer courseTypeId);
 
-    //  Fetch courses by BatchCycle + CourseType if not deleted
     List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeIdAndDeletedFalse(
             Integer batchCycleId,
             Integer courseTypeId
     );
+
+    @Query(value = """
+            SELECT new com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO(
+                c.courseCode, c.courseName, 
+                c.courseType.courseTypeId, c.courseType.typeName, 
+                c.premise.premiseId, c.premise.name, 
+                c.batchCycle.batchCycleId, c.batchCycle.cycleName, 
+                c.studentCount, c.courseGroupCount, c.status
+            )
+            FROM Course c
+            WHERE c.deleted = false
+                AND (:courseTypeId IS NULL OR c.courseType.courseTypeId = :courseTypeId)
+                AND (:batchCycleId IS NULL OR c.batchCycle.batchCycleId = :batchCycleId)
+                AND (:premiseId IS NULL OR c.premise.premiseId = :premiseId)
+                AND (:searchTerm IS NULL OR c.courseName LIKE %:searchTerm% OR c.courseCode LIKE %:searchTerm%)
+            ORDER BY c.startDate DESC
+            """,
+            countQuery = """
+                    SELECT COUNT(c) FROM Course c
+                    WHERE c.deleted=false
+                        AND (:courseTypeId IS NULL OR c.courseType.courseTypeId = :courseTypeId)
+                        AND (:batchCycleId IS NULL OR c.batchCycle.batchCycleId = :batchCycleId)
+                        AND (:premiseId IS NULL OR c.premise.premiseId = :premiseId)
+                        AND (:searchTerm IS NULL OR c.courseName LIKE %:searchTerm% OR c.courseCode LIKE %:searchTerm%)
+                    """)
+    Page<PaginatedCourseResponseDTO> findPaginatedCourses(
+            @Param("courseTypeId") UUID courseTypeId,
+            @Param("batchCycleId") UUID batchCycleId,
+            @Param("premiseId") UUID premiseID,
+            @Param("searchTerm") String searchTerm,
+            Pageable pageable
+    );
+
 
 }
 
