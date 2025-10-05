@@ -1,23 +1,18 @@
 package com.staff_portal.academic_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class InfrastructureRequest {
-
 	@NotBlank
-	private String roomName;
+	private String title;
 	private String type;
-	private String location;
 	private int capacity;
 	private String description;
-	private int premisesId;
-
+	private String premiseId;
 }
