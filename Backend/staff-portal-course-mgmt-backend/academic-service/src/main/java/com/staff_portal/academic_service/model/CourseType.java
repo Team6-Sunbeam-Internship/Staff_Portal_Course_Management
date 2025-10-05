@@ -1,58 +1,43 @@
 package com.staff_portal.academic_service.model;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.enums.CourseTypeStatus;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "course_types")
+@Builder
 public class CourseType {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int courseTypeId;
-	
-//	 @ManyToOne
-//	    @JoinColumn(name = "batchCycleId", nullable = false)
-//	    private BatchCycle batchCycle;
-	
-	 @ManyToOne
-	    @JoinColumn(name = "premisesId", nullable = false)
-	    private Premises premises;
-	 
-	 @Column(nullable = false)
-	    private String typeName;
-	 
-	 @Column(length = 500)
-	    private String description;
-	 
-	 @Enumerated(EnumType.STRING)
-	    @Column(nullable = false)
-	    private CourseTypeStatus status;
-	 
-	 @Column(nullable = false)
-	    private boolean deleted = false;
-	 
-	 @OneToMany(mappedBy = "courseType", cascade = CascadeType.ALL)
-	    private List<Course> courses;
+    @Id
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name="course_type_id",unique = true, nullable = false, length = 36)
+    private UUID courseTypeId;
+
+    @Column(nullable = false)
+    private String typeName;
+
+    @Column(length = 500)
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CourseTypeStatus status;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @OneToMany(mappedBy = "courseType", cascade = CascadeType.ALL)
+    private List<Course> courses;
 
 }
