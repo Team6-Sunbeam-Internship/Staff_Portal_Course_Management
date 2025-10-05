@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:5176")
 @RestController
 @RequestMapping("/api/sections")
 @RequiredArgsConstructor
@@ -57,7 +57,7 @@ public class SectionController {
     @GetMapping("/filter")
     public ResponseEntity<?> filterSections(
             @RequestParam Integer batchCycleId,
-            @RequestParam String courseTypeId,
+            @RequestParam Integer courseTypeId,
             @RequestParam Integer courseId,
             @RequestParam Integer moduleId,
             @RequestParam Integer subjectId
@@ -67,4 +67,11 @@ public class SectionController {
         );
         return ResponseEntity.ok(new CustomResponse<>(false, "Filtered Sections", response));
     }
+    @GetMapping("/by-subject/{subjectId}")
+    public ResponseEntity<?> getSectionsBySubject(@PathVariable Integer subjectId) {
+        List<SectionResponseDTO> response = sectionService.getSectionsBySubject(subjectId);
+        return ResponseEntity.ok(new CustomResponse<>(false, "Sections fetched successfully", response));
+    }
+    
+    
 }

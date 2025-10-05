@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +21,7 @@ import com.staff_portal.academic_service.dto.response.TopicResponseDTO;
 import com.staff_portal.academic_service.service.interfaces.TopicService;
 
 import lombok.RequiredArgsConstructor;
-
+@CrossOrigin(origins = "http://localhost:5176")
 @RestController
 @RequestMapping("/api/topics")
 @RequiredArgsConstructor
@@ -62,6 +63,13 @@ public class TopicController {
     public ResponseEntity<?> getTopicById(@PathVariable int id) {
         TopicResponseDTO response = topicService.getTopicById(id);
         return ResponseEntity.ok(new CustomResponse<>(false, "Topic Found", response));
+    }
+    
+    // ✅ Get Topics By Section (like SectionController)
+    @GetMapping("/bySection/{sectionId}")
+    public ResponseEntity<?> getTopicsBySection(@PathVariable int sectionId) {
+        List<TopicResponseDTO> response = topicService.getTopicsBySection(sectionId);
+        return ResponseEntity.ok(new CustomResponse<>(false, "Topics for Section fetched", response));
     }
 
     @GetMapping("/filter")

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.staff_portal.academic_service.dto.request.TopicRequestDTO;
 import com.staff_portal.academic_service.dto.response.TopicResponseDTO;
@@ -28,7 +29,8 @@ public class TopicServiceImpl implements TopicService {
         Section section = sectionRepository.findById(requestDTO.getSectionId())
                 .orElseThrow(() -> new RuntimeException("Section not found"));
 
-        if (topicRepository.existsByTopicNameAndSection_SectionId(requestDTO.getTopicName(), requestDTO.getSectionId())) {
+        if (topicRepository.existsByTopicNameAndSection_SectionIdAndDeletedFalse(
+                requestDTO.getTopicName(), requestDTO.getSectionId())) {
             throw new RuntimeException("Topic already exists in this section");
         }
 
@@ -36,6 +38,7 @@ public class TopicServiceImpl implements TopicService {
         topic.setSection(section);
         topic.setTopicName(requestDTO.getTopicName());
         topic.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : TopicStatus.ACTIVE);
+        topic.setDeleted(false);
 
         Topic saved = topicRepository.save(topic);
         return mapToResponse(saved);
@@ -58,16 +61,19 @@ public class TopicServiceImpl implements TopicService {
     }
 
     @Override
+    @Transactional
     public void deleteTopic(int id) {
-        if (!topicRepository.existsById(id)) {
-            throw new RuntimeException("Topic not found");
-        }
-        topicRepository.deleteById(id);
+        Topic topic = topicRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Topic not found"));
+
+        // Soft delete
+        topic.setDeleted(true);
+        topic.setStatus(TopicStatus.INACTIVE);
     }
 
     @Override
     public List<TopicResponseDTO> getAllTopics() {
-        return topicRepository.findAll()
+        return topicRepository.findByDeletedFalse()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -79,7 +85,7 @@ public class TopicServiceImpl implements TopicService {
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
         return mapToResponse(topic);
     }
-    
+
     @Override
     public List<TopicResponseDTO> getTopicsByFilters(
             Integer batchCycleId,
@@ -92,10 +98,17 @@ public class TopicServiceImpl implements TopicService {
         List<Topic> topics = topicRepository.findTopicsByAllFilters(
                 batchCycleId, courseTypeId, courseId, moduleId, subjectId, sectionId
         );
-
         return topics.stream()
-        		.map(this::mapToResponse)
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TopicResponseDTO> getTopicsBySection(int sectionId) {
+        List<Topic> topics = topicRepository.findBySection_SectionIdAndDeletedFalse(sectionId);
+        return topics.stream()
+                     .map(this::mapToResponse)
+                     .collect(Collectors.toList());
     }
 
     private TopicResponseDTO mapToResponse(Topic topic) {
@@ -103,6 +116,7 @@ public class TopicServiceImpl implements TopicService {
         response.setTopicId(topic.getTopicId());
         response.setTopicName(topic.getTopicName());
         response.setStatus(topic.getStatus());
+        response.setDeleted(topic.isDeleted());
 
         if (topic.getSection() != null) {
             response.setSectionName(topic.getSection().getSectionName());
@@ -119,7 +133,7 @@ public class TopicServiceImpl implements TopicService {
                 }
             }
         }
-       
+
         return response;
     }
 }

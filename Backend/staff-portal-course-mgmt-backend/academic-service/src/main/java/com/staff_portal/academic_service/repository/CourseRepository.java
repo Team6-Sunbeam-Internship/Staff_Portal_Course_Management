@@ -13,16 +13,29 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
 	
     boolean existsByCourseCode(String courseCode);
     
-//    List<Course> findByCourseTypeId(int courseTypeId);
     
+//    List<Course> findByCourseType_CourseTypeId(Integer courseTypeId);
+//    
+    List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
+            Integer batchCycleId,
+            Integer courseTypeId
+        );
+    
+    
+    //  Fetch all non-deleted courses
+    List<Course> findByDeletedFalse();
 
-    // Filter by BatchCycle ID + CourseType ID
-    List<Course> findByCourseType_BatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
-            Integer batchCycleId, Integer courseTypeId);
-    
-    List<Course> findByCourseType_CourseTypeId(Integer courseTypeId);
-    
-   
+    //  Fetch by ID if not deleted
+    Course findByCourseIdAndDeletedFalse(int courseId);
+
+    //  Fetch courses by courseType if not deleted
+    List<Course> findByCourseType_CourseTypeIdAndDeletedFalse(Integer courseTypeId);
+
+    //  Fetch courses by BatchCycle + CourseType if not deleted
+    List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeIdAndDeletedFalse(
+            Integer batchCycleId,
+            Integer courseTypeId
+    );
 
 }
 

@@ -38,16 +38,16 @@ public class Module {
     @JoinColumn(name = "courseTypeId", nullable = false)
     private CourseType courseType;   // Type in UI
 
-    @ManyToOne
-    @JoinColumn(name = "batchCycleId", nullable = false)
-    private BatchCycle batchCycle;   // Batch in UI
+//    @ManyToOne
+//    @JoinColumn(name = "batchCycleId", nullable = false)
+//    private BatchCycle batchCycle;   // Batch in UI
 
     @ManyToOne
     @JoinColumn(name = "courseId", nullable = false)
     private Course course;   // Course in UI
 
-    @Column(nullable = false)
-    private int staffId;
+//    @Column(nullable = false)
+//    private int staffId;
 
     @Column(nullable = false)
     private int theoryHours;
@@ -58,6 +58,9 @@ public class Module {
     @Enumerated(EnumType.STRING)  // Store as string (ACTIVE, INACTIVE, etc.)
     @Column(nullable = false)
     private ModuleStatus status;   // Enum instead of String
+    
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subject> subjects;

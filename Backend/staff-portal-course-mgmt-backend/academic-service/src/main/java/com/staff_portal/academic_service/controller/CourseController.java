@@ -5,6 +5,7 @@ import java.util.List;
 //import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +22,7 @@ import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.service.interfaces.CourseService;
 
 import lombok.RequiredArgsConstructor;
-
+@CrossOrigin(origins = "http://localhost:5176")
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
@@ -61,13 +62,26 @@ public class CourseController {
         return ResponseEntity.ok(new CustomResponse<>(false, "Course Found", response));
     }
     
-  
+//  
+//    @GetMapping("/filterByIds")
+//    public ResponseEntity<?> getCoursesByBatchCycleAndType(
+//            @RequestParam Integer batchCycleId,
+//            @RequestParam Integer courseTypeId) {
+//
+//        List<CourseResponseDTO> response = courseService.getCoursesByFilters(batchCycleId, courseTypeId);
+//        return ResponseEntity.ok(new CustomResponse<>(false, "Courses filtered", response));
+//    }
+ 
+    
     @GetMapping("/filterByIds")
-    public ResponseEntity<?> getCoursesByBatchCycleAndType(
+    public ResponseEntity<CustomResponse<List<CourseResponseDTO>>> getCoursesByBatchCycleAndType(
             @RequestParam Integer batchCycleId,
             @RequestParam Integer courseTypeId) {
 
         List<CourseResponseDTO> response = courseService.getCoursesByFilters(batchCycleId, courseTypeId);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Courses filtered", response));
+
+        return ResponseEntity.ok(
+                new CustomResponse<>(false, "Courses filtered successfully", response)
+        );
     }
 }

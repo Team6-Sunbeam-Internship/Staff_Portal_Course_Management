@@ -12,7 +12,7 @@ import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:5176")
 @RestController
 @RequestMapping("/api/coursetypes")
 @RequiredArgsConstructor
@@ -51,10 +51,10 @@ public class CourseTypeController {
         return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Found", response));
     }
  
-   
-    @GetMapping("/byBatchCycle")
-    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
-        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleId(batchCycleId);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Course types fetched", response));
-    }
+//   
+//    @GetMapping("/byBatchCycle")
+//    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
+//        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleId(batchCycleId);
+//        return ResponseEntity.ok(new CustomResponse<>(false, "Course types fetched", response));
+//    }
 }

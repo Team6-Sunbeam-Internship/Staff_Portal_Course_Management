@@ -19,12 +19,13 @@ public class CourseResponseDTO {
     private String courseCode;
     private String courseName;
     private CourseStatus status;
+    private boolean deleted; 
     private String cycleName;      // from CourseType
     private String courseTypeName;            // from CourseType
     private String premisesName;    // from Premises (through CourseType)
     private LocalDate startDate;
     private LocalDate endDate;
-    private int studentCount;
-    private int groupCount;
+//    private int studentCount;
+//    private int groupCount;
 }
 

@@ -15,19 +15,38 @@ public interface TopicRepository extends JpaRepository<Topic, Integer> {
     // Get all topics by SectionId
     List<Topic> findBySection_SectionId(Integer sectionId);
     
-    @Query("SELECT t FROM Topic t " +
-            "WHERE t.section.sectionId = :sectionId " +
-            "AND t.section.subject.subjectId = :subjectId " +
-            "AND t.section.subject.module.moduleId = :moduleId " +
-            "AND t.section.subject.module.course.courseId = :courseId " +
-            "AND t.section.subject.module.courseType.courseTypeId = :courseTypeId " +
-            "AND t.section.subject.module.batchCycle.batchCycleId = :batchCycleId")
-     List<Topic> findTopicsByAllFilters(
-             @Param("batchCycleId") Integer batchCycleId,
-             @Param("courseTypeId") Integer courseTypeId,
-             @Param("courseId") Integer courseId,
-             @Param("moduleId") Integer moduleId,
-             @Param("subjectId") Integer subjectId,
-             @Param("sectionId") Integer sectionId
-     );
+    
+    // Find all topics in a given section
+    List<Topic> findBySection_SectionId(int sectionId);
+    
+    // Check if a topic exists in a section (only active)
+    boolean existsByTopicNameAndSection_SectionIdAndDeletedFalse(String topicName, Integer sectionId);
+
+    // Get all topics of a section (excluding soft-deleted)
+    List<Topic> findBySection_SectionIdAndDeletedFalse(Integer sectionId);
+
+    // Global filter for fetching only active topics
+    List<Topic> findByDeletedFalse();
+
+    // Fetch by all filters (only active)
+    @Query("""
+        SELECT t FROM Topic t
+        WHERE t.section.sectionId = :sectionId
+          AND t.section.subject.subjectId = :subjectId
+          AND t.section.subject.module.moduleId = :moduleId
+          AND t.section.subject.module.course.courseId = :courseId
+          AND t.section.subject.module.course.courseType.courseTypeId = :courseTypeId
+          AND t.section.subject.module.course.batchCycle.batchCycleId = :batchCycleId
+          AND t.deleted = false
+        """)
+    List<Topic> findTopicsByAllFilters(
+            @Param("batchCycleId") Integer batchCycleId,
+            @Param("courseTypeId") Integer courseTypeId,
+            @Param("courseId") Integer courseId,
+            @Param("moduleId") Integer moduleId,
+            @Param("subjectId") Integer subjectId,
+            @Param("sectionId") Integer sectionId
+    );
+
+
 }

@@ -12,22 +12,33 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
 	
     boolean existsBySectionNameAndSubject_SubjectId(String sectionName, Integer subjectId);
     
-    // Filter query based on hierarchy
+   
+    List<Section> findBySubject_SubjectId(Integer subjectId);
+    
+ // Fetch by subject (only active)
+    List<Section> findBySubject_SubjectIdAndDeletedFalse(Integer subjectId);
+
+    // Fetch all active
+    List<Section> findByDeletedFalse();
+
+    // Update filter query (exclude deleted)
     @Query("""
             SELECT s FROM Section s
-            WHERE s.subject.module.course.courseType.batchCycle.batchCycleId = :batchCycleId
+            WHERE s.deleted = false
+              AND s.subject.module.course.batchCycle.batchCycleId = :batchCycleId
               AND s.subject.module.course.courseType.courseTypeId = :courseTypeId
               AND s.subject.module.course.courseId = :courseId
               AND s.subject.module.moduleId = :moduleId
               AND s.subject.subjectId = :subjectId
-        """)
-        List<Section> filterSections(
-                @Param("batchCycleId") Integer batchCycleId,
-                @Param("courseTypeId") String courseTypeId,
-                @Param("courseId") Integer courseId,
-                @Param("moduleId") Integer moduleId,
-                @Param("subjectId") Integer subjectId
-        );
+          """)
+    List<Section> filterSections(
+            @Param("batchCycleId") Integer batchCycleId,
+            @Param("courseTypeId") Integer courseTypeId,
+            @Param("courseId") Integer courseId,
+            @Param("moduleId") Integer moduleId,
+            @Param("subjectId") Integer subjectId
+    );
+
     
-    List<Section> findBySubject_SubjectId(Integer subjectId);
+    
 }

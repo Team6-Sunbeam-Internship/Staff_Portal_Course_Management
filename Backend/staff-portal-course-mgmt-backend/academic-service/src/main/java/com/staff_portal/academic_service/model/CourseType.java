@@ -31,9 +31,9 @@ public class CourseType {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int courseTypeId;
 	
-	 @ManyToOne
-	    @JoinColumn(name = "batchCycleId", nullable = false)
-	    private BatchCycle batchCycle;
+//	 @ManyToOne
+//	    @JoinColumn(name = "batchCycleId", nullable = false)
+//	    private BatchCycle batchCycle;
 	
 	 @ManyToOne
 	    @JoinColumn(name = "premisesId", nullable = false)
@@ -48,6 +48,9 @@ public class CourseType {
 	 @Enumerated(EnumType.STRING)
 	    @Column(nullable = false)
 	    private CourseTypeStatus status;
+	 
+	 @Column(nullable = false)
+	    private boolean deleted = false;
 	 
 	 @OneToMany(mappedBy = "courseType", cascade = CascadeType.ALL)
 	    private List<Course> courses;

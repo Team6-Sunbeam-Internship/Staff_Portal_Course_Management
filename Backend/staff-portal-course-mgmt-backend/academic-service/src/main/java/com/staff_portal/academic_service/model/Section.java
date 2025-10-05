@@ -45,6 +45,9 @@ public class Section {
 	 @Enumerated(EnumType.STRING)
 	    private SectionStatus status; 
 	 
+	 @Column(nullable = false)
+	    private boolean deleted = false; 
+	 
 	 @OneToMany(mappedBy = "section", cascade = CascadeType.ALL,orphanRemoval = true)
 	    private List<Topic> topics;
 

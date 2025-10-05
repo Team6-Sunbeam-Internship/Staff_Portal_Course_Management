@@ -13,8 +13,9 @@ public class CourseTypeResponseDTO {
     private int courseTypeId;
     private String typeName;
 //    private int batchCycleId;
-    private String cycleName;
+//    private String cycleName;
     private String description;
+    private boolean deleted; 
     private CourseTypeStatus status;
     private String premisesName;
 }

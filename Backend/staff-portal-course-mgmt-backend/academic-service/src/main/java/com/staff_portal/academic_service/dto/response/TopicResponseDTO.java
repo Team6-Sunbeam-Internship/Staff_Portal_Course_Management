@@ -15,6 +15,7 @@ public class TopicResponseDTO {
     private Integer topicId;
     private String topicName;
     private TopicStatus status;
+    private boolean deleted;
 
     // hierarchy info
     private String sectionName;

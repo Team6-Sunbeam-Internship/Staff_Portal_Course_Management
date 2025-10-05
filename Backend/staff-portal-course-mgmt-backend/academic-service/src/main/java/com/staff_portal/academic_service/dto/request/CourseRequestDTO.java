@@ -17,6 +17,7 @@ import lombok.Setter;
 public class CourseRequestDTO {
     private String courseCode;
     private String courseName;
+    private int batchCycleId;
     private int courseTypeId;          // FK → CourseType
     private LocalDate startDate;       // new
     private LocalDate endDate;         // new

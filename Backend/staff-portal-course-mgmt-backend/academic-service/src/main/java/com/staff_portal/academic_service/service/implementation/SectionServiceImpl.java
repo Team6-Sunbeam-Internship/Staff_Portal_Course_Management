@@ -3,14 +3,17 @@ package com.staff_portal.academic_service.service.implementation;
 import com.staff_portal.academic_service.dto.request.SectionRequestDTO;
 import com.staff_portal.academic_service.dto.response.SectionResponseDTO;
 import com.staff_portal.academic_service.enums.SectionStatus;
+import com.staff_portal.academic_service.enums.TopicStatus;
 import com.staff_portal.academic_service.model.Section;
 import com.staff_portal.academic_service.model.Subject;
+//import com.staff_portal.academic_service.model.Topic;
 import com.staff_portal.academic_service.repository.SectionRepository;
 import com.staff_portal.academic_service.repository.SubjectRepository;
 import com.staff_portal.academic_service.service.interfaces.SectionService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +39,7 @@ public class SectionServiceImpl implements SectionService {
         section.setSubject(subject);
         section.setSectionName(requestDTO.getSectionName());
         section.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : SectionStatus.ACTIVE);
+        section.setDeleted(false);
 
         Section saved = sectionRepository.save(section);
         return mapToResponse(saved);
@@ -58,16 +62,29 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
+    @Transactional
     public void deleteSection(int id) {
-        if (!sectionRepository.existsById(id)) {
-            throw new RuntimeException("Section not found");
+        Section section = sectionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        // Soft delete section
+        section.setDeleted(true);
+        section.setStatus(SectionStatus.INACTIVE);
+
+        // Cascade soft delete to topics
+        if (section.getTopics() != null) {
+            section.getTopics().forEach(topic -> {
+                topic.setDeleted(true);
+                topic.setStatus(TopicStatus.INACTIVE);
+            });
         }
-        sectionRepository.deleteById(id);
+
+        // No explicit save needed due to @Transactional and JPA dirty checking
     }
 
     @Override
     public List<SectionResponseDTO> getAllSections() {
-        return sectionRepository.findAll()
+        return sectionRepository.findByDeletedFalse()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -79,10 +96,11 @@ public class SectionServiceImpl implements SectionService {
                 .orElseThrow(() -> new RuntimeException("Section not found"));
         return mapToResponse(section);
     }
+
     @Override
     public List<SectionResponseDTO> filterSections(
             Integer batchCycleId,
-            String courseTypeId,
+            Integer courseTypeId,
             Integer courseId,
             Integer moduleId,
             Integer subjectId
@@ -95,13 +113,23 @@ public class SectionServiceImpl implements SectionService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-   
 
+    @Override
+    public List<SectionResponseDTO> getSectionsBySubject(Integer subjectId) {
+        List<Section> sections = sectionRepository.findBySubject_SubjectIdAndDeletedFalse(subjectId);
+
+        return sections.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Mapper (Entity → DTO)
     private SectionResponseDTO mapToResponse(Section section) {
         SectionResponseDTO response = new SectionResponseDTO();
         response.setSectionId(section.getSectionId());
         response.setSectionName(section.getSectionName());
         response.setStatus(section.getStatus());
+        response.setDeleted(section.isDeleted());
 
         if (section.getSubject() != null) {
             response.setSubjectName(section.getSubject().getSubjectName());

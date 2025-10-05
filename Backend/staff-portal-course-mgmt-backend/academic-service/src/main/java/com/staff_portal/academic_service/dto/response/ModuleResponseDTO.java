@@ -13,8 +13,9 @@ public class ModuleResponseDTO {
     private String courseTypeName;
     private String batchCycleName;
     private String courseName;
-    private int staffId;
+//    private int staffId;
     private int theoryHours;
     private int practicalHours;
     private ModuleStatus status;
+    private boolean deleted;
 }

@@ -18,10 +18,12 @@ public interface SectionService {
     
     List<SectionResponseDTO> filterSections(
             Integer batchCycleId,
-            String courseTypeId,
+            Integer courseTypeId,
             Integer courseId,
             Integer moduleId,
             Integer subjectId
     );
+    List<SectionResponseDTO> getSectionsBySubject(Integer subjectId);
+
 }
 

@@ -3,18 +3,16 @@ package com.staff_portal.academic_service.service.implementation;
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 import com.staff_portal.academic_service.enums.CourseTypeStatus;
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.model.CourseType;
 import com.staff_portal.academic_service.model.Premises;
-import com.staff_portal.academic_service.repository.BatchCycleRepository;
-import com.staff_portal.academic_service.repository.CourseTypeRepository;
-import com.staff_portal.academic_service.repository.PremisesRepository;
+import com.staff_portal.academic_service.repository.*;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,30 +20,27 @@ import java.util.stream.Collectors;
 public class CourseTypeServiceImpl implements CourseTypeService {
 
     private final CourseTypeRepository courseTypeRepository;
-    private final BatchCycleRepository batchCycleRepository;
     private final PremisesRepository premisesRepository;
+    private final CourseRepository courseRepository;
+    private final ModuleRepository moduleRepository;
+    private final SubjectRepository subjectRepository;
+    private final SectionRepository sectionRepository;
+    private final TopicRepository topicRepository;
 
     @Override
     public CourseTypeResponseDTO addCourseType(CourseTypeRequestDTO requestDTO) {
-        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
-                .orElseThrow(() -> new RuntimeException("BatchCycle not found"));
         Premises premises = premisesRepository.findById(requestDTO.getPremisesId())
                 .orElseThrow(() -> new RuntimeException("Premises not found"));
-
-        if (courseTypeRepository.existsByTypeNameAndBatchCycle_BatchCycleId(requestDTO.getTypeName(), requestDTO.getBatchCycleId())) {
-            throw new RuntimeException("CourseType already exists for this batch cycle");
-        }
 
         CourseType courseType = new CourseType();
         courseType.setTypeName(requestDTO.getTypeName());
         courseType.setDescription(requestDTO.getDescription());
-        courseType.setBatchCycle(batchCycle);
         courseType.setPremises(premises);
         courseType.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : CourseTypeStatus.ACTIVE);
+        courseType.setDeleted(false);
 
         CourseType saved = courseTypeRepository.save(courseType);
         return mapToResponse(saved);
-        
     }
 
     @Override
@@ -57,34 +52,65 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         courseType.setDescription(requestDTO.getDescription());
         courseType.setStatus(requestDTO.getStatus());
 
-        // update relations if needed
-        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
-                .orElseThrow(() -> new RuntimeException("BatchCycle not found"));
         Premises premises = premisesRepository.findById(requestDTO.getPremisesId())
                 .orElseThrow(() -> new RuntimeException("Premises not found"));
 
-        courseType.setBatchCycle(batchCycle);
         courseType.setPremises(premises);
-
         courseTypeRepository.save(courseType);
+
         return mapToResponse(courseType);
-       
     }
 
     @Override
+    @Transactional
     public void deleteCourseType(int id) {
-        if (!courseTypeRepository.existsById(id)) {
-            throw new RuntimeException("CourseType not found");
-        }
-        courseTypeRepository.deleteById(id);
         CourseType courseType = courseTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("CourseType not found"));
-        courseTypeRepository.delete(courseType);
+
+        // Soft delete parent
+        courseType.setDeleted(true);
+        courseTypeRepository.save(courseType);
+
+        // Cascade soft delete: Courses → Modules → Subjects → Sections → Topics
+        if (courseType.getCourses() != null) {
+            courseType.getCourses().forEach(course -> {
+                course.setDeleted(true);
+                courseRepository.save(course);
+
+                if (course.getModules() != null) {
+                    course.getModules().forEach(module -> {
+                        module.setDeleted(true);
+                        moduleRepository.save(module);
+
+                        if (module.getSubjects() != null) {
+                            module.getSubjects().forEach(subject -> {
+                                subject.setDeleted(true);
+                                subjectRepository.save(subject);
+
+                                if (subject.getSections() != null) {
+                                    subject.getSections().forEach(section -> {
+                                        section.setDeleted(true);
+                                        sectionRepository.save(section);
+
+                                        if (section.getTopics() != null) {
+                                            section.getTopics().forEach(topic -> {
+                                                topic.setDeleted(true);
+                                                topicRepository.save(topic);
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     }
 
     @Override
     public List<CourseTypeResponseDTO> getAllCourseTypes() {
-        return courseTypeRepository.findAll()
+        return courseTypeRepository.findByDeletedFalse()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -94,19 +120,12 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     public CourseTypeResponseDTO getCourseTypeById(int id) {
         CourseType courseType = courseTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("CourseType not found"));
+
+        if (courseType.isDeleted()) {
+            throw new RuntimeException("CourseType not found");
+        }
         return mapToResponse(courseType);
     }
-    
-       
-    @Override
-    public List<CourseTypeResponseDTO> getCourseTypesByBatchCycleId(Integer batchCycleId) {
-        List<CourseType> courseTypes = courseTypeRepository.findByBatchCycle_BatchCycleId(batchCycleId);
-
-        return courseTypes.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
 
     private CourseTypeResponseDTO mapToResponse(CourseType courseType) {
         CourseTypeResponseDTO response = new CourseTypeResponseDTO();
@@ -114,16 +133,12 @@ public class CourseTypeServiceImpl implements CourseTypeService {
         response.setTypeName(courseType.getTypeName());
         response.setDescription(courseType.getDescription());
         response.setStatus(courseType.getStatus());
-//        response.setBatchCycleId(courseType.getBatchCycle().getBatchCycleId());
-        response.setCycleName(courseType.getBatchCycle().getCycleName());
-//       
+        response.setDeleted(courseType.isDeleted());
+
         if (courseType.getPremises() != null) {
             response.setPremisesName(courseType.getPremises().getName());
         }
 
-
         return response;
     }
-
-
 }
