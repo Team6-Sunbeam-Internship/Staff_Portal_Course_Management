@@ -18,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
+@CrossOrigin
 public class StudentController {
 
 	@Autowired
@@ -47,7 +48,6 @@ public class StudentController {
             return ResponseEntity.badRequest().body(result);
         }
     }
-
 
     @PostMapping("/add")
     public ResponseEntity<StudentDTO> addStudent(@RequestBody StudentDTO studentDTO) {

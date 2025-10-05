@@ -48,6 +48,12 @@ public class Student {
 
 	@Column(columnDefinition = "TEXT")
 	private String address;
+	
+	@Column(nullable = false, columnDefinition = "TEXT")
+    private String batchCycleName;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String courseName;
 
 	@Column(nullable = false, columnDefinition = "TEXT")
 	private String courseName;
