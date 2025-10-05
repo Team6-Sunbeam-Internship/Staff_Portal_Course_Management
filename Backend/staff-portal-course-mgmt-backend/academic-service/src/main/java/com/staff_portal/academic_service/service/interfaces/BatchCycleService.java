@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.service.interfaces;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
@@ -14,7 +15,7 @@ public interface BatchCycleService {
 
 	BatchCycleResponse findById(int id);
 
-	BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request);
+    ApiResponse<String> updateBatchCycle(UUID id, BatchCycleRequest request);
 
 	void deleteBatchCycle(int id);
 
