@@ -27,7 +27,7 @@ public class InfrastructureServiceImpl implements InfrastructureService {
     public ApiResponse<UUID> createInfrastructure(InfrastructureRequest request) {
         UUID premiseId = UUID.fromString(request.getPremiseId());
         Premise premise = premiseRepository.findById(premiseId).orElseThrow(
-                () -> new ResourceNotFoundException("Premises not found with id: " + request.getPremisesId()));
+                () -> new ResourceNotFoundException("Premises not found with id: " + request.getPremiseId()));
 
         Infrastructure infrastructure = Infrastructure.builder()
                 .roomName(request.getTitle())
@@ -63,7 +63,7 @@ public class InfrastructureServiceImpl implements InfrastructureService {
     }
 
     @Override
-    public void deleteInfrastructure(int id) {
+    public void deleteInfrastructure(UUID id) {
         Infrastructure infra = infrastructureRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
 
