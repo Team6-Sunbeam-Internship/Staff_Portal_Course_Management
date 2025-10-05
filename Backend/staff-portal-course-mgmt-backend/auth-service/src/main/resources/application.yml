@@ -8,7 +8,6 @@ server:
         same-site: none
         max-age: 2h
         http-only: true
-        domain: localhost:8001
 spring:
   application:
     name: auth-service
@@ -21,12 +20,12 @@ spring:
       hibernate:
         format_sql: true
 
-    profiles:
-      active: dev
+  profiles:
+    active: dev
 
-  logging:
-    level:
-      org:
-        springframework:
-          web: DEBUG
-          security: DEBUG
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        security: DEBUG
