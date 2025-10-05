@@ -3,7 +3,6 @@ package com.staff_portal.academic_service.controller;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +11,7 @@ import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/course-types")
@@ -20,23 +20,22 @@ public class CourseTypeController {
 
     private final CourseTypeService courseTypeService;
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addCourseType(@RequestBody CourseTypeRequestDTO requestDTO) {
-        CourseTypeResponseDTO response = courseTypeService.addCourseType(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new CustomResponse<>(false, "CourseType Added Successfully!", response));
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<UUID>> addCourseType(@RequestBody CourseTypeRequestDTO requestDTO) {
+        ApiResponse<UUID> courseTypeResponse = courseTypeService.createCourseType(requestDTO);
+        return ResponseEntity.ok(courseTypeResponse);
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateCourseType(@PathVariable int id, @RequestBody CourseTypeRequestDTO requestDTO) {
         CourseTypeResponseDTO response = courseTypeService.updateCourseType(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType s Successfully!", response));
+        return ResponseEntity.ok(new CustomResponse<>(false, "createCourseType s Successfully!", response));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteCourseType(@PathVariable int id) {
         courseTypeService.deleteCourseType(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Deleted Successfully!", null));
+        return ResponseEntity.ok(new CustomResponse<>(false, "createCourseType Deleted Successfully!", null));
     }
 
     @GetMapping("/getAll")
@@ -48,9 +47,9 @@ public class CourseTypeController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getCourseTypeById(@PathVariable int id) {
         CourseTypeResponseDTO response = courseTypeService.getCourseTypeById(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Found", response));
+        return ResponseEntity.ok(new CustomResponse<>(false, "createCourseType Found", response));
     }
- 
+
 //   
 //    @GetMapping("/byBatchCycle")
 //    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
