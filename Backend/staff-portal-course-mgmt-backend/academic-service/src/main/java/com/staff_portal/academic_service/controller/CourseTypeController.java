@@ -33,9 +33,9 @@ public class CourseTypeController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteCourseType(@PathVariable int id) {
-        courseTypeService.deleteCourseType(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "createCourseType Deleted Successfully!", null));
+    public ResponseEntity<?> deleteCourseType(@PathVariable String id) {
+        courseTypeService.deleteCourseType(UUID.fromString(id));
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/getAll")
@@ -43,17 +43,4 @@ public class CourseTypeController {
         ApiResponse<List<CourseTypeResponseDTO>> response = courseTypeService.getAllCourseTypes();
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCourseTypeById(@PathVariable int id) {
-        CourseTypeResponseDTO response = courseTypeService.getCourseTypeById(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "createCourseType Found", response));
-    }
-
-//   
-//    @GetMapping("/byBatchCycle")
-//    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
-//        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleId(batchCycleId);
-//        return ResponseEntity.ok(new CustomResponse<>(false, "Course types fetched", response));
-//    }
 }
