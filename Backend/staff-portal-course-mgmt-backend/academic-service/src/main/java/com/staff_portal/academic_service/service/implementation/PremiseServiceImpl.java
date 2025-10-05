@@ -10,7 +10,6 @@ import com.staff_portal.academic_service.repository.PremiseRepository;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.response.PremiseResponse;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
-import com.staff_portal.academic_service.model.Premises;
 import com.staff_portal.academic_service.service.interfaces.PremiseService;
 
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,7 @@ public class PremiseServiceImpl implements PremiseService {
 	}
 
 	@Override
-	public void deletePremises(UUID id) {
+	public void deletePremise(UUID id) {
 		Premise premises = premiseRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
 		premises.setDeleted(true);
