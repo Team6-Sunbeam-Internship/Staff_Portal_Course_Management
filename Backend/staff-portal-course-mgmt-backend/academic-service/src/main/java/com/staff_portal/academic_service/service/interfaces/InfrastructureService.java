@@ -13,7 +13,7 @@ public interface InfrastructureService {
 
     ApiResponse<String> updateInfrastructure(UUID id, InfrastructureRequest request);
 
-    void deleteInfrastructure(int id);
+    void deleteInfrastructure(UUID id);
 
     ApiResponse<List<InfrastructureResponse>> getAllInfrastructures();
 
