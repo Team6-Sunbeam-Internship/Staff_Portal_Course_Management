@@ -10,7 +10,7 @@ public interface BatchCycleService {
 
 	ApiResponse<List<BatchCycleResponse>> findAll();
 
-	BatchCycleResponse createBatchCycle(BatchCycleRequest request);
+	ApiResponse<BatchCycleResponse> createBatchCycle(BatchCycleRequest request);
 
 	BatchCycleResponse findById(int id);
 
