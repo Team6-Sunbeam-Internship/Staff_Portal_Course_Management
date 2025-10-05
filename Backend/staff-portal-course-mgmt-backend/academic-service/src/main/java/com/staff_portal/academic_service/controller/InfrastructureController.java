@@ -30,15 +30,9 @@ public class InfrastructureController {
 
     // Create Infrastructure
     @PostMapping("/create")
-    public ResponseEntity<InfrastructureResponse> createInfrastructure(@RequestBody InfrastructureRequest request) {
-        InfrastructureResponse response = infrastructureService.createInfrastructure(request);
+    public ResponseEntity<ApiResponse<UUID>> createInfrastructure(@RequestBody InfrastructureRequest request) {
+        ApiResponse<UUID> response = infrastructureService.createInfrastructure(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    // get Infrastructure
-    @GetMapping("/{id}")
-    public ResponseEntity<InfrastructureResponse> getInfrastructureById(@PathVariable int id) {
-        return ResponseEntity.ok(infrastructureService.getInfrastructureById(id));
     }
 
     // updating the infrastructure
@@ -49,9 +43,9 @@ public class InfrastructureController {
     }
 
     // deleting the infrastructure
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteInfrastructure(@PathVariable int id) {
-        infrastructureService.deleteInfrastructure(id);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteInfrastructure(@PathVariable String id) {
+        infrastructureService.deleteInfrastructure(UUID.fromString(id));
         return ResponseEntity.ok("Infrastructure deleted successfully with id: " + id);
     }
 
