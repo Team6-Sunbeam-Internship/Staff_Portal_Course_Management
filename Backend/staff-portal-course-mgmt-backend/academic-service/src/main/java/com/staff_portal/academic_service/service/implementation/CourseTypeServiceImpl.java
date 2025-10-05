@@ -20,12 +20,6 @@ import java.util.UUID;
 public class CourseTypeServiceImpl implements CourseTypeService {
 
     private final CourseTypeRepository courseTypeRepository;
-    private final PremiseRepository premisesRepository;
-    private final CourseRepository courseRepository;
-    private final ModuleRepository moduleRepository;
-    private final SubjectRepository subjectRepository;
-    private final SectionRepository sectionRepository;
-    private final TopicRepository topicRepository;
 
     @Override
     public ApiResponse<UUID> createCourseType(CourseTypeRequestDTO requestDTO) {
@@ -51,49 +45,13 @@ public class CourseTypeServiceImpl implements CourseTypeService {
 
     @Override
     @Transactional
-    public void deleteCourseType(int id) {
+    public void deleteCourseType(UUID id) {
         CourseType courseType = courseTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("createCourseType not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course type with id: %s not found", id)));
 
         // Soft delete parent
         courseType.setDeleted(true);
         courseTypeRepository.save(courseType);
-
-        // Cascade soft delete: Courses → Modules → Subjects → Sections → Topics
-        if (courseType.getCourses() != null) {
-            courseType.getCourses().forEach(course -> {
-                course.setDeleted(true);
-                courseRepository.save(course);
-
-                if (course.getModules() != null) {
-                    course.getModules().forEach(module -> {
-                        module.setDeleted(true);
-                        moduleRepository.save(module);
-
-                        if (module.getSubjects() != null) {
-                            module.getSubjects().forEach(subject -> {
-                                subject.setDeleted(true);
-                                subjectRepository.save(subject);
-
-                                if (subject.getSections() != null) {
-                                    subject.getSections().forEach(section -> {
-                                        section.setDeleted(true);
-                                        sectionRepository.save(section);
-
-                                        if (section.getTopics() != null) {
-                                            section.getTopics().forEach(topic -> {
-                                                topic.setDeleted(true);
-                                                topicRepository.save(topic);
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-        }
     }
 
     @Override
@@ -109,31 +67,5 @@ public class CourseTypeServiceImpl implements CourseTypeService {
                         .build())
                 .toList();
         return ApiResponse.onSuccess(listOfCourseType);
-    }
-
-    @Override
-    public CourseTypeResponseDTO getCourseTypeById(int id) {
-        CourseType courseType = courseTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("createCourseType not found"));
-
-        if (courseType.isDeleted()) {
-            throw new RuntimeException("createCourseType not found");
-        }
-        return mapToResponse(courseType);
-    }
-
-    private CourseTypeResponseDTO mapToResponse(CourseType courseType) {
-        CourseTypeResponseDTO response = new CourseTypeResponseDTO();
-        response.setCourseTypeId(courseType.getCourseTypeId());
-        response.setTypeName(courseType.getTypeName());
-        response.setDescription(courseType.getDescription());
-        response.setStatus(courseType.getStatus());
-        response.setDeleted(courseType.isDeleted());
-
-        if (courseType.getPremises() != null) {
-            response.setPremisesName(courseType.getPremises().getName());
-        }
-
-        return response;
     }
 }
