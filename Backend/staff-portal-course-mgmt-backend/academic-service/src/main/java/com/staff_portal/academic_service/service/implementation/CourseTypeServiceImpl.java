@@ -1,10 +1,10 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
 import com.staff_portal.academic_service.enums.CourseTypeStatus;
 import com.staff_portal.academic_service.model.CourseType;
-import com.staff_portal.academic_service.model.Premises;
 import com.staff_portal.academic_service.repository.*;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
 
@@ -109,11 +109,18 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     }
 
     @Override
-    public List<CourseTypeResponseDTO> getAllCourseTypes() {
-        return courseTypeRepository.findByDeletedFalse()
+    public ApiResponse<List<CourseTypeResponseDTO>> getAllCourseTypes() {
+        List<CourseTypeResponseDTO> listOfCourseType = courseTypeRepository
+                .findByDeletedFalse()
                 .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .map(courseType -> CourseTypeResponseDTO.builder()
+                        .courseTypeId(courseType.getCourseTypeId())
+                        .title(courseType.getTypeName())
+                        .description(courseType.getDescription())
+                        .status(courseType.getStatus())
+                        .build())
+                .toList();
+        return ApiResponse.onSuccess(listOfCourseType);
     }
 
     @Override
