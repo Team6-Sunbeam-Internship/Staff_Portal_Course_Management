@@ -1,49 +1,40 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import java.util.List;
+import java.util.UUID;
 
+import com.staff_portal.academic_service.dto.request.PremiseRequest;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
+import com.staff_portal.academic_service.model.Premise;
 import com.staff_portal.academic_service.repository.PremiseRepository;
 import org.springframework.stereotype.Service;
-import com.staff_portal.academic_service.dto.request.PremisesRequest;
 import com.staff_portal.academic_service.dto.response.PremiseResponse;
-import com.staff_portal.academic_service.enums.PremisesStatus;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.Premises;
-import com.staff_portal.academic_service.service.interfaces.PremisesService;
+import com.staff_portal.academic_service.service.interfaces.PremiseService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PremiseServiceImpl implements PremisesService {
+public class PremiseServiceImpl implements PremiseService {
 
 	private final PremiseRepository premiseRepository;
 
 	@Override
-	public PremiseResponse createPremises(PremisesRequest request) {
-		try {
-			Premises entity = new Premises();
-			entity.setName(request.getName());
-			entity.setType(request.getType());
-			entity.setAddress(request.getAddress());
-			entity.setCity(request.getCity());
-			entity.setState(request.getState());
-			entity.setPostalCode(request.getPostalCode());
-			entity.setStatus(request.getStatus() != null ? request.getStatus() : PremisesStatus.ACTIVE);
-			entity.setDeleted(false);
-
-			Premises saved = premiseRepository.save(entity);
-
-			return new PremiseResponse(saved.getPremisesId(), saved.getName(), saved.getType(), saved.getAddress(),
-					saved.getCity(), saved.getState(), saved.getPostalCode(), saved.getStatus());
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to save premises: " + e.getMessage());
-		}
-	}
+	public ApiResponse<UUID> createPremise(PremiseRequest request) {
+        Premise premise = Premise.builder()
+                .name(request.getTitle())
+                .description(request.getDescription())
+                .type(request.getType())
+                .address(request.getAddress())
+                .build();
+        Premise savedPremise = premiseRepository.save(premise);
+        return ApiResponse.onSuccess(savedPremise.getPremiseId());
+    }
 
 	@Override
-	public PremiseResponse updatePremises(int id, PremisesRequest request) {
+	public PremiseResponse updatePremises(int id, PremiseRequest request) {
 		Premises existingPremises = premiseRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
 
