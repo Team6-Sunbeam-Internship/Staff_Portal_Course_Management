@@ -14,5 +14,5 @@ public interface PremiseService {
 
 	ApiResponse<String> updatePremise(UUID id, PremiseRequest request);
 
-	void deletePremises(int id);
+	void deletePremise(UUID id);
 }
