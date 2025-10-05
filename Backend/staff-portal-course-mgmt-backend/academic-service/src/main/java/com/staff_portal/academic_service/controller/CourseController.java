@@ -58,9 +58,9 @@ public class CourseController {
 
     //delete course
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteCourse(@PathVariable int id) {
+    public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
         courseService.deleteCourse(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Course Deleted Successfully!", null));
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
