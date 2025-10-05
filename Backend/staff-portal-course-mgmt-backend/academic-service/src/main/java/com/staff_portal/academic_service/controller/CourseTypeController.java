@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.controller;
 
 
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,13 +9,12 @@ import org.springframework.web.bind.annotation.*;
 
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
-import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:5176")
+
 @RestController
-@RequestMapping("/api/coursetypes")
+@RequestMapping("/course-types")
 @RequiredArgsConstructor
 public class CourseTypeController {
 
@@ -39,10 +39,10 @@ public class CourseTypeController {
         return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Deleted Successfully!", null));
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllCourseTypes() {
-        List<CourseTypeResponseDTO> response = courseTypeService.getAllCourseTypes();
-        return ResponseEntity.ok(new CustomResponse<>(false, "All CourseTypes Fetched", response));
+    @GetMapping("/getAll")
+    public ResponseEntity<ApiResponse<List<CourseTypeResponseDTO>>> getAllCourseTypes() {
+        ApiResponse<List<CourseTypeResponseDTO>> response = courseTypeService.getAllCourseTypes();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
