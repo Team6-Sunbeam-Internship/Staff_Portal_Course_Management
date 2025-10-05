@@ -3,6 +3,7 @@ package com.staff_portal.academic_service.repository;
 import java.util.List;
 import java.util.UUID;
 
+import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
 import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +38,7 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 
     @Query(value = """
             SELECT new com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO(
-                c.courseCode, c.courseName, 
+                c.courseId, c.courseCode, c.courseName, 
                 c.courseType.courseTypeId, c.courseType.typeName, 
                 c.premise.premiseId, c.premise.name, 
                 c.batchCycle.batchCycleId, c.batchCycle.cycleName, 
@@ -67,6 +68,24 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
             Pageable pageable
     );
 
-
+    @Query("""
+        SELECT new com.staff_portal.academic_service.dto.response.CourseResponseDTO(
+            c.courseCode,
+            c.courseName,
+            b.batchCycleId,
+            b.cycleName,
+            ct.courseTypeId,
+            ct.typeName,
+            c.courseGroupCount,
+            p.premiseId,
+            p.name
+        )
+        FROM Course c
+        JOIN c.batchCycle b
+        JOIN c.courseType ct
+        LEFT JOIN c.premise p
+        WHERE c.deleted = false
+        """)
+    List<CourseResponseDTO> findAllCourseDetails();
 }
 
