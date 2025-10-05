@@ -9,14 +9,11 @@ import com.staff_portal.academic_service.dto.response.BatchCycleResponse;
 
 public interface BatchCycleService {
 
-	ApiResponse<List<BatchCycleResponse>> findAll();
+    ApiResponse<List<BatchCycleResponse>> findAll();
 
-	ApiResponse<BatchCycleResponse> createBatchCycle(BatchCycleRequest request);
-
-	BatchCycleResponse findById(int id);
+    ApiResponse<BatchCycleResponse> createBatchCycle(BatchCycleRequest request);
 
     ApiResponse<String> updateBatchCycle(UUID id, BatchCycleRequest request);
 
-	void deleteBatchCycle(int id);
-
+    void deleteBatchCycle(UUID id);
 }
