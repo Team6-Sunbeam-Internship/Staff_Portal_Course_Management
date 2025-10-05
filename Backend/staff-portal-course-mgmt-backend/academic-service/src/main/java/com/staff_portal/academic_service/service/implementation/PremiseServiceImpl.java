@@ -34,30 +34,20 @@ public class PremiseServiceImpl implements PremiseService {
     }
 
 	@Override
-	public PremiseResponse updatePremises(int id, PremiseRequest request) {
-		Premises existingPremises = premiseRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
+	public ApiResponse<String> updatePremise(UUID id, PremiseRequest request) {
+		Premise existingPremise = premiseRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Premise with id " + id + " not found"));
 
-		existingPremises.setName(request.getName());
-		existingPremises.setType(request.getType());
-		existingPremises.setAddress(request.getAddress());
-		existingPremises.setCity(request.getCity());
-		existingPremises.setState(request.getState());
-		existingPremises.setPostalCode(request.getPostalCode());
-
-		if (request.getStatus() != null) {
-			existingPremises.setStatus(request.getStatus());
-		}
-
-		Premises updated = premiseRepository.save(existingPremises);
-
-		return new PremiseResponse(updated.getPremisesId(), updated.getName(), updated.getType(), updated.getAddress(),
-				updated.getCity(), updated.getState(), updated.getPostalCode(), updated.getStatus());
+		existingPremise.setName(request.getTitle());
+		existingPremise.setType(request.getType());
+		existingPremise.setAddress(request.getAddress());
+		premiseRepository.save(existingPremise);
+        return ApiResponse.onSuccess(String.format("Premise with id %s has been updated", id));
 	}
 
 	@Override
-	public void deletePremises(int id) {
-		Premises premises = premiseRepository.findById(id)
+	public void deletePremises(UUID id) {
+		Premise premises = premiseRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Premises with id " + id + " not found"));
 		premises.setDeleted(true);
 		premiseRepository.save(premises);
