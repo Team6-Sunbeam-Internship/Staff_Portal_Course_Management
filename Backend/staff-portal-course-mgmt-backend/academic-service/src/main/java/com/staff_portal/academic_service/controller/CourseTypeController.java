@@ -27,9 +27,9 @@ public class CourseTypeController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCourseType(@PathVariable int id, @RequestBody CourseTypeRequestDTO requestDTO) {
-        CourseTypeResponseDTO response = courseTypeService.updateCourseType(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "createCourseType s Successfully!", response));
+    public ResponseEntity<?> updateCourseType(@PathVariable String id, @RequestBody CourseTypeRequestDTO requestDTO) {
+        ApiResponse<String> udpateApiResponse = courseTypeService.updateCourseType(UUID.fromString(id), requestDTO);
+        return ResponseEntity.ok(udpateApiResponse);
     }
 
     @DeleteMapping("/delete/{id}")
