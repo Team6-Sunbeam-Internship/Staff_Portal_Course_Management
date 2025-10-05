@@ -38,9 +38,9 @@ public class PremiseController {
 		return ResponseEntity.ok(premiseService.updatePremise(UUID.fromString(id), request));
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<String> deletePremises(@PathVariable int id) {
-		premiseService.deletePremises(id);
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<String> deletePremises(@PathVariable String id) {
+		premiseService.deletePremises(UUID.fromString(id));
 		return ResponseEntity.ok("Premises with id " + id + " deleted successfully");
 	}
 
