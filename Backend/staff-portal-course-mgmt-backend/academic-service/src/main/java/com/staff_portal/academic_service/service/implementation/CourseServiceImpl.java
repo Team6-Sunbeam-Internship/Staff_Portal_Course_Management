@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
+import com.staff_portal.academic_service.exception.CannotUpdateException;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.*;
 import com.staff_portal.academic_service.model.Module;
@@ -13,6 +14,8 @@ import com.staff_portal.academic_service.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +39,7 @@ public class CourseServiceImpl implements CourseService {
     private final TopicRepository topicRepository;
 
     @Override
-    public ApiResponse<Page<PaginatedCourseResponseDTO>> getPaginatedCourse(String searchTerm, UUID courseTypeId, UUID batchCycleId, UUID premiseId, int page, int size){
+    public ApiResponse<Page<PaginatedCourseResponseDTO>> getPaginatedCourse(String searchTerm, UUID courseTypeId, UUID batchCycleId, UUID premiseId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
         String processedSearch = (searchTerm != null && !searchTerm.trim().isEmpty()) ? searchTerm.trim() : null;
@@ -51,19 +54,37 @@ public class CourseServiceImpl implements CourseService {
         return ApiResponse.onSuccess(paginatedCourses);
     }
 
+    private record CourseRelations(
+            BatchCycle batchCycle,
+            CourseType courseType,
+            Premise premise
+    ) {
+    }
+
+    private CourseRelations fetchRelations(CourseRequestDTO dto) {
+        BatchCycle batchCycle = batchCycleRepository.findById(dto.getBatchCycleId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Batch Cycle Not Found with id: %s", dto.getBatchCycleId())));
+
+        CourseType courseType = courseTypeRepository.findById(dto.getCourseTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course Type Not Found with id: %s", dto.getCourseTypeId())));
+
+        Premise premise = premiseRepository.findById(dto.getPremiseId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Premise Not Found with id: %s", dto.getPremiseId())));
+
+        return new CourseRelations(batchCycle, courseType, premise);
+    }
+
+
     // Create Course
     @Override
     public ApiResponse<UUID> createCourse(CourseRequestDTO requestDTO) {
-        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId()).orElseThrow(() -> new ResourceNotFoundException(String.format("Batch Cycle Not Found with id: %s", requestDTO.getBatchCycleId())));
-        CourseType courseType = courseTypeRepository.findById(requestDTO.getCourseTypeId()).orElseThrow(()-> new ResourceNotFoundException(String.format("Course Type Not Found with id: %s", requestDTO.getCourseTypeId())));
-        Premise premise = premiseRepository.findById(requestDTO.getPremiseId()).orElseThrow(() -> new ResourceNotFoundException(String.format("Premise Not Found with id: %s", requestDTO.getPremiseId())));
-
+        var relations = fetchRelations(requestDTO);
         Course course = Course.builder()
                 .courseName(requestDTO.getTitle())
                 .courseCode(requestDTO.getCourseCode())
-                .batchCycle(batchCycle)
-                .courseType(courseType)
-                .premise(premise)
+                .batchCycle(relations.batchCycle)
+                .courseType(relations.courseType)
+                .premise(relations.premise)
                 .startDate(requestDTO.getStartDate())
                 .endDate(requestDTO.getEndDate())
                 .studentCount(requestDTO.getStudentCount())
@@ -71,44 +92,34 @@ public class CourseServiceImpl implements CourseService {
                 .status(requestDTO.getStatus())
                 .build();
         Course savedCourse = courseRepository.save(course);
-        return ApiResponse.onSuccess(savedCourse.getCourseId())
+        return ApiResponse.onSuccess(savedCourse.getCourseId());
     }
 
     // Update Course
     @Override
-    public CourseResponseDTO updateCourse(int id, CourseRequestDTO requestDTO) {
+    public ApiResponse<String> updateCourse(UUID id, CourseRequestDTO requestDTO) {
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course Not Found with id: %s", id)));
 
         if (course.isDeleted()) {
-            throw new RuntimeException("Cannot update deleted course");
+            throw new CannotUpdateException("Can't perform update for deleted course", HttpStatus.FORBIDDEN);
         }
 
-        CourseType courseType = courseTypeRepository.findById(requestDTO.getCourseTypeId())
-                .orElseThrow(() -> new RuntimeException("createCourseType not found"));
+        var relations = fetchRelations(requestDTO);
 
+        course.setCourseName(requestDTO.getTitle());
         course.setCourseCode(requestDTO.getCourseCode());
-        course.setCourseName(requestDTO.getCourseName());
+        course.setBatchCycle(relations.batchCycle());
+        course.setCourseType(relations.courseType());
+        course.setPremise(relations.premise());
         course.setStartDate(requestDTO.getStartDate());
         course.setEndDate(requestDTO.getEndDate());
+        course.setStudentCount(requestDTO.getStudentCount());
+        course.setCourseGroupCount(requestDTO.getGroupCount());
         course.setStatus(requestDTO.getStatus());
-        course.setCourseType(courseType);
 
-        Course updated = courseRepository.save(course);
-        return mapToResponseDTO(updated);
-    }
-
-    // Get Course by ID
-    @Override
-    public CourseResponseDTO getCourseById(int id) {
-        Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
-
-        if (course.isDeleted()) {
-            throw new RuntimeException("Course not found");
-        }
-
-        return mapToResponseDTO(course);
+        courseRepository.save(course);
+        return ApiResponse.onSuccess("Course updated successfully");
     }
 
     // Get All Courses (excluding deleted)
@@ -162,32 +173,5 @@ public class CourseServiceImpl implements CourseService {
                 }
             }
         }
-    }
-
-    // Filtered Courses by Batch + Type
-    @Override
-    public List<CourseResponseDTO> getCoursesByFilters(Integer batchCycleId, Integer courseTypeId) {
-        return courseRepository
-                .findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(batchCycleId, courseTypeId)
-                .stream()
-                .filter(c -> !c.isDeleted())
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    // Mapper (Entity → DTO)
-    private CourseResponseDTO mapToResponseDTO(Course course) {
-        CourseResponseDTO response = new CourseResponseDTO();
-        response.setCourseId(course.getCourseId());
-        response.setCourseCode(course.getCourseCode());
-        response.setCourseName(course.getCourseName());
-        response.setStartDate(course.getStartDate());
-        response.setEndDate(course.getEndDate());
-        response.setStatus(course.getStatus());
-        response.setDeleted(course.isDeleted());
-        response.setCourseTypeName(course.getCourseType().getTypeName());
-        response.setCycleName(course.getBatchCycle().getCycleName());
-        response.setPremisesName(course.getCourseType().getPremises().getName());
-        return response;
     }
 }
