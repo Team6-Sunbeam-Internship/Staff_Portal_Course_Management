@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import org.springframework.stereotype.Service;
@@ -76,19 +77,18 @@ public class BatchCycleServiceImpl implements BatchCycleService {
     }
 
     @Override
-    public BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request) {
-        BatchCycle batch = repository.findById(id)
+    public ApiResponse<String> updateBatchCycle(UUID id, BatchCycleRequest request) {
+        BatchCycle batch = batchCycleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
-        batch.setCycleName(request.getCycleName());
+        batch.setCycleName(request.getTitle());
         batch.setDescription(request.getDescription());
         batch.setStartDate(request.getStartDate());
         batch.setEndDate(request.getEndDate());
         batch.setStatus(request.getStatus());
 
-        BatchCycle updated = repository.save(batch);
+        batchCycleRepository.save(batch);
 
-        return new BatchCycleResponse(updated.getBatchCycleId(), updated.getCycleName(), updated.getDescription(),
-                updated.getStartDate(), updated.getEndDate(), updated.getStatus());
+        return ApiResponse.onSuccess(String.format("Successfully updated BatchCycle with id %d", id));
     }
 
     @Override
