@@ -16,7 +16,7 @@ public interface CourseService {
 
     ApiResponse<String> updateCourse(UUID id, CourseRequestDTO requestDTO);
 
-    void deleteCourse(int id);
+    void deleteCourse(UUID id);
 
     List<CourseResponseDTO> getAllCourses();
 }

@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -135,9 +134,9 @@ public class CourseServiceImpl implements CourseService {
     // Soft Delete Course and cascade
     @Override
     @Transactional
-    public void deleteCourse(int id) {
+    public void deleteCourse(UUID id) {
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course Not Found with id: %s", id)));
 
         softDeleteCourseHierarchy(course);
     }
