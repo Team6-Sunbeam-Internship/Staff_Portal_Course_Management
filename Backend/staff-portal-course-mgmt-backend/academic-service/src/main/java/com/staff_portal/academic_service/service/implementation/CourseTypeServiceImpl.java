@@ -13,14 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class CourseTypeServiceImpl implements CourseTypeService {
 
     private final CourseTypeRepository courseTypeRepository;
-    private final PremisesRepository premisesRepository;
+    private final PremiseRepository premisesRepository;
     private final CourseRepository courseRepository;
     private final ModuleRepository moduleRepository;
     private final SubjectRepository subjectRepository;
@@ -28,25 +28,20 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     private final TopicRepository topicRepository;
 
     @Override
-    public CourseTypeResponseDTO addCourseType(CourseTypeRequestDTO requestDTO) {
-        Premises premises = premisesRepository.findById(requestDTO.getPremisesId())
-                .orElseThrow(() -> new RuntimeException("Premises not found"));
-
-        CourseType courseType = new CourseType();
-        courseType.setTypeName(requestDTO.getTypeName());
-        courseType.setDescription(requestDTO.getDescription());
-        courseType.setPremises(premises);
-        courseType.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : CourseTypeStatus.ACTIVE);
-        courseType.setDeleted(false);
-
-        CourseType saved = courseTypeRepository.save(courseType);
-        return mapToResponse(saved);
+    public ApiResponse<UUID> createCourseType(CourseTypeRequestDTO requestDTO) {
+        CourseType courseType = CourseType.builder()
+                .typeName(requestDTO.getTitle())
+                .description(requestDTO.getDescription())
+                .status(requestDTO.getStatus())
+                .build();
+        CourseType savedCourseType = courseTypeRepository.save(courseType);
+        return ApiResponse.onSuccess(savedCourseType.getCourseTypeId());
     }
 
     @Override
     public CourseTypeResponseDTO updateCourseType(int id, CourseTypeRequestDTO requestDTO) {
         CourseType courseType = courseTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+                .orElseThrow(() -> new RuntimeException("createCourseType not found"));
 
         courseType.setTypeName(requestDTO.getTypeName());
         courseType.setDescription(requestDTO.getDescription());
@@ -65,7 +60,7 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     @Transactional
     public void deleteCourseType(int id) {
         CourseType courseType = courseTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+                .orElseThrow(() -> new RuntimeException("createCourseType not found"));
 
         // Soft delete parent
         courseType.setDeleted(true);
@@ -126,10 +121,10 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     @Override
     public CourseTypeResponseDTO getCourseTypeById(int id) {
         CourseType courseType = courseTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+                .orElseThrow(() -> new RuntimeException("createCourseType not found"));
 
         if (courseType.isDeleted()) {
-            throw new RuntimeException("CourseType not found");
+            throw new RuntimeException("createCourseType not found");
         }
         return mapToResponse(courseType);
     }
