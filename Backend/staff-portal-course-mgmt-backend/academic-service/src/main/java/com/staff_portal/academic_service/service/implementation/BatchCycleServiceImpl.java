@@ -66,17 +66,6 @@ public class BatchCycleServiceImpl implements BatchCycleService {
     }
 
     @Override
-    public BatchCycleResponse findById(int id) {
-        BatchCycle batch = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
-        if (batch.isDeleted()) {
-            throw new ResourceNotFoundException("BatchCycle not found with id " + id);
-        }
-        return new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName(), batch.getDescription(),
-                batch.getStartDate(), batch.getEndDate(), batch.getStatus());
-    }
-
-    @Override
     public ApiResponse<String> updateBatchCycle(UUID id, BatchCycleRequest request) {
         BatchCycle batch = batchCycleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
@@ -92,11 +81,11 @@ public class BatchCycleServiceImpl implements BatchCycleService {
     }
 
     @Override
-    public void deleteBatchCycle(int id) {
-        BatchCycle batch = repository.findById(id)
+    public void deleteBatchCycle(UUID id) {
+        BatchCycle batch = batchCycleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
         batch.setDeleted(true);
-        repository.save(batch);
+        batchCycleRepository.save(batch);
     }
 
 }
