@@ -83,7 +83,7 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
         FROM Course c
         JOIN c.batchCycle b
         JOIN c.courseType ct
-        LEFT JOIN c.premise p
+        JOIN c.premise p
         WHERE c.deleted = false
         """)
     List<CourseResponseDTO> findAllCourseDetails();
