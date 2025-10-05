@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.service.interfaces;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.request.InfrastructureRequest;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
@@ -8,7 +9,7 @@ import com.staff_portal.academic_service.dto.response.InfrastructureResponse;
 
 public interface InfrastructureService {
 
-    InfrastructureResponse createInfrastructure(InfrastructureRequest request);
+    ApiResponse<UUID> createInfrastructure(InfrastructureRequest request);
 
     InfrastructureResponse getInfrastructureById(int id);
 
