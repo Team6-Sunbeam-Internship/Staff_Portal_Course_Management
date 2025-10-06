@@ -29,10 +29,10 @@ public class ModuleController {
     }
 
     // Update Module
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateModule(@PathVariable int id, @RequestBody ModuleRequestDTO requestDTO) {
-        ModuleResponseDTO response = moduleService.updateModule(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Module Updated Successfully!", response));
+    @PutMapping("/update/{courseCode}/{moduleId}")
+    public ResponseEntity<ApiResponse<String>> updateModule(@PathVariable("courseCode") String courseCode, @PathVariable("moduleId") UUID moduleId, @RequestBody ModuleRequestDTO requestDTO) {
+        ApiResponse<String> updateModuleResponse = moduleService.updateModule(courseCode, moduleId, requestDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(updateModuleResponse);
     }
 
     // Delete Module
