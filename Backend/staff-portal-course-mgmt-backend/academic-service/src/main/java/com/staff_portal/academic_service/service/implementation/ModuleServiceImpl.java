@@ -3,11 +3,9 @@ package com.staff_portal.academic_service.service.implementation;
 import com.staff_portal.academic_service.dto.request.ModuleRequestDTO;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.ModuleResponseDTO;
-import com.staff_portal.academic_service.enums.ModuleStatus;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.exception.ResourseAlreadyExistException;
 import com.staff_portal.academic_service.model.Course;
-import com.staff_portal.academic_service.model.CourseType;
 import com.staff_portal.academic_service.model.Module;
 import com.staff_portal.academic_service.model.Subject;
 import com.staff_portal.academic_service.model.Section;
@@ -55,17 +53,15 @@ public class ModuleServiceImpl implements ModuleService {
 
     // Update Module
     @Override
-    public ModuleResponseDTO updateModule(int id, ModuleRequestDTO requestDTO) {
-        Module module = moduleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Module not found"));
-
+    public ApiResponse<String> updateModule(String courseCode, UUID moduleId, ModuleRequestDTO requestDTO) {
+        Module module = moduleRepository.findById(moduleId).orElseThrow(() -> new ResourceNotFoundException(String.format("Module with moduleCode: [%s] found", moduleId)));
         module.setModuleName(requestDTO.getModuleName());
+        module.setModuleCode(requestDTO.getModuleCode());
         module.setTheoryHours(requestDTO.getTheoryHours());
         module.setPracticalHours(requestDTO.getPracticalHours());
-        module.setStatus(requestDTO.getStatus());
 
         moduleRepository.save(module);
-        return mapToResponse(module);
+        return ApiResponse.onSuccess(String.format("Module with moduleCode: [%s] updated", module.getModuleCode()));
     }
 
     // Soft Delete Module + cascading subjects → sections → topics
