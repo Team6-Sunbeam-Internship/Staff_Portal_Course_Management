@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
@@ -18,7 +19,7 @@ import com.staff_portal.academic_service.model.Course;
 public interface CourseRepository extends JpaRepository<Course, UUID> {
 
 
-    boolean existsByCourseCode(String courseCode);
+    Optional<Boolean> existsByCourseCode(String courseCode);
 
     List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
             Integer batchCycleId,
