@@ -1,31 +1,31 @@
 package com.staff_portal.academic_service.controller;
 
 
-
 import com.staff_portal.academic_service.dto.request.ModuleRequestDTO;
-import com.staff_portal.academic_service.dto.response.CustomResponse;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.ModuleResponseDTO;
 import com.staff_portal.academic_service.service.interfaces.ModuleService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:5176")
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/modules")
+@RequestMapping("/module")
 @RequiredArgsConstructor
 public class ModuleController {
 
     private final ModuleService moduleService;
 
     //  Add Module
-    @PostMapping("/add")
-    public ResponseEntity<?> addModule(@RequestBody ModuleRequestDTO requestDTO) {
-        ModuleResponseDTO response = moduleService.addModule(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new CustomResponse<>(false, "Module Added Successfully!", response));
+    @PostMapping("/create/{courseCode}")
+    public ResponseEntity<ApiResponse<UUID>> create(@PathVariable("courseCode") String courseCode, @RequestBody ModuleRequestDTO requestDTO) {
+        ApiResponse<UUID> createResponse = moduleService.createModule(courseCode, requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createResponse);
     }
 
     // Update Module
@@ -55,7 +55,7 @@ public class ModuleController {
         ModuleResponseDTO response = moduleService.getModuleById(id);
         return ResponseEntity.ok(new CustomResponse<>(false, "Module Found", response));
     }
-    
+
     @GetMapping("/filter")
     public ResponseEntity<?> getModulesByFilters(
             @RequestParam(required = false) Integer batchCycleId,
