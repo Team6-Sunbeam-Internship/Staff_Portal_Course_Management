@@ -17,15 +17,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 
-@Setter
-@Getter
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"course_id", "module_code"})})
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Module {
 
     @Id
