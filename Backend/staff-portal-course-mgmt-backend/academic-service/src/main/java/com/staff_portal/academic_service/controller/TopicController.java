@@ -16,14 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.staff_portal.academic_service.dto.request.TopicRequestDTO;
-import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.dto.response.TopicResponseDTO;
 import com.staff_portal.academic_service.service.interfaces.TopicService;
 
 import lombok.RequiredArgsConstructor;
-@CrossOrigin(origins = "http://localhost:5176")
 @RestController
-@RequestMapping("/api/topics")
+@RequestMapping("/topic")
 @RequiredArgsConstructor
 public class TopicController {
 

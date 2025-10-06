@@ -1,7 +1,6 @@
 package com.staff_portal.academic_service.controller;
 
 import com.staff_portal.academic_service.dto.request.SectionRequestDTO;
-import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.dto.response.SectionResponseDTO;
 import com.staff_portal.academic_service.service.interfaces.SectionService;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:5176")
 @RestController
-@RequestMapping("/api/sections")
+@RequestMapping("/section")
 @RequiredArgsConstructor
 public class SectionController {
 
