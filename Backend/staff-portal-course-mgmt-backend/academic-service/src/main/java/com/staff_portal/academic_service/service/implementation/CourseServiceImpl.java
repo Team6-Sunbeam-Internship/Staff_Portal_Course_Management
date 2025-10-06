@@ -2,8 +2,7 @@ package com.staff_portal.academic_service.service.implementation;
 
 import java.util.*;
 
-import com.staff_portal.academic_service.dto.response.ApiResponse;
-import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
+import com.staff_portal.academic_service.dto.response.*;
 import com.staff_portal.academic_service.exception.CannotUpdateException;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.*;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.staff_portal.academic_service.dto.request.CourseRequestDTO;
-import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
 import com.staff_portal.academic_service.service.interfaces.CourseService;
 
 import lombok.RequiredArgsConstructor;
@@ -126,21 +124,13 @@ public class CourseServiceImpl implements CourseService {
 
         Map<UUID, Map<UUID, List<CourseResponseDTO>>> typeMap = new HashMap<>();
 
-        for(CourseResponseDTO dto : allCourseDetails) {
+        for (CourseResponseDTO dto : allCourseDetails) {
             UUID courseTypeId = dto.getCourseTypeId();
             UUID batchCycleId = dto.getBatchCycleId();
 
-            Map<UUID, List<CourseResponseDTO>> batchMap = typeMap.get(courseTypeId);
-            if(batchMap == null) {
-                batchMap = new HashMap<>();
-                typeMap.put(courseTypeId, batchMap);
-            }
+            Map<UUID, List<CourseResponseDTO>> batchMap = typeMap.computeIfAbsent(courseTypeId, k -> new HashMap<>());
 
-            List<CourseResponseDTO> courseDetails = batchMap.get(batchCycleId);
-            if(courseDetails == null) {
-                courseDetails = new ArrayList<>();
-                batchMap.put(batchCycleId, courseDetails);
-            }
+            List<CourseResponseDTO> courseDetails = batchMap.computeIfAbsent(batchCycleId, k -> new ArrayList<>());
             courseDetails.add(dto);
         }
         return ApiResponse.onSuccess(typeMap);
@@ -187,5 +177,37 @@ public class CourseServiceImpl implements CourseService {
                 }
             }
         }
+    }
+
+    @Override
+    public ApiResponse<CourseHierarchyResponseDTO> getCourseHierarchy(String courseCode) {
+        // Validate course existence
+        if (courseRepository.existsByCourseCode(courseCode).isEmpty()) {
+            throw new ResourceNotFoundException(String.format("Course %s not found", courseCode));
+        }
+
+        List<ModuleResponseDTO> modules = moduleRepository.getAllModulesForCourse(courseCode);
+
+        if (modules.isEmpty()) {
+            return ApiResponse.onSuccess(new CourseHierarchyResponseDTO(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList()));
+        }
+
+        List<UUID> moduleIds = modules.stream().map(ModuleResponseDTO::getId).toList();
+        List<SubjectResponseDTO> subjects = subjectRepository.getAllSubjectsForModule(moduleIds);
+
+        List<UUID> subjectIds = subjects.stream().map(SubjectResponseDTO::getId).toList();
+        List<SectionResponseDTO> sections = sectionRepository.getAllSectionsForSubjects(subjectIds);
+
+        List<UUID> sectionIds = sections.stream().map(SectionResponseDTO::getId).toList();
+        List<TopicResponseDTO> topics = topicRepository.getAllTopicsForSections(sectionIds);
+
+        CourseHierarchyResponseDTO hierarchy = new CourseHierarchyResponseDTO(
+                modules,
+                subjects,
+                sections,
+                topics
+        );
+
+        return ApiResponse.onSuccess(hierarchy);
     }
 }
