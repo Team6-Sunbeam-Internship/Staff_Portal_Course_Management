@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface ModuleService {
     ApiResponse<UUID> createModule(String courseCode, ModuleRequestDTO requestDTO);
     ApiResponse<String> updateModule(String courseCode, UUID moduleId, ModuleRequestDTO requestDTO);
-    void deleteModule(int id);
+    void deleteModule(String courseCode, UUID moduleId);
     List<ModuleResponseDTO> getAllModules();
     ModuleResponseDTO getModuleById(int id);
     
