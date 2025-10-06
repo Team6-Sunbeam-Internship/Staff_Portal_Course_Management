@@ -67,9 +67,9 @@ public class ModuleServiceImpl implements ModuleService {
     // Soft Delete Module + cascading subjects → sections → topics
     @Override
     @Transactional
-    public void deleteModule(int id) {
-        Module module = moduleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Module not found"));
+    public void deleteModule(String courseCode, UUID moduleId) {
+        Module module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Module with moduleCode: [%s] found", moduleId)));
 
         module.setDeleted(true);
 
