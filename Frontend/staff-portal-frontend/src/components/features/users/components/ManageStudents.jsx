@@ -11,7 +11,7 @@ import {
   getInactiveStudents,
   getActiveStudents,
 } from "../../../../services/api/StudentService";
-import Pagination from "../../../common/Pagination/Pagination";
+import Pagination from "../../../layout/Pagination/Pagination";
 import Table from "../../../common/Table/Table";
 
 function ManageStudents() {
