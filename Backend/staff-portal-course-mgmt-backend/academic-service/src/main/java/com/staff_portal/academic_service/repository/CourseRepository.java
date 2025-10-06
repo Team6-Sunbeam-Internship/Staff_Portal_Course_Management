@@ -88,5 +88,7 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
         WHERE c.deleted = false
         """)
     List<CourseResponseDTO> findAllCourseDetails();
+
+    Optional<Course> findByCourseCode(String courseCode);
 }
 
