@@ -1,6 +1,7 @@
 package com.staff_portal.academic_service.dto.response;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.enums.CourseStatus;
 
@@ -15,17 +16,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseResponseDTO {
-    private int courseId;
-    private String courseCode;
+    private String courseCode; // it is unique for every batchcycle
     private String courseName;
-    private CourseStatus status;
-    private boolean deleted; 
-    private String cycleName;      // from CourseType
-    private String courseTypeName;            // from CourseType
-    private String premisesName;    // from Premises (through CourseType)
-    private LocalDate startDate;
-    private LocalDate endDate;
-//    private int studentCount;
-//    private int groupCount;
+    private UUID batchCycleId;
+    private String batchCycleName;
+    private UUID courseTypeId;
+    private String courseTypeName;
+    private int maxGroupCount;
+    private UUID premiseId;
+    private String premiseName;
 }
 
