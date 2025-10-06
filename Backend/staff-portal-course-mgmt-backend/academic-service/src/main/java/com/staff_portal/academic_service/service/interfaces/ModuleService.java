@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ModuleService {
     ApiResponse<UUID> createModule(String courseCode, ModuleRequestDTO requestDTO);
-    ModuleResponseDTO updateModule(int id, ModuleRequestDTO requestDTO);
+    ApiResponse<String> updateModule(String courseCode, UUID moduleId, ModuleRequestDTO requestDTO);
     void deleteModule(int id);
     List<ModuleResponseDTO> getAllModules();
     ModuleResponseDTO getModuleById(int id);
