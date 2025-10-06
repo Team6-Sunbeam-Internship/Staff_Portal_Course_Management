@@ -1,7 +1,11 @@
 package com.staff_portal.academic_service.controller;
 
 import java.util.List;
+import java.util.UUID;
 
+import com.staff_portal.academic_service.dto.response.ApiResponse;
+import org.hibernate.engine.jdbc.batch.spi.Batch;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,34 +24,32 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/batch-cycles")
+@RequestMapping("/batch-cycle")
 public class BatchCycleController {
 
-	private final BatchCycleService service;
+    private final BatchCycleService service;
 
-	@PostMapping
-	public BatchCycleResponse create(@RequestBody BatchCycleRequest request) {
-		return service.createBatchCycle(request);
-	}
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<BatchCycleResponse>> create(@RequestBody BatchCycleRequest request) {
+        ApiResponse<BatchCycleResponse> batchCycleCreateResponse = service.createBatchCycle(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(batchCycleCreateResponse);
+    }
 
-	@GetMapping
-	public List<BatchCycleResponse> getAllBatchCycles() {
-		return service.findAll();
-	}
+    @GetMapping("/getAll")
+    public ResponseEntity<ApiResponse<List<BatchCycleResponse>>> getAllBatchCycles() {
+        ApiResponse<List<BatchCycleResponse>> allBatchCycles = service.findAll();
+        return ResponseEntity.status(HttpStatus.OK).body(allBatchCycles);
+    }
 
-	@GetMapping("/{id}")
-	public BatchCycleResponse getById(@PathVariable int id) {
-		return service.findById(id);
-	}
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<String>> update(@PathVariable String id, @RequestBody BatchCycleRequest request) {
+        UUID uuid = UUID.fromString(id);
+        return ResponseEntity.status(HttpStatus.OK).body(service.updateBatchCycle(uuid, request));
+    }
 
-	@PutMapping("/{id}")
-	public BatchCycleResponse update(@PathVariable int id, @RequestBody BatchCycleRequest request) {
-		return service.updateBatchCycle(id, request);
-	}
-
-	@DeleteMapping("/{id}")
-	public ResponseEntity<String> delete(@PathVariable int id) {
-		service.deleteBatchCycle(id);
-		return ResponseEntity.ok("BatchCycle deleted successfully!");
-	}
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> delete(@PathVariable String id) {
+        service.deleteBatchCycle(UUID.fromString(id));
+        return ResponseEntity.ok("BatchCycle deleted successfully!");
+    }
 }

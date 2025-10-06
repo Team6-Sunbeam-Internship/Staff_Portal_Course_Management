@@ -3,25 +3,12 @@ package com.staff_portal.academic_service.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import com.staff_portal.academic_service.enums.CourseStatus;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.staff_portal.academic_service.enums.Status;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 
 @Setter
@@ -30,19 +17,26 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "courses")
+@Builder
 public class Course {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int courseId;
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "course_id", unique = true, nullable = false)
+    private UUID courseId;
     
     @ManyToOne
-    @JoinColumn(name = "batchCycleId", nullable = false)
+    @JoinColumn(name = "batch_cycle_id", nullable = false)
     private BatchCycle batchCycle;
 
     @ManyToOne
-    @JoinColumn(name = "courseTypeId", nullable = false)
+    @JoinColumn(name = "course_type_id", nullable = false)
     private CourseType courseType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "premise_id", nullable = false)
+    private Premise premise;
 
     @Column(nullable = false, unique = true)
     private String courseCode;
@@ -52,21 +46,29 @@ public class Course {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CourseStatus status;
+    private Status status;
 
     @Column(nullable = true)
     private LocalDate startDate;
 
     @Column(nullable = true)
     private LocalDate endDate;
-    
+
+    @Column(nullable = false, name = "student_count")
+    private int studentCount;
+
+    @Column(nullable = false, name="course_group_count")
+    private int courseGroupCount;
+
     @Column(nullable = false)
     private boolean deleted = false;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Module> modules = new ArrayList<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<CourseGroup> courseGroups = new ArrayList<>();
 }
 

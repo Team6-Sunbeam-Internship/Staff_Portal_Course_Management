@@ -1,20 +1,19 @@
 package com.staff_portal.academic_service.service.interfaces;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.BatchCycleResponse;
 
 public interface BatchCycleService {
 
-	List<BatchCycleResponse> findAll();
+    ApiResponse<List<BatchCycleResponse>> findAll();
 
-	BatchCycleResponse createBatchCycle(BatchCycleRequest request);
+    ApiResponse<BatchCycleResponse> createBatchCycle(BatchCycleRequest request);
 
-	BatchCycleResponse findById(int id);
+    ApiResponse<String> updateBatchCycle(UUID id, BatchCycleRequest request);
 
-	BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request);
-
-	void deleteBatchCycle(int id);
-
+    void deleteBatchCycle(UUID id);
 }

@@ -8,11 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ModuleRequestDTO {
+    private String moduleCode;
     private String moduleName;
-    private int courseTypeId;
-    private int courseId;
-//    private int staffId;
     private int theoryHours;
     private int practicalHours;
-    private ModuleStatus status;   // Enum: ACTIVE, INACTIVE
 }

@@ -1,60 +1,46 @@
 package com.staff_portal.academic_service.controller;
 
 
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.staff_portal.academic_service.dto.request.CourseTypeRequestDTO;
 import com.staff_portal.academic_service.dto.response.CourseTypeResponseDTO;
-import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.service.interfaces.CourseTypeService;
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:5176")
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/coursetypes")
+@RequestMapping("/course-types")
 @RequiredArgsConstructor
 public class CourseTypeController {
 
     private final CourseTypeService courseTypeService;
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addCourseType(@RequestBody CourseTypeRequestDTO requestDTO) {
-        CourseTypeResponseDTO response = courseTypeService.addCourseType(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new CustomResponse<>(false, "CourseType Added Successfully!", response));
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<UUID>> addCourseType(@RequestBody CourseTypeRequestDTO requestDTO) {
+        ApiResponse<UUID> courseTypeResponse = courseTypeService.createCourseType(requestDTO);
+        return ResponseEntity.ok(courseTypeResponse);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCourseType(@PathVariable int id, @RequestBody CourseTypeRequestDTO requestDTO) {
-        CourseTypeResponseDTO response = courseTypeService.updateCourseType(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType s Successfully!", response));
+    public ResponseEntity<?> updateCourseType(@PathVariable String id, @RequestBody CourseTypeRequestDTO requestDTO) {
+        ApiResponse<String> udpateApiResponse = courseTypeService.updateCourseType(UUID.fromString(id), requestDTO);
+        return ResponseEntity.ok(udpateApiResponse);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteCourseType(@PathVariable int id) {
-        courseTypeService.deleteCourseType(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Deleted Successfully!", null));
+    public ResponseEntity<?> deleteCourseType(@PathVariable String id) {
+        courseTypeService.deleteCourseType(UUID.fromString(id));
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllCourseTypes() {
-        List<CourseTypeResponseDTO> response = courseTypeService.getAllCourseTypes();
-        return ResponseEntity.ok(new CustomResponse<>(false, "All CourseTypes Fetched", response));
+    @GetMapping("/getAll")
+    public ResponseEntity<ApiResponse<List<CourseTypeResponseDTO>>> getAllCourseTypes() {
+        ApiResponse<List<CourseTypeResponseDTO>> response = courseTypeService.getAllCourseTypes();
+        return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCourseTypeById(@PathVariable int id) {
-        CourseTypeResponseDTO response = courseTypeService.getCourseTypeById(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "CourseType Found", response));
-    }
- 
-//   
-//    @GetMapping("/byBatchCycle")
-//    public ResponseEntity<?> getCourseTypesByBatchCycle(@RequestParam Integer batchCycleId) {
-//        List<CourseTypeResponseDTO> response = courseTypeService.getCourseTypesByBatchCycleId(batchCycleId);
-//        return ResponseEntity.ok(new CustomResponse<>(false, "Course types fetched", response));
-//    }
 }

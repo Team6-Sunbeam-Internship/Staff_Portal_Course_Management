@@ -2,6 +2,7 @@ package com.staff_portal.academic_service.model;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import com.staff_portal.academic_service.enums.BatchStatus;
 
@@ -14,33 +15,33 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 @Setter
 @Getter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BatchCycle {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "batchcycle_id")
-	private int batchCycleId;
+    @Id
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "batch_cycle_id", nullable = false, updatable = false)
+    private UUID batchCycleId;
 
-	@Column(nullable = false, unique = true, name = "cycle_name")
+    @Column(nullable = false, unique = true, name = "cycle_name")
 	private String cycleName;
 
 	@Column(length = 500, name = "description") 
 	private String description;
 
-	@Column(nullable = true, name = "start_date")
+	@Column(name = "start_date", nullable=false)
 	private LocalDate startDate;
 
-	@Column(nullable = true, name = "end_date")
+	@Column(name = "end_date", nullable=false)
 	private LocalDate endDate;
 	
 	@Column(name = "is_deleted", nullable = false)

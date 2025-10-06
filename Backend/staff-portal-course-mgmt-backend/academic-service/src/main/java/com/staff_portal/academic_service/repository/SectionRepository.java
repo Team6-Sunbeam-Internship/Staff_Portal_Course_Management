@@ -1,21 +1,23 @@
 package com.staff_portal.academic_service.repository;
 
+import com.staff_portal.academic_service.dto.response.SectionResponseDTO;
 import com.staff_portal.academic_service.model.Section;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SectionRepository extends JpaRepository<Section, Integer> {
-	
+
     boolean existsBySectionNameAndSubject_SubjectId(String sectionName, Integer subjectId);
-    
-   
+
+
     List<Section> findBySubject_SubjectId(Integer subjectId);
-    
- // Fetch by subject (only active)
+
+    // Fetch by subject (only active)
     List<Section> findBySubject_SubjectIdAndDeletedFalse(Integer subjectId);
 
     // Fetch all active
@@ -23,14 +25,14 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
 
     // Update filter query (exclude deleted)
     @Query("""
-            SELECT s FROM Section s
-            WHERE s.deleted = false
-              AND s.subject.module.course.batchCycle.batchCycleId = :batchCycleId
-              AND s.subject.module.course.courseType.courseTypeId = :courseTypeId
-              AND s.subject.module.course.courseId = :courseId
-              AND s.subject.module.moduleId = :moduleId
-              AND s.subject.subjectId = :subjectId
-          """)
+              SELECT s FROM Section s
+              WHERE s.deleted = false
+                AND s.subject.module.course.batchCycle.batchCycleId = :batchCycleId
+                AND s.subject.module.course.courseType.courseTypeId = :courseTypeId
+                AND s.subject.module.course.courseId = :courseId
+                AND s.subject.module.moduleId = :moduleId
+                AND s.subject.subjectId = :subjectId
+            """)
     List<Section> filterSections(
             @Param("batchCycleId") Integer batchCycleId,
             @Param("courseTypeId") Integer courseTypeId,
@@ -39,6 +41,16 @@ public interface SectionRepository extends JpaRepository<Section, Integer> {
             @Param("subjectId") Integer subjectId
     );
 
-    
-    
+    @Query("""
+                SELECT new com.staff_portal.academic_service.dto.response.SectionResponseDTO(
+                    sec.sectionId,
+                    sec.subject.subjectId,
+                    sec.sectionName
+                )
+                FROM Section sec
+                WHERE sec.subject.subjectId IN :subjectIds
+            """)
+    List<SectionResponseDTO> getAllSectionsForSubjects(@Param("subjectIds") List<UUID> subjectIds);
+
+
 }

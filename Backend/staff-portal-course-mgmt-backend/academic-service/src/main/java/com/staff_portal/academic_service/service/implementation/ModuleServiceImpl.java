@@ -1,10 +1,11 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import com.staff_portal.academic_service.dto.request.ModuleRequestDTO;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.ModuleResponseDTO;
-import com.staff_portal.academic_service.enums.ModuleStatus;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
+import com.staff_portal.academic_service.exception.ResourseAlreadyExistException;
 import com.staff_portal.academic_service.model.Course;
-import com.staff_portal.academic_service.model.CourseType;
 import com.staff_portal.academic_service.model.Module;
 import com.staff_portal.academic_service.model.Subject;
 import com.staff_portal.academic_service.model.Section;
@@ -14,10 +15,12 @@ import com.staff_portal.academic_service.repository.CourseTypeRepository;
 import com.staff_portal.academic_service.repository.ModuleRepository;
 import com.staff_portal.academic_service.service.interfaces.ModuleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,51 +33,43 @@ public class ModuleServiceImpl implements ModuleService {
     
 
     @Override
-    public ModuleResponseDTO addModule(ModuleRequestDTO requestDTO) {
-        Course course = courseRepository.findById(requestDTO.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+    public ApiResponse<UUID> createModule(String courseCode, ModuleRequestDTO requestDTO) {
+        Course course = courseRepository.findByCourseCode(courseCode).orElseThrow(()-> new ResourceNotFoundException(String.format("Course with code %s not found", courseCode)));
 
-        CourseType courseType = courseTypeRepository.findById(requestDTO.getCourseTypeId())
-                .orElseThrow(() -> new RuntimeException("CourseType not found"));
-
-        if (moduleRepository.existsByModuleNameAndCourse_CourseId(requestDTO.getModuleName(), requestDTO.getCourseId())) {
-            throw new RuntimeException("Module already exists for this course");
+        if(!moduleRepository.existsByCourseAndModuleCode(course, requestDTO.getModuleCode()).isEmpty()){
+            throw new ResourseAlreadyExistException(String.format("Module with moduleCode: [%s] already exist", requestDTO.getModuleCode()), HttpStatus.FORBIDDEN);
         }
+        Module module = Module.builder()
+                .moduleCode(requestDTO.getModuleCode())
+                .moduleName(requestDTO.getModuleName())
+                .theoryHours(requestDTO.getTheoryHours())
+                .practicalHours(requestDTO.getPracticalHours())
+                .course(course)
+                .build();
 
-        Module module = new Module();
-        module.setModuleName(requestDTO.getModuleName());
-        module.setCourse(course);
-        module.setCourseType(courseType); // ⚠️ important
-        module.setTheoryHours(requestDTO.getTheoryHours());
-        module.setPracticalHours(requestDTO.getPracticalHours());
-        module.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : ModuleStatus.ACTIVE);
-        module.setDeleted(false);
-
-        Module saved = moduleRepository.save(module);
-        return mapToResponse(saved);
+        Module savedModule = moduleRepository.save(module);
+        return ApiResponse.onSuccess(savedModule.getModuleId());
     }
 
     // Update Module
     @Override
-    public ModuleResponseDTO updateModule(int id, ModuleRequestDTO requestDTO) {
-        Module module = moduleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Module not found"));
-
+    public ApiResponse<String> updateModule(String courseCode, UUID moduleId, ModuleRequestDTO requestDTO) {
+        Module module = moduleRepository.findById(moduleId).orElseThrow(() -> new ResourceNotFoundException(String.format("Module with moduleCode: [%s] found", moduleId)));
         module.setModuleName(requestDTO.getModuleName());
+        module.setModuleCode(requestDTO.getModuleCode());
         module.setTheoryHours(requestDTO.getTheoryHours());
         module.setPracticalHours(requestDTO.getPracticalHours());
-        module.setStatus(requestDTO.getStatus());
 
         moduleRepository.save(module);
-        return mapToResponse(module);
+        return ApiResponse.onSuccess(String.format("Module with moduleCode: [%s] updated", module.getModuleCode()));
     }
 
     // Soft Delete Module + cascading subjects → sections → topics
     @Override
     @Transactional
-    public void deleteModule(int id) {
-        Module module = moduleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Module not found"));
+    public void deleteModule(String courseCode, UUID moduleId) {
+        Module module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Module with moduleCode: [%s] found", moduleId)));
 
         module.setDeleted(true);
 

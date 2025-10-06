@@ -5,17 +5,16 @@ import com.staff_portal.academic_service.enums.CourseTypeStatus;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CourseTypeResponseDTO {
-    private int courseTypeId;
-    private String typeName;
-//    private int batchCycleId;
-//    private String cycleName;
+    private UUID courseTypeId;
+    private String title;
     private String description;
-    private boolean deleted; 
     private CourseTypeStatus status;
-    private String premisesName;
 }

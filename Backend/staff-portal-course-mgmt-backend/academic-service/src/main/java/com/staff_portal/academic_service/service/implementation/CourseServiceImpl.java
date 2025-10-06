@@ -1,27 +1,21 @@
 package com.staff_portal.academic_service.service.implementation;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
+import com.staff_portal.academic_service.dto.response.*;
+import com.staff_portal.academic_service.exception.CannotUpdateException;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
+import com.staff_portal.academic_service.model.*;
+import com.staff_portal.academic_service.model.Module;
+import com.staff_portal.academic_service.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.staff_portal.academic_service.dto.request.CourseRequestDTO;
-import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
-import com.staff_portal.academic_service.model.BatchCycle;
-import com.staff_portal.academic_service.model.Course;
-import com.staff_portal.academic_service.model.CourseType;
-import com.staff_portal.academic_service.model.Module;
-import com.staff_portal.academic_service.model.Subject;
-import com.staff_portal.academic_service.model.Section;
-import com.staff_portal.academic_service.model.Topic;
-import com.staff_portal.academic_service.repository.BatchCycleRepository;
-import com.staff_portal.academic_service.repository.CourseRepository;
-import com.staff_portal.academic_service.repository.CourseTypeRepository;
-import com.staff_portal.academic_service.repository.ModuleRepository;
-import com.staff_portal.academic_service.repository.SubjectRepository;
-import com.staff_portal.academic_service.repository.SectionRepository;
-import com.staff_portal.academic_service.repository.TopicRepository;
 import com.staff_portal.academic_service.service.interfaces.CourseService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,87 +27,121 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final CourseTypeRepository courseTypeRepository;
     private final BatchCycleRepository batchCycleRepository;
+    private final PremiseRepository premiseRepository;
     private final ModuleRepository moduleRepository;
     private final SubjectRepository subjectRepository;
     private final SectionRepository sectionRepository;
     private final TopicRepository topicRepository;
 
+    @Override
+    public ApiResponse<Page<PaginatedCourseResponseDTO>> getPaginatedCourse(String searchTerm, UUID courseTypeId, UUID batchCycleId, UUID premiseId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        String processedSearch = (searchTerm != null && !searchTerm.trim().isEmpty()) ? searchTerm.trim() : null;
+
+        Page<PaginatedCourseResponseDTO> paginatedCourses = courseRepository.findPaginatedCourses(
+                courseTypeId,
+                batchCycleId,
+                premiseId,
+                processedSearch,
+                pageable
+        );
+        return ApiResponse.onSuccess(paginatedCourses);
+    }
+
+    private record CourseRelations(
+            BatchCycle batchCycle,
+            CourseType courseType,
+            Premise premise
+    ) {
+    }
+
+    private CourseRelations fetchRelations(CourseRequestDTO dto) {
+        BatchCycle batchCycle = batchCycleRepository.findById(dto.getBatchCycleId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Batch Cycle Not Found with id: %s", dto.getBatchCycleId())));
+
+        CourseType courseType = courseTypeRepository.findById(dto.getCourseTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course Type Not Found with id: %s", dto.getCourseTypeId())));
+
+        Premise premise = premiseRepository.findById(dto.getPremiseId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Premise Not Found with id: %s", dto.getPremiseId())));
+
+        return new CourseRelations(batchCycle, courseType, premise);
+    }
+
+
     // Create Course
     @Override
-    public CourseResponseDTO addCourse(CourseRequestDTO requestDTO) {
-        BatchCycle batchCycle = batchCycleRepository.findById(requestDTO.getBatchCycleId())
-                .orElseThrow(() -> new RuntimeException("BatchCycle not found with id "));
-
-        CourseType courseType = courseTypeRepository.findById(requestDTO.getCourseTypeId())
-                .orElseThrow(() -> new RuntimeException("CourseType not found"));
-
-        Course course = new Course();
-        course.setCourseCode(requestDTO.getCourseCode());
-        course.setCourseName(requestDTO.getCourseName());
-        course.setStartDate(requestDTO.getStartDate());
-        course.setEndDate(requestDTO.getEndDate());
-        course.setStatus(requestDTO.getStatus());
-        course.setDeleted(false); // ✅ soft delete flag
-        course.setBatchCycle(batchCycle);
-        course.setCourseType(courseType);
-
-        Course saved = courseRepository.save(course);
-        return mapToResponseDTO(saved);
+    public ApiResponse<UUID> createCourse(CourseRequestDTO requestDTO) {
+        var relations = fetchRelations(requestDTO);
+        Course course = Course.builder()
+                .courseName(requestDTO.getTitle())
+                .courseCode(requestDTO.getCourseCode())
+                .batchCycle(relations.batchCycle)
+                .courseType(relations.courseType)
+                .premise(relations.premise)
+                .startDate(requestDTO.getStartDate())
+                .endDate(requestDTO.getEndDate())
+                .studentCount(requestDTO.getStudentCount())
+                .courseGroupCount(requestDTO.getGroupCount())
+                .status(requestDTO.getStatus())
+                .build();
+        Course savedCourse = courseRepository.save(course);
+        return ApiResponse.onSuccess(savedCourse.getCourseId());
     }
 
     // Update Course
     @Override
-    public CourseResponseDTO updateCourse(int id, CourseRequestDTO requestDTO) {
+    public ApiResponse<String> updateCourse(UUID id, CourseRequestDTO requestDTO) {
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course Not Found with id: %s", id)));
 
         if (course.isDeleted()) {
-            throw new RuntimeException("Cannot update deleted course");
+            throw new CannotUpdateException("Can't perform update for deleted course", HttpStatus.FORBIDDEN);
         }
 
-        CourseType courseType = courseTypeRepository.findById(requestDTO.getCourseTypeId())
-                .orElseThrow(() -> new RuntimeException("CourseType not found"));
+        var relations = fetchRelations(requestDTO);
 
+        course.setCourseName(requestDTO.getTitle());
         course.setCourseCode(requestDTO.getCourseCode());
-        course.setCourseName(requestDTO.getCourseName());
+        course.setBatchCycle(relations.batchCycle());
+        course.setCourseType(relations.courseType());
+        course.setPremise(relations.premise());
         course.setStartDate(requestDTO.getStartDate());
         course.setEndDate(requestDTO.getEndDate());
+        course.setStudentCount(requestDTO.getStudentCount());
+        course.setCourseGroupCount(requestDTO.getGroupCount());
         course.setStatus(requestDTO.getStatus());
-        course.setCourseType(courseType);
 
-        Course updated = courseRepository.save(course);
-        return mapToResponseDTO(updated);
-    }
-
-    // Get Course by ID
-    @Override
-    public CourseResponseDTO getCourseById(int id) {
-        Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
-
-        if (course.isDeleted()) {
-            throw new RuntimeException("Course not found");
-        }
-
-        return mapToResponseDTO(course);
+        courseRepository.save(course);
+        return ApiResponse.onSuccess("Course updated successfully");
     }
 
     // Get All Courses (excluding deleted)
     @Override
-    public List<CourseResponseDTO> getAllCourses() {
-        return courseRepository.findAll()
-                .stream()
-                .filter(c -> !c.isDeleted())
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+    public ApiResponse<Map<UUID, Map<UUID, List<CourseResponseDTO>>>> getAllCourses() {
+        List<CourseResponseDTO> allCourseDetails = courseRepository.findAllCourseDetails();
+
+        Map<UUID, Map<UUID, List<CourseResponseDTO>>> typeMap = new HashMap<>();
+
+        for (CourseResponseDTO dto : allCourseDetails) {
+            UUID courseTypeId = dto.getCourseTypeId();
+            UUID batchCycleId = dto.getBatchCycleId();
+
+            Map<UUID, List<CourseResponseDTO>> batchMap = typeMap.computeIfAbsent(courseTypeId, k -> new HashMap<>());
+
+            List<CourseResponseDTO> courseDetails = batchMap.computeIfAbsent(batchCycleId, k -> new ArrayList<>());
+            courseDetails.add(dto);
+        }
+        return ApiResponse.onSuccess(typeMap);
     }
 
     // Soft Delete Course and cascade
     @Override
     @Transactional
-    public void deleteCourse(int id) {
+    public void deleteCourse(UUID id) {
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Course Not Found with id: %s", id)));
 
         softDeleteCourseHierarchy(course);
     }
@@ -151,30 +179,35 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
-    // Filtered Courses by Batch + Type
     @Override
-    public List<CourseResponseDTO> getCoursesByFilters(Integer batchCycleId, Integer courseTypeId) {
-        return courseRepository
-                .findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(batchCycleId, courseTypeId)
-                .stream()
-                .filter(c -> !c.isDeleted())
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
-    }
+    public ApiResponse<CourseHierarchyResponseDTO> getCourseHierarchy(String courseCode) {
+        // Validate course existence
+        if (courseRepository.existsByCourseCode(courseCode).isEmpty()) {
+            throw new ResourceNotFoundException(String.format("Course %s not found", courseCode));
+        }
 
-    // Mapper (Entity → DTO)
-    private CourseResponseDTO mapToResponseDTO(Course course) {
-        CourseResponseDTO response = new CourseResponseDTO();
-        response.setCourseId(course.getCourseId());
-        response.setCourseCode(course.getCourseCode());
-        response.setCourseName(course.getCourseName());
-        response.setStartDate(course.getStartDate());
-        response.setEndDate(course.getEndDate());
-        response.setStatus(course.getStatus());
-        response.setDeleted(course.isDeleted());
-        response.setCourseTypeName(course.getCourseType().getTypeName());
-        response.setCycleName(course.getBatchCycle().getCycleName());
-        response.setPremisesName(course.getCourseType().getPremises().getName());
-        return response;
+        List<ModuleResponseDTO> modules = moduleRepository.getAllModulesForCourse(courseCode);
+
+        if (modules.isEmpty()) {
+            return ApiResponse.onSuccess(new CourseHierarchyResponseDTO(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList()));
+        }
+
+        List<UUID> moduleIds = modules.stream().map(ModuleResponseDTO::getId).toList();
+        List<SubjectResponseDTO> subjects = subjectRepository.getAllSubjectsForModule(moduleIds);
+
+        List<UUID> subjectIds = subjects.stream().map(SubjectResponseDTO::getId).toList();
+        List<SectionResponseDTO> sections = sectionRepository.getAllSectionsForSubjects(subjectIds);
+
+        List<UUID> sectionIds = sections.stream().map(SectionResponseDTO::getId).toList();
+        List<TopicResponseDTO> topics = topicRepository.getAllTopicsForSections(sectionIds);
+
+        CourseHierarchyResponseDTO hierarchy = new CourseHierarchyResponseDTO(
+                modules,
+                subjects,
+                sections,
+                topics
+        );
+
+        return ApiResponse.onSuccess(hierarchy);
     }
 }

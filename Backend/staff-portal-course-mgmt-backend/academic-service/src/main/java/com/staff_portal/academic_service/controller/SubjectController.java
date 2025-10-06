@@ -2,7 +2,6 @@ package com.staff_portal.academic_service.controller;
 
 
 import com.staff_portal.academic_service.dto.request.SubjectRequestDTO;
-import com.staff_portal.academic_service.dto.response.CustomResponse;
 import com.staff_portal.academic_service.dto.response.SubjectResponseDTO;
 import com.staff_portal.academic_service.service.interfaces.SubjectService;
 import lombok.RequiredArgsConstructor;
@@ -11,9 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:5176")
 @RestController
-@RequestMapping("/api/subjects")
+@RequestMapping("/subject")
 @RequiredArgsConstructor
 public class SubjectController {
 

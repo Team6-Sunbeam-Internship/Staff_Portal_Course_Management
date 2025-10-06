@@ -1,11 +1,12 @@
 package com.staff_portal.academic_service.service.implementation;
 
 import java.util.List;
-import org.springframework.data.domain.Sort;
+import java.util.UUID;
+
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.BatchCycleRequest;
 import com.staff_portal.academic_service.dto.response.BatchCycleResponse;
-import com.staff_portal.academic_service.enums.BatchStatus;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.repository.BatchCycleRepository;
@@ -21,64 +22,70 @@ import lombok.Setter;
 @Setter
 public class BatchCycleServiceImpl implements BatchCycleService {
 
-	private final BatchCycleRepository repository;
+    private final BatchCycleRepository batchCycleRepository;
 
-	@Override
-	public BatchCycleResponse createBatchCycle(BatchCycleRequest request) {
-		BatchCycle entity = new BatchCycle();
-		entity.setCycleName(request.getCycleName());
-		entity.setDescription(request.getDescription());
-		entity.setStartDate(request.getStartDate());
-		entity.setEndDate(request.getEndDate());
-		entity.setStatus(request.getStatus());
+    @Override
+    public ApiResponse<BatchCycleResponse> createBatchCycle(BatchCycleRequest request) {
+        BatchCycle batchCycle = BatchCycle.builder()
+                .cycleName(request.getTitle())
+                .description(request.getDescription())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .status(request.getStatus())
+                .build();
+        BatchCycle savedBatchCycle = batchCycleRepository.save(batchCycle);
+        return ApiResponse.onSuccess(BatchCycleResponse.builder()
+                .batchCycleId(savedBatchCycle.getBatchCycleId())
+                .title(savedBatchCycle.getCycleName())
+                .description(savedBatchCycle.getDescription())
+                .year(savedBatchCycle.getStartDate().getYear())
+                .startDate(savedBatchCycle.getStartDate())
+                .endDate(savedBatchCycle.getEndDate())
+                .status(savedBatchCycle.getStatus())
+                .build());
+    }
 
-		BatchCycle saved = repository.save(entity);
+    @Override
+    public ApiResponse<List<BatchCycleResponse>> findAll() {
 
-		return new BatchCycleResponse(saved.getBatchCycleId(), saved.getCycleName(), saved.getDescription(),
-				saved.getStartDate(), saved.getEndDate(), saved.getStatus());
-	}
+        List<BatchCycleResponse> listOfBatchCycles = batchCycleRepository
+                .findAll()
+                .stream()
+                .filter(batch -> !batch.isDeleted())
+                .map(filteredBatchCycle -> BatchCycleResponse.builder()
+                        .batchCycleId(filteredBatchCycle.getBatchCycleId())
+                        .title(filteredBatchCycle.getCycleName())
+                        .description(filteredBatchCycle.getDescription())
+                        .year(filteredBatchCycle.getStartDate().getYear())
+                        .startDate(filteredBatchCycle.getStartDate())
+                        .endDate(filteredBatchCycle.getEndDate())
+                        .build()
+                ).toList();
 
-	@Override
-	public List<BatchCycleResponse> findAll() {
-		return repository.findAll().stream().filter(batch -> !batch.isDeleted())
-				.map(batch -> new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName(),
-						batch.getDescription(), batch.getStartDate(), batch.getEndDate(), batch.getStatus()))
-				.toList();
-	}
+        return ApiResponse.onSuccess(listOfBatchCycles);
+    }
 
-	@Override
-	public BatchCycleResponse findById(int id) {
-		BatchCycle batch = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
-		if (batch.isDeleted()) {
-			throw new ResourceNotFoundException("BatchCycle not found with id " + id);
-		}
-		return new BatchCycleResponse(batch.getBatchCycleId(), batch.getCycleName(), batch.getDescription(),
-				batch.getStartDate(), batch.getEndDate(), batch.getStatus());
-	}
+    @Override
+    public ApiResponse<String> updateBatchCycle(UUID id, BatchCycleRequest request) {
+        BatchCycle batch = batchCycleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
+        batch.setCycleName(request.getTitle());
+        batch.setDescription(request.getDescription());
+        batch.setStartDate(request.getStartDate());
+        batch.setEndDate(request.getEndDate());
+        batch.setStatus(request.getStatus());
 
-	@Override
-	public BatchCycleResponse updateBatchCycle(int id, BatchCycleRequest request) {
-		BatchCycle batch = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
-		batch.setCycleName(request.getCycleName());
-		batch.setDescription(request.getDescription());
-		batch.setStartDate(request.getStartDate());
-		batch.setEndDate(request.getEndDate());
-		batch.setStatus(request.getStatus());
+        batchCycleRepository.save(batch);
 
-		BatchCycle updated = repository.save(batch);
+        return ApiResponse.onSuccess(String.format("Successfully updated BatchCycle with id %d", id));
+    }
 
-		return new BatchCycleResponse(updated.getBatchCycleId(), updated.getCycleName(), updated.getDescription(),
-				updated.getStartDate(), updated.getEndDate(), updated.getStatus());
-	}
-
-	@Override
-	public void deleteBatchCycle(int id) {
-		BatchCycle batch = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
-		batch.setDeleted(true);
-		repository.save(batch);
-	}
+    @Override
+    public void deleteBatchCycle(UUID id) {
+        BatchCycle batch = batchCycleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BatchCycle not found with id " + id));
+        batch.setDeleted(true);
+        batchCycleRepository.save(batch);
+    }
 
 }
