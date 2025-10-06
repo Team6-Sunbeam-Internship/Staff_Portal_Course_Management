@@ -1,1 +1,0 @@
-export { default as StudentOperationsPage } from './StudentOperationPage';
