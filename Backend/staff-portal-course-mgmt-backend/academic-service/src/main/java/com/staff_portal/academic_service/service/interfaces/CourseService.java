@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.request.CourseRequestDTO;
 import com.staff_portal.academic_service.dto.response.ApiResponse;
+import com.staff_portal.academic_service.dto.response.CourseHierarchyResponseDTO;
 import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
 import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
 import org.springframework.data.domain.Page;
@@ -20,5 +21,7 @@ public interface CourseService {
     void deleteCourse(UUID id);
 
     ApiResponse<Map<UUID, Map<UUID, List<CourseResponseDTO>>>>getAllCourses();
+
+    ApiResponse<CourseHierarchyResponseDTO> getCourseHierarchy(String courseCode);
 }
 
