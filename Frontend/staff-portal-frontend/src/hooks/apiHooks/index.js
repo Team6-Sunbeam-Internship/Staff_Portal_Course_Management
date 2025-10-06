@@ -1,0 +1,1 @@
+export { useFilteredMenu } from "./useFilteredMenu";
