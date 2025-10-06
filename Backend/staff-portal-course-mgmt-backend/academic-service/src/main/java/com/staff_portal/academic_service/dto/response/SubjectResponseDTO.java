@@ -3,18 +3,19 @@ package com.staff_portal.academic_service.dto.response;
 
 import com.staff_portal.academic_service.enums.SubjectStatus;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.UUID;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@RequiredArgsConstructor
 public class SubjectResponseDTO {
-
-    private int subjectId;
-    private String subjectName;
-    private SubjectStatus status;
-    private boolean deleted;
-    private String moduleName;   // from Module
-    private String courseName;   // from Course (via Module)
-    
+    private UUID id;
+    private UUID moduleId;
+    private String title;
+    private int theoryHours;
+    private int practicalHours;
 }

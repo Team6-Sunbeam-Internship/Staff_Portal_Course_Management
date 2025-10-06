@@ -7,19 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TopicResponseDTO {
-    private Integer topicId;
-    private String topicName;
-    private TopicStatus status;
-    private boolean deleted;
-
-    // hierarchy info
-    private String sectionName;
-    private String subjectName;
-    private String moduleName;
-    private String courseName;
+    private UUID id;
+    private UUID sectionId;
+    private String title;
 }
