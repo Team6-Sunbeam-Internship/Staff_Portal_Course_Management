@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.staff_portal.academic_service.enums.CourseStatus;
-
 import com.staff_portal.academic_service.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,7 +35,7 @@ public class Course {
     private CourseType courseType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "premise_id")
+    @JoinColumn(name = "premise_id", nullable = false)
     private Premise premise;
 
     @Column(nullable = false, unique = true)
