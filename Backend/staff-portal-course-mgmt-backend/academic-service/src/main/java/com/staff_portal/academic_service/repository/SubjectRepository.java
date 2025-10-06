@@ -14,7 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SubjectRepository extends JpaRepository<Subject, Integer> {
+public interface SubjectRepository extends JpaRepository<Subject, UUID> {
 
     // Check if a subject already exists under a given module (not soft-deleted)
     boolean existsBySubjectNameAndModule_ModuleIdAndDeletedFalse(String subjectName, int moduleId);

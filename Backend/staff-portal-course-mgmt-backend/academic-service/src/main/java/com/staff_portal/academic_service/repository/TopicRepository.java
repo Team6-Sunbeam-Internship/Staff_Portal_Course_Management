@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.staff_portal.academic_service.model.Topic;
 
 @Repository
-public interface TopicRepository extends JpaRepository<Topic, Integer> {
+public interface TopicRepository extends JpaRepository<Topic, UUID> {
     boolean existsByTopicNameAndSection_SectionId(String topicName, Integer sectionId);
 
     // Get all topics by SectionId
