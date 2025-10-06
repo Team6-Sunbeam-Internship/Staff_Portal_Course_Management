@@ -1,12 +1,14 @@
-import React from "react";
+import AppProviders from "./providers/AppProvider";
 import AppRoutes from "./routes/AppRoutes";
 
-function App() {
-  return <AppRoutes />;
-  import React from "react";
-  import AppRoutes from "./routes/AppRoutes";
+const App = () => {
+	return (
+		<AppProviders>
+			<div className='relative'>
+				<AppRoutes />
+			</div>
+		</AppProviders>
+	);
+};
 
-  function App() {
-    return <AppRoutes />;
-  }
-}
+export default App;
