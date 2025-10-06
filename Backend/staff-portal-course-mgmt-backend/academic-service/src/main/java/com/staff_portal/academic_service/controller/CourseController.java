@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.staff_portal.academic_service.dto.response.ApiResponse;
+import com.staff_portal.academic_service.dto.response.CourseHierarchyResponseDTO;
 import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -65,5 +66,11 @@ public class CourseController {
     public ResponseEntity<ApiResponse<Map<UUID, Map<UUID, List<CourseResponseDTO>>>>> getAllCourses() {
         ApiResponse<Map<UUID, Map<UUID, List<CourseResponseDTO>>>> allCourses = courseService.getAllCourses();
         return ResponseEntity.ok(allCourses);
+    }
+
+    @GetMapping("/getHierarchy/{courseCode}")
+    public ResponseEntity< ApiResponse<CourseHierarchyResponseDTO>> getCourseHierarchy(@PathVariable("courseCode") String courseCode) {
+        ApiResponse<CourseHierarchyResponseDTO> courseHierarchy = courseService.getCourseHierarchy(courseCode);
+        return ResponseEntity.ok(courseHierarchy);
     }
 }
