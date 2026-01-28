@@ -6,9 +6,9 @@ import {
 	Badge,
 	Card,
 	CardBody,
-	CardHeader,
+	// CardHeader,
 	VStack,
-} from "../../../../common";
+} from "../../../layout";
 
 export const ConflictChecker = ({ schedules = [], onConflictDetected }) => {
 	const [conflicts, setConflicts] = useState([]);
@@ -161,12 +161,12 @@ export const ConflictChecker = ({ schedules = [], onConflictDetected }) => {
 
 	return (
 		<Card>
-			<CardHeader
+			{/* <CardHeader
 				title='Schedule Conflicts Detected'
 				subtitle={`${conflicts.length} conflict${
 					conflicts.length !== 1 ? "s" : ""
 				} found`}
-			/>
+			/> */}
 			<CardBody>
 				<VStack spacing='sm'>
 					{conflicts.map((conflict) => (

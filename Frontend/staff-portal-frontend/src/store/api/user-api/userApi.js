@@ -1,5 +1,13 @@
-import baseApi from "./baseApi";
-import API_CONFIG from "../../config/api.config";
+import { createEntityAdapter } from "@reduxjs/toolkit";
+import API_CONFIG from "../../../config/api.config";
+import baseApi from "../baseApi";
+
+// create entity adapter
+export const staffAdapter = createEntityAdapter({
+	selectId: (staff) => staff.staffId,
+});
+// initial state
+export const initialState = staffAdapter.getInitialState();
 
 export const userApi = baseApi.injectEndpoints({
 	endpoints: (builder) => ({
@@ -9,106 +17,93 @@ export const userApi = baseApi.injectEndpoints({
 				params,
 			}),
 			providesTags: ["Staff"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => staffAdapter.setAll(initialState, response.apiResponse),
 			transformErrorResponse: (response) => response,
 		}),
 		// For Module Router
-		// param: course_code == course_designation + multiple -> response: List<EligibleStafDTO>: staffId, name, course_designation
+		// param: uniqueCourseName + multiple -> response: List<EligibleStafDTO>: staffId, name, course_specialization
 		getEligibleStaff: builder.query({
 			query: (params = {}) => ({
 				url: API_CONFIG.ENDPOINTS.STAFF.ELIGIBLE_STAFF,
 				params,
 			}),
 			providesTags: ["Staff"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
 		createStaff: builder.mutation({
-			query: (staff) => ({
+			query: (payload) => ({
 				url: API_CONFIG.ENDPOINTS.STAFF.CREATE_STAFF,
 				method: "POST",
-				body: staff,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted(staff, { dispatch, queryFulfilled }) {
+			async onQueryStarted(payload, { dispatch, queryFulfilled }) {
 				// Pessimitic patching
 				try {
 					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
-					const completeNewEntry = { ...staff, id: newId };
+					const newId = serverResponse;
+					const completeNewEntry = { ...payload, staffId: newId };
 					dispatch(
 						userApi.util.updateQueryData("getAllStaff", {}, (draft) => {
-							draft.unshift(completeNewEntry);
+							staffAdapter.addOne(draft, completeNewEntry);
 						})
 					);
 				} catch (error) {
 					// do nothing
 				}
-			}
+			},
 		}),
 		// authUserId == staffId
 		updateStaff: builder.mutation({
-			query: ({  staffId, staff }) => ({
-				url: API_CONFIG.ENDPOINTS.STAFF.UPDATE_STAFF,
-				method: "PUT",
-				body: staff,
+			query: ({ id, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.STAFF.UPDATE_STAFF}`,
+				method: "PATCH",
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({staffId, staff}, { dispatch, queryFulfilled }) {
+			async onQueryStarted({ id, payload }, { dispatch, queryFulfilled }) {
 				// Optimistic patching
 				const patchResult = dispatch(
-					userApi.util.updateQueryData("getAllStaff", staffId, (draft) => {
-						const index = draft.findIndex((item) => item.id === staffId);
-						if (index !== -1) {
-							draft[index] = staff;
-						}
+					userApi.util.updateQueryData("getAllStaff", {}, (draft) => {
+						staffAdapter.updateOne(draft, { id, changes: payload });
 					})
-				)
+				);
 
 				try {
 					await queryFulfilled; // Wait for the network request to succeed
-				} catch (error) {
+				} catch {
 					// If the network request fails, revert the cache change
 					patchResult.undo();
 				}
-			}
+			},
 		}),
 		deleteStaff: builder.mutation({
 			query: (staffId) => ({
-				url: API_CONFIG.ENDPOINTS.STAFF.DELETE_STAFF,
+				url: `${API_CONFIG.ENDPOINTS.STAFF.DELETE_STAFF}/${staffId}`,
 				method: "DELETE",
-				body: staffId,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 			async onQueryStarted(staffId, { dispatch, queryFulfilled }) {
 				// Optimistic patching
 				const patchResult = dispatch(
-					userApi.util.updateQueryData("getAllStaff", staffId, (draft) => {
-						const index = draft.findIndex((item) => item.id === staffId);
-						if (index !== -1) {
-							draft.splice(index, 1);
-						}
+					userApi.util.updateQueryData("getAllStaff", {}, (draft) => {
+						staffAdapter.removeOne(draft, staffId);
 					})
-				)
+				);
 
 				try {
 					await queryFulfilled; // Wait for the network request to succeed
-				} catch (error) {
+				} catch {
 					// If the network request fails, revert the cache change
 					patchResult.undo();
 				}
-			}
-		})
+			},
+		}),
 	}),
 });
 
-export const {
-	useGetAllStaffQuery,
-	useGetEligibleStaffQuery,
-	useCreateStaffMutation,
-	useUpdateStaffMutation,
-	useDeleteStaffMutation,
-} = userApi;
+export const { useGetAllStaffQuery, useGetEligibleStaffQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteStaffMutation } = userApi;

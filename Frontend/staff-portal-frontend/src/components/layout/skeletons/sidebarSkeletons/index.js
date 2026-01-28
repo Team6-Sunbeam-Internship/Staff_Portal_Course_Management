@@ -1,1 +1,5 @@
-export { SidebarSkeleton } from "./SidebarSkeleton";
+export { default as SidebarSkeleton } from "./SidebarSkeleton"
+export { default as SidebarHeaderSkeleton } from "./SidebarHeaderSkeleton"
+export { default as SidebarBodySkeleton } from "./SidebarBodySkeleton"
+export { default as SidebarFooterSkeleton } from "./SidebarFooterSkeleton"
+export { default as HorizonDividerSkeleton } from "./HorizonDividerSkeleton"

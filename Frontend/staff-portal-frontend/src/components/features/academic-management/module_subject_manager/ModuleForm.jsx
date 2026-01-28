@@ -1,24 +1,54 @@
-import React, { useEffect, useState } from "react";
-import { FormField } from "../../../layout";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { Button, FormField, Input } from "../../../layout";
+import { useFormState } from "../../../../hooks/uiHook/useFormState";
+import { useDebounce } from "../../../../hooks";
 
-export const ModuleForm = ({ module, batchCycleId, courseCode, onSubmit, isLoading = false, onCancel }) => {
-	const [formData, setFormData] = useState({
-		moduleCode: "",
-		moduleName: "",
-		theoryHours: "",
-		practicalHours: "",
-	});
-	useEffect(() => {
-		if (module) {
-			setFormData({
-				moduleCode: module.moduleCode,
-				moduleName: module.moduleName,
-				theoryHours: module.theoryHours,
-				practicalHours: module.practicalHours,
+export const ModuleForm = forwardRef(({ module, batchCycleId, courseCode, onSubmit, isLoading = false }, ref) => {
+	console.log("Editing Module: ", module);
+	const { values, errors, setField, setAll, submit, reset, isDirty } = useFormState({
+		initialValues: {
+			moduleCode: "",
+			moduleName: "",
+			theoryHours: "",
+			practicalHours: "",
+		},
+		validate: (vals) => {
+			const errs = {};
+			if (!vals.moduleName.trim()) errs.moduleName = "Module name is required";
+			if (!vals.theoryHours || isNaN(vals.theoryHours) || parseInt(vals.theoryHours) <= 0)
+				errs.theoryHours = "Theory hours must be a valid positive number";
+			if (!vals.practicalHours || isNaN(vals.practicalHours) || parseInt(vals.practicalHours) <= 0)
+				errs.practicalHours = "Practical hours must be a valid positive number";
+			return errs;
+		},
+		onSubmit: (vals) => {
+			onSubmit({
+				payload: vals,
+				courseCode: courseCode,
+				id: module?.id,
 			});
-		}
+		},
+	});
+	const originalCodeRef = useRef("");
+	const originalNameRef = useRef("");
+
+	useEffect(() => {
+		if (!module) return;
+
+		const initialCode = generateModuleCode(courseCode, module.title);
+
+		setAll({
+			moduleCode: initialCode,
+			moduleName: module.title,
+			theoryHours: module.theoryHours,
+			practicalHours: module.practicalHours,
+		});
+
+		originalCodeRef.current = initialCode;
+		originalNameRef.current = module.title;
 	}, [module, courseCode]);
-	const [error, setErrors] = useState({});
+
+	const debouncedModuleName = useDebounce(values.moduleName, 400);
 
 	const generateModuleCode = (courseCode, moduleName) => {
 		if (!courseCode || !moduleName) return "";
@@ -27,113 +57,72 @@ export const ModuleForm = ({ module, batchCycleId, courseCode, onSubmit, isLoadi
 		const shortName = moduleName
 			.trim()
 			.replace(/[^a-zA-Z0-9 ]/g, "")
-			.split(" ")
+			.split("")
 			.map((word) => word.slice(0, 3).toUpperCase())
 			.join("");
 
 		return `${courseCode}-${shortName}`;
 	};
 	useEffect(() => {
-		const { moduleName } = formData;
-		const moduleCode = generateModuleCode(courseCode, moduleName);
-		setFormData({
-			...formData,
-			moduleCode: moduleCode,
-		});
-	},[courseCode, formData]);
-	const validateForm = () => {
-		const newErrors = {};
+		if (!courseCode || !debouncedModuleName) return;
 
-		if (!formData.moduleCode.trim()) {
-			newErrors.moduleCode = "Module code is required";
-		}
-		if (!formData.moduleName.trim()) {
-			newErrors.moduleName = "Module name is required";
-		}
-		if (!formData.theoryHours || isNaN(formData.theoryHours) || parseInt(formData.theoryHours) <= 0) {
-			newErrors.theoryHours = "Theory hours must be a valid positive number";
-		}
-		if (!formData.practicalHours || isNaN(formData.practicalHours) || parseInt(formData.practicalHours) <= 0) {
-			newErrors.practicalHours = "Practical hours must be a valid positive number";
-		}
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
+		const nameChanged = debouncedModuleName !== originalNameRef.current;
 
-	const handleInputChange = (field, value) => {
-		setFormData({
-			...formData,
-			[field]: value,
-		});
-	};
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (validateForm()) {
-			onSubmit({
-				...formData,
-				courseCode: courseCode,
-				...(module?.id && { id: module.id }),
-			});
+		const nextCode = nameChanged ? generateModuleCode(courseCode, debouncedModuleName) : originalCodeRef.current;
+
+		if (values.moduleCode !== nextCode) {
+			setField("moduleCode", nextCode);
 		}
-	};
+	}, [courseCode, debouncedModuleName]);
+
+	useImperativeHandle(ref, () => ({
+		submit,
+		reset,
+		isDirty,
+	}));
 	return (
-		<form onSubmit={handleSubmit} className='space-y-6'>
+		<div className='space-y-6'>
 			{/**Read only value for batchCycleId and courseCode */}
 			<div className='grid grid-cols-2 gap-6'>
 				<Input readOnly label='Batch Cycle' value={batchCycleId} />
 				<Input readOnly label='Course' value={courseCode} />
+				<Input readOnly label='Module Code' value={values.moduleCode} />
 			</div>
 
-			<FormField label={"Module Code"} error={error.moduleCode} required>
-				<Input
-					type='text'
-					value={formData.moduleCode}
-					onChange={(e) => handleInputChange("moduleCode", e.target.value)}
-					placeHolder='MCJ-001 or MSDM-005'
-					disabled={isLoading}
-				/>
-			</FormField>
+			<Input
+				type='text'
+				label={"Module Name"}
+				required
+				value={values.moduleName}
+				onChange={(e) => setField("moduleName", e.target.value)}
+				placeHolder='Module Name'
+				disabled={isLoading}
+				error={!!errors.moduleName}
+			/>
 
-			<FormField label={"Module Name"} error={error.moduleName} required>
-				<Input
-					type='text'
-					value={formData.moduleName}
-					onChange={(e) => handleInputChange("moduleName", e.target.value)}
-					placeHolder='Module Name'
-					disabled={isLoading}
-				/>
-			</FormField>
+			<Input
+				type='number'
+				label={"Theory Hours"}
+				required
+				value={values.theoryHours}
+				onChange={(e) => setField("theoryHours", e.target.value)}
+				placeHolder='Theory Hours'
+				disabled={isLoading}
+				error={!!errors.theoryHours}
+			/>
 
-			<FormField label={"Theory Hours"} error={error.theoryHours} required>
-				<Input
-					type='number'
-					value={formData.theoryHours}
-					onChange={(e) => handleInputChange("theoryHours", e.target.value)}
-					placeHolder='Theory Hours'
-					disabled={isLoading}
-				/>
-			</FormField>
-
-			<FormField label={"Practical Hours"} error={error.practicalHours} required>
-				<Input
-					type='number'
-					value={formData.practicalHours}
-					onChange={(e) => handleInputChange("practicalHours", e.target.value)}
-					placeHolder='Practical Hours'
-					disabled={isLoading}
-				/>
-			</FormField>
-
-			<div className='flex items-center justify-end space-x-3 pt-4'>
-				<Button type='button' variant='danger' onClick={onCancel} disabled={isLoading}>
-					Cancel
-				</Button>
-				<Button variant='secondary' type='submit' disabled={isLoading}>
-					{isLoading ? "Save" : "Save"}
-				</Button>
-			</div>
-		</form>
+			<Input
+				type='number'
+				label={"Practical Hours"}
+				required
+				value={values.practicalHours}
+				onChange={(e) => setField("practicalHours", e.target.value)}
+				placeHolder='Practical Hours'
+				disabled={isLoading}
+				error={!!errors.practicalHours}
+			/>
+		</div>
 	);
-};
+});
 
 export default ModuleForm;

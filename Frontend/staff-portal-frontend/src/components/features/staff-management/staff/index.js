@@ -1,2 +1,2 @@
 export { default as StaffList } from "./StaffList";
-export { StaffForm } from "./StaffForm"
+export { StaffForm } from "./StaffForm";

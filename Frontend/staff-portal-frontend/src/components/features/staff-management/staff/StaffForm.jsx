@@ -1,192 +1,211 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { AtSign, MapPinHouse, Smartphone, User, VenusAndMars } from "lucide-react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import { useFormState } from "../../../../hooks/uiHook/useFormState";
 import { useGetAllCourseTypesQuery, useGetUniqueCourseNamesQuery } from "../../../../store";
-import { CustomSelect, FormField, Input } from "../../../layout";
+import { CustomSelect, Input } from "../../../layout";
 
-export const StaffForm = ({ staff, onSubmit, onCancel, isLoading = false, staffRoleOptions, staffTypeOptions }) => {
+export const StaffForm = forwardRef(({ staff, onSubmit, isLoading = false, staffRoleOptions, staffTypeOptions }, ref) => {
+	const isEditing = !!staff;
+
 	const [filters, setFilters] = useState({
 		courseTypeId: "",
 		courseName: "",
-		staffRole: "",
-		staffType: "",
 	});
 	const handleFilterChange = (name, value) => {
 		setFilters((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const { data: courseTypes, isLoading: isLoadingCourseTypes, isError: isErrorCourseTypes, error: errorCourseTypes } = useGetAllCourseTypesQuery();
-	const {
-		data: uniqueCourseNames,
-		isLoading: isLoadingUniqueCourseNames,
-		isError: isErrorUniqueCourseNames,
-		error: errorUniqueCourseNames,
-	} = useGetUniqueCourseNamesQuery(); // [{courseTypeId1: {coursename1, coursenam2, courseName3}}, {courseTypeId2: {coursename1, coursenam2, courseName3}}]
+	const { data: courseTypes, isLoading: isLoadingCourseTypes, isError: isErrorCourseTypes } = useGetAllCourseTypesQuery();
+	const { data: uniqueCourseNames, isLoading: isLoadingUniqueCourseNames, isError: isErrorUniqueCourseNames } = useGetUniqueCourseNamesQuery();
 
 	const courseTypeOptions = useMemo(() => {
-		if (isLoadingCourseTypes || isErrorCourseTypes) return [];
-		return courseTypes.map((courseType) => ({
-			label: courseType.name,
+		if (isLoadingCourseTypes || isErrorCourseTypes) return [{ value: "", label: "Select Course Type" }];
+		const mapped = courseTypes.map((courseType) => ({
+			label: courseType.title,
 			value: courseType.id,
 		}));
+		return [{ value: "", label: "Select Course Type" }, ...mapped];
 	}, [isLoadingCourseTypes, isErrorCourseTypes, courseTypes]);
+
 	const courseNameOptions = useMemo(() => {
-		if (!filters.courseTypeId) return [];
-		if (isLoadingUniqueCourseNames || isErrorUniqueCourseNames) return [];
-		return uniqueCourseNames[filters.courseTypeId]?.map((courseName) => ({
-			label: courseName,
-			value: courseName,
-		}));
+		if (!filters.courseTypeId) return [{ value: "", label: "Select Course Name" }];
+		if (isLoadingUniqueCourseNames || isErrorUniqueCourseNames) return [{ value: "", label: "Select Course Name" }];
+
+		const mapped =
+			uniqueCourseNames[filters.courseTypeId]?.map((courseName) => ({
+				label: courseName,
+				value: courseName,
+			})) || [];
+
+		return [{ value: "", label: "Select Course Name" }, { value: "MULTIPLE", label: "Multiple Courses" }, ...mapped];
 	}, [isLoadingUniqueCourseNames, isErrorUniqueCourseNames, uniqueCourseNames, filters.courseTypeId]);
 
-	const [formData, setFormData] = useState({
-		firstName: "",
-		lastName: "",
-		email: "",
-		phoneNumber: "",
-		courseSpecialization: "", // multiple or courseName
-		staffType: "",
-		staffRole: "",
-		address: "",
+	const { values, errors, setField, setAll, submit, reset, isDirty } = useFormState({
+		initialValues: {
+			firstName: "",
+			lastName: "",
+			email: "",
+			gender: "",
+			phoneNumber: "",
+			courseSpecialization: "",
+			staffType: "",
+			role: "",
+			address: "",
+		},
+		validate: (vals) => {
+			const errs = {};
+			if (!vals.firstName?.trim()) errs.firstName = "First name is required";
+			if (!vals.lastName?.trim()) errs.lastName = "Last name is required";
+			if (!vals.email?.trim()) errs.email = "Email is required";
+			if (!vals.gender?.trim()) errs.gender = "Gender is required";
+			if (!vals.phoneNumber?.trim()) errs.phoneNumber = "Phone number is required";
+			if (!vals.courseSpecialization?.trim()) errs.courseSpecialization = "Course specialization is required";
+			if (!vals.staffType) errs.staffType = "Staff type is required";
+			if (!vals.role) errs.role = "Staff role is required";
+			if (!vals.address?.trim()) errs.address = "Address is required";
+			return errs;
+		},
+		onSubmit: (vals) => {
+			if (isEditing) {
+				onSubmit({
+					id: staff.staffId,
+					payload: vals,
+				});
+			} else {
+				onSubmit({
+					payload: vals,
+				});
+			}
+		},
 	});
 
 	useEffect(() => {
-		if (staff) {
-			setFormData({
+		if (isEditing && staff) {
+			setAll({
 				firstName: staff.firstName || "",
 				lastName: staff.lastName || "",
 				email: staff.email || "",
-				phoneNumber: staff.phone || "",
-				courseSpecialization: staff.courseSpecialization || "", // multiple or courseName
+				phoneNumber: staff.phoneNumber || "",
+				courseSpecialization: staff.courseSpecialization || "",
 				staffType: staff.staffType || "",
-				staffRole: staff.staffRole || "",
+				role: staff.role || "",
 				address: staff.address || "",
 			});
+			// Also set filters for course type and name if available
+			// This would require additional logic to extract courseTypeId from courseSpecialization
 		}
-	}, [staff]);
+	}, [isEditing, staff]);
 
-	const [errors, setErros] = useState({});
-
-	const validateForm = () => {
-		if (!formData.firstName) errors.firstName = "First name is required";
-		if (!formData.lastName) errors.lastName = "Last name is required";
-		if (!formData.email) errors.email = "Email is required";
-		if (!formData.phoneNumber) errors.phoneNumber = "Phone number is required";
-		if (!formData.courseSpecialization) errors.courseSpecialization = "Course specialization is required";
-		if (!formData.staffType) errors.staffType = "Staff type is required";
-		if (!formData.staffRole) errors.staffRole = "Staff role is required";
-		if (!formData.address) errors.address = "Address is required";
-		setErros(errors);
-		return Object.keys(errors).length === 0;
-	};
-
-	const handleFormSubmit = (e) => {
-		e.preventDefault();
-		if (validateForm()) {
-			onSubmit({
-				...formData,
-				courseSpecialization: filters.courseName,
-				staffType: formData.staffType,
-				staffRole: formData.staffRole,
-			});
+	// Update courseSpecialization when courseName changes
+	useEffect(() => {
+		if (filters.courseName) {
+			setField("courseSpecialization", filters.courseName.toUpperCase());
 		}
-	};
+	}, [filters.courseName]);
 
+	useImperativeHandle(ref, () => ({
+		submit,
+		reset,
+		isDirty,
+	}));
+	
+	const genderOptions = [
+		{ value: "", label: "Select Gender" },
+		{ value: "MALE", label: "Male" },
+		{ value: "FEMALE", label: "Female" },
+		{ value: "OTHER", label: "Other" },
+	];
 	return (
-		<>
-			<form onSubmit={handleFormSubmit} className='space-y-6'>
-				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-					<FormField>
-						<Input
-							type='text'
-							label='First Name'
-							value={formData.firstName}
-							onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-							error={errors.firstName}
-						/>
-					</FormField>
-					<FormField>
-						<Input
-							type='text'
-							label='Last Name'
-							value={formData.lastName}
-							onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-							error={errors.lastName}
-						/>
-					</FormField>
-					<FormField>
-						<Input
-							type='email'
-							label='Email'
-							value={formData.email}
-							onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-							error={errors.email}
-						/>
-					</FormField>
-					<FormField>
-						<Input
-							type='number'
-							label='Phone Number'
-							value={formData.phoneNumber}
-							onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-							error={errors.phoneNumber}
-						/>
-					</FormField>
-					<FormField>
-						<Input
-							type='text'
-							label='Address'
-							value={formData.address}
-							onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-							error={errors.address}
-						/>
-					</FormField>
-					<FormField>
-						<CustomSelect
-							label='Course Type'
-							value={filters.courseTypeId}
-							options={courseTypeOptions}
-							onChange={(e) => handleFilterChange("courseTypeId", e.target.value)}
-							isLoading={isLoadingCourseTypes}
-						/>
-					</FormField>
-					<FormField>
-						<CustomSelect
-							label='Course Name'
-							value={filters.courseName}
-							options={courseNameOptions}
-							onChange={(e) => handleFilterChange("courseName", e.target.value)}
-							isLoading={isLoadingUniqueCourseNames}
-							disabled={!filters.courseTypeId}
-						/>
-					</FormField>
-
-					<FormField>
-						<CustomSelect
-							label='Staff Type'
-							value={formData.staffType}
-							options={staffTypeOptions}
-							onChange={(e) => handleFilterChange("staffType", e.target.value)}
-						/>
-					</FormField>
-					<FormField>
-						<CustomSelect
-							label='Staff Role'
-							value={formData.staffRole}
-							options={staffRoleOptions}
-							onChange={(e) => handleFilterChange("staffRole", e.target.value)}
-						/>
-					</FormField>
-				</div>
-				<div className='flex items-center justify-end space-x-3 pt-4'>
-					<Button type='button' variant='danger' onClick={onCancel} disabled={isLoading}>
-						Cancel
-					</Button>
-					<Button variant='secondary' type='submit' disabled={isLoading}>
-						{isLoading ? "Saving..." : "Save"}
-					</Button>
-				</div>
-			</form>
-		</>
+		<div className='space-y-6'>
+			<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+				<Input
+					type='text'
+					label='First Name'
+					icon={User}
+					value={values.firstName}
+					onChange={(e) => setField("firstName", e.target.value)}
+					error={errors.firstName}
+					disabled={isLoading}
+				/>
+				<Input
+					type='text'
+					label='Last Name'
+					icon={User}
+					value={values.lastName}
+					onChange={(e) => setField("lastName", e.target.value)}
+					error={errors.lastName}
+					disabled={isLoading}
+				/>
+				<Input
+					type='email'
+					label='Email'
+					icon={AtSign}
+					value={values.email}
+					onChange={(e) => setField("email", e.target.value)}
+					error={errors.email}
+					disabled={isLoading}
+				/>
+				<CustomSelect
+					label='Gender'
+					value={values.gender}
+					options={genderOptions}
+					onChange={(e) => setField("gender", e.target.value)}
+					disabled={isLoading}
+				/>
+				<Input
+					type='number'
+					label='Phone Number'
+					icon={Smartphone}
+					value={values.phoneNumber}
+					onChange={(e) => setField("phoneNumber", e.target.value)}
+					error={errors.phoneNumber}
+					disabled={isLoading}
+				/>
+				<Input
+					type='text'
+					label='Address'
+					icon={MapPinHouse}
+					value={values.address}
+					onChange={(e) => setField("address", e.target.value)}
+					error={errors.address}
+					disabled={isLoading}
+				/>
+				<CustomSelect
+					label='Course Type'
+					value={filters.courseTypeId}
+					options={courseTypeOptions}
+					onChange={(e) => handleFilterChange("courseTypeId", e.target.value)}
+					isLoading={isLoadingCourseTypes}
+					disabled={isLoading}
+				/>
+				<CustomSelect
+					label='Course Name'
+					value={filters.courseName}
+					options={courseNameOptions}
+					onChange={(e) => handleFilterChange("courseName", e.target.value)}
+					isLoading={isLoadingUniqueCourseNames}
+					disabled={!filters.courseTypeId || isLoading}
+					error={errors.courseSpecialization}
+				/>
+				<CustomSelect
+					label='Staff Type'
+					value={values.staffType}
+					options={staffTypeOptions}
+					onChange={(e) => setField("staffType", e.target.value)}
+					error={errors.staffType}
+					disabled={isLoading}
+				/>
+				<CustomSelect
+					label='Staff Role'
+					value={values.role}
+					options={staffRoleOptions}
+					onChange={(e) => setField("role", e.target.value)}
+					error={errors.role}
+					disabled={isLoading}
+				/>
+			</div>
+		</div>
 	);
-};
+});
 
 export default StaffForm;

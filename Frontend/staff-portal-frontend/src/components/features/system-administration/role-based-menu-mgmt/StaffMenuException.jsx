@@ -1,51 +1,53 @@
-import { useState, useEffect, use } from "react";
-import { Plus, Trash2, Edit, List } from "lucide-react";
+import { List, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 // --- COMMON COMPONENTS ---
+import { useDispatch, useSelector } from "react-redux";
 import {
+	Badge,
+	Button,
 	Card,
 	CardBody,
-	Table,
-	TableHead,
-	TableHeader,
-	TableBody,
-	TableRow,
-	TableCell,
-	Button,
-	Modal,
-	ModalHeader,
-	ModalBody,
 	ConfirmDialog,
+	CustomSelect,
 	EmptyState,
 	SkeletonTable,
-	CustomSelect,
-	Badge,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
 } from "../../../layout";
-import { useDispatch } from "react-redux";
 
+import { useFilteredMenu } from "../../../../hooks";
+import { useModal } from "../../../../providers/providerHook/useModal";
 import {
 	setBreadcrumbs,
 	setHeaderInfo,
+	useCreateUpdateStaffMenuAccessMutation,
+	useDeleteStaffMenuAccessMutation,
+	useGetAllMenuItemsQuery,
+	useGetAllRoleBasedMenuQuery,
 	useGetAllStaffAccessMenuQuery,
 	useGetAllStaffQuery,
-	useGetMenuItemsQuery,
 } from "../../../../store";
-import { useModal } from "../../../../providers/providerHook/useModal";
+import { selectUserRole } from "../../../../store/selectors";
 import { ErrorFallback } from "../../../layout/errorBoundary";
-import { PremiseForm } from "../../infrastructure-management";
+import { ModalForm } from "../../../layout/modals/ModalForm";
+import { StaffMenuAccessExceptionForm } from "./StaffMenuAccessExceptionForm";
 
 const StaffMenuException = () => {
-	const [creating, setCreating] = useState(false);
-	const [updating, setUpdating] = useState(false);
-	const [deleting, setDeleting] = useState(false);
-	const { showModal, setShowModal } = useModal();
-	const [
-		editingStaffMenuAccessException,
-		setEditingStaffMenuAccessException,
-	] = useState(null);
+	const dispatch = useDispatch();
+	const userRole = useSelector(selectUserRole);
+	const { pathSet } = useFilteredMenu();
+	const canAccessStaffMenuException = pathSet.has("/system-administration/menus") && userRole === "ADMIN";
+
+	const formRef = useRef(null);
+	const { showModal, openModal, closeModal } = useModal();
 	const [deleteModal, setDeleteModal] = useState({
 		open: false,
-		menu: null,
+		staffMenuAccessException: null,
 	});
 	const [filters, setFilters] = useState({
 		role: "",
@@ -58,44 +60,36 @@ const StaffMenuException = () => {
 	};
 	// Get all staff menu access exceptions
 	const {
-		data: staffMenuAccessExceptions,
+		data: staffMenuAccessExceptions = [],
 		isLoading: isLoadingStaffMenuAccessExceptions,
 		isError: isErrorStaffMenuAccessExceptions,
 		error: staffMenuAccessExceptionsError,
 	} = useGetAllStaffAccessMenuQuery();
 	// Get all staff
+	const { data: allStaff, isLoading: isLoadingAllStaff, isError: isErrorAllStaff, error: allStaffError } = useGetAllStaffQuery();
 	const {
-		data: allStaff,
-		isLoading: isLoadingAllStaff,
-		isError: isErrorAllStaff,
-		error: allStaffError,
-	} = useGetAllStaffQuery();
-	const {
-		data: menuItems,
-		isLoading: isLoadingMenuItems,
-		isError: isErrorMenuItems,
-		error: menuItemsError,
-	} = useGetMenuItemsQuery();
-	const isLoading =
-		isLoadingStaffMenuAccessExceptions ||
-		isLoadingAllStaff ||
-		isLoadingMenuItems;
-	const isError =
-		isErrorStaffMenuAccessExceptions || isErrorAllStaff || isErrorMenuItems;
-	const dispatch = useDispatch();
+		data: roleBasedMenuItems,
+		isLoading: isLoadingRoleBasedMenuItems,
+		isError: isErrorRoleBasedMenuItems,
+		error: roleBasedMenuItemsError,
+	} = useGetAllRoleBasedMenuQuery();
+	const { data: menuItems, isLoading: isLoadingMenuItems, isError: isErrorMenuItems, error: menuItemsError } = useGetAllMenuItemsQuery();
+	const [createUpdateStaffMenuAccess, { isLoading: isCreating }] = useCreateUpdateStaffMenuAccessMutation();
+	const [deleteStaffMenuAccess, { isLoading: isDeleting }] = useDeleteStaffMenuAccessMutation();
+
+	const isLoading = isLoadingStaffMenuAccessExceptions || isLoadingAllStaff || isLoadingMenuItems;
+	const isError = isErrorStaffMenuAccessExceptions || isErrorAllStaff || isErrorMenuItems;
+
 	useEffect(() => {
-		console.log("Staff", allStaff);
-		console.log("Menu Items", menuItems);
-		console.log("Staff Menu Exceptions", staffMenuAccessExceptions);
 		dispatch(
 			setHeaderInfo({
 				title: "Staff Menu Exceptions",
 				subtitle: "List of staff menu exceptions in the application",
-				action: [
-					{
-						label: "Add Staff Menu Exceptions",
-					},
-				],
+				action: [{
+					label: "Add Staff Exception",
+					entity: "STAFF_MENU_EXCEPTION",
+					mode: "CREATE",
+				}],
 			})
 		);
 		dispatch(
@@ -119,28 +113,24 @@ const StaffMenuException = () => {
 	}, [dispatch]);
 
 	if (isErrorStaffMenuAccessExceptions) {
-		return (
-			<ErrorFallback
-				errorMessage={staffMenuAccessExceptionsError.message}
-			/>
-		);
+		return <ErrorFallback errorMessage={staffMenuAccessExceptionsError?.message} />;
 	}
-	const handleCreateStaffMenuAccessException = async (newMenuItem) => {
-		setCreating(true);
-	};
-
-	const handleUpdateStaffMenuAccessException = async (updatedMenuItem) => {
-		setUpdating(true);
+	const handleCreateStaffMenuAccessException = async (staffMenuAccessException) => {
+		try {
+			await createUpdateStaffMenuAccess(staffMenuAccessException).unwrap();
+			closeModal();
+		} catch (error) {}
 	};
 
 	const handleDeleteStaffMenuAccessException = async () => {
-		setDeleting(true);
+		const idToDelete = deleteModal.staffMenuAccessException.id;
+		if (!idToDelete) return;
+		try {
+			await deleteStaffMenuAccess(idToDelete).unwrap();
+			setDeleteModal({ open: false, staffMenuAccessException: null });
+		} catch (error) {}
 	};
 
-	const handleOpenEditModal = (Premise) => {
-		setEditingStaffMenuAccessException(Premise);
-		setShowModal(true);
-	};
 	const roleOptions = [
 		{
 			label: "Admin",
@@ -158,9 +148,7 @@ const StaffMenuException = () => {
 
 	const staffOptions = [{ value: "", label: "All Staff" }];
 	if (allStaff) {
-		staffOptions.push(
-			...allStaff.map((staff) => ({ value: staff.staffId, label: staff.firstName + " " + staff.lastName }))
-		);
+		staffOptions.push(...allStaff.map((staff) => ({ value: staff.staffId, label: staff.firstName + " " + staff.lastName })));
 	}
 	const menuOptions = [{ value: "", label: "All Menu Items" }];
 	if (menuItems) {
@@ -192,215 +180,114 @@ const StaffMenuException = () => {
 		}
 	};
 	if (isError) {
-		return (
-			<ErrorFallback
-				errorMessage={staffMenuAccessExceptionsError.message}
-			/>
-		);
+		return <ErrorFallback errorMessage={staffMenuAccessExceptionsError.message} />;
 	}
 	return (
 		<>
-			<div className='grid grid-cols-6 gap-4 mb-4'>
-				<CustomSelect
-					value={filters.role}
-					onChange={(e) => handleFilterChange("role", e.target.value)}
-					options={roleOptions}
-				/>
-				<CustomSelect
-					value={filters.staff}
-					onChange={(e) =>
-						handleFilterChange("staff", e.target.value)
-					}
-					options={staffOptions}
-				/>
-				<CustomSelect
-					value={filters.menuItem}
-					onChange={(e) =>
-						handleFilterChange("menuItem", e.target.value)
-					}
-					options={menuOptions}
-				/>
-				<CustomSelect
-					value={filters.exceptionType}
-					onChange={(e) =>
-						handleFilterChange("exceptionType", e.target.value)
-					}
-					options={exceptionTypeOptions}
-				/>
+			<div className='mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+				<div className='grid flex-1 grid-cols-1 gap-4 md:grid-cols-4'>
+					<CustomSelect value={filters.role} onChange={(e) => handleFilterChange("role", e.target.value)} options={roleOptions} />
+					<CustomSelect value={filters.staff} onChange={(e) => handleFilterChange("staff", e.target.value)} options={staffOptions} />
+					<CustomSelect value={filters.menuItem} onChange={(e) => handleFilterChange("menuItem", e.target.value)} options={menuOptions} />
+					<CustomSelect
+						value={filters.exceptionType}
+						onChange={(e) => handleFilterChange("exceptionType", e.target.value)}
+						options={exceptionTypeOptions}
+					/>
+				</div>
 			</div>
 			<Card className={"h-[574px]"}>
 				<CardBody>
-					{isLoading ? (
+					{isLoading ?
 						<SkeletonTable />
-					) : staffMenuAccessExceptions.length === 0 ? (
+					: staffMenuAccessExceptions?.length === 0 ?
 						<EmptyState
-							icon={<List className='w-12 h-12' />}
+							icon={<List className='h-12 w-12' />}
 							title='No Staff Menu Exceptions'
 							description='There are no staff menu exceptions. Get started by adding a new one.'
 						/>
-					) : (
-						<>
+					:	<>
 							<Table>
 								<TableHead>
 									<TableRow>
-										<TableHeader className='w-[100px] rounded-tl-2xl'>
-											S.No
-										</TableHeader>
-										<TableHeader className='w-1/6'>
-											Name
-										</TableHeader>
-										<TableHeader className='w-1/4'>
-											Menu Item
-										</TableHeader>
-										<TableHeader className='w-1/3'>
-											Role
-										</TableHeader>
-										<TableHeader className='w-1/3'>
-											Exception Type
-										</TableHeader>
-										<TableHeader className='text-center rounded-tr-lg w-[120px]'>
-											Actions
-										</TableHeader>
+										<TableHeader className='w-[100px] rounded-tl-2xl'>S.No</TableHeader>
+										<TableHeader className='w-1/6'>Name</TableHeader>
+										<TableHeader className='w-1/4'>Menu Item</TableHeader>
+										<TableHeader className='w-1/3'>Role</TableHeader>
+										<TableHeader className='w-1/3'>Access</TableHeader>
+										<TableHeader className='w-[120px] rounded-tr-lg text-center'>Action</TableHeader>
 									</TableRow>
 								</TableHead>
 							</Table>
-							<div className='h-[500px] rounded-b-2xl overflow-y-auto scrollbar-none'>
+							<div className='scrollbar-none h-[500px] overflow-y-auto rounded-b-2xl'>
 								<Table>
 									<TableBody>
-										{staffMenuAccessExceptions.map(
-											(
-												staffMenuAccessException,
-												index
-											) => (
-												<TableRow
-													key={
-														staffMenuAccessException.id
-													}
-												>
-													<TableCell className='font-medium w-[100px]'>
-														{index + 1}
-													</TableCell>
-													<TableCell className='font-medium text-center w-1/6'>
-														{staffMenuAccessException.firstName +
-															" " +
-															staffMenuAccessException.lastName}
-													</TableCell>
-													<TableCell className='font-medium text-center w-1/4'>
-														{
-															staffMenuAccessException.menuItemTitle
-														}
-													</TableCell>
-													<TableCell className='font-medium text-center w-1/4'>
-														{
-															staffMenuAccessException.staffRoleName
-														}
-													</TableCell>
-													<TableCell className='w-1/3'>
-														<Badge
-															className={getStatusClasses(
-																staffMenuAccessException.status
-															)}
-														>
-															{
-																staffMenuAccessException.status
-															}
-														</Badge>
-													</TableCell>
-													<TableCell className='w-[120px]'>
-														<div className='flex items-center justify-center space-x-2'>
-															<Button
-																variant='ghost'
-																className='cursor-pointer dark:hover:text-yellow-400'
-																size='sm'
-																onClick={() =>
-																	handleOpenEditModal(
-																		staffMenuAccessException
-																	)
-																}
-															>
-																<Edit
-																	size={16}
-																/>
-															</Button>
-															<Button
-																variant='ghost'
-																size='sm'
-																className='text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 cursor-pointer'
-																onClick={() =>
-																	setDeleteModal(
-																		{
-																			open: true,
-																			staffMenuAccessException,
-																		}
-																	)
-																}
-															>
-																<Trash2
-																	size={16}
-																/>
-															</Button>
-														</div>
-													</TableCell>
-												</TableRow>
-											)
-										)}
+										{staffMenuAccessExceptions?.map((staffMenuAccessException, index) => (
+											<TableRow key={staffMenuAccessException.id}>
+												<TableCell className='w-[100px] font-medium'>{index + 1}</TableCell>
+												<TableCell className='w-1/6 text-center font-medium'>
+													{staffMenuAccessException.firstName + " " + staffMenuAccessException.lastName}
+												</TableCell>
+												<TableCell className='w-1/4 text-center font-medium'>{staffMenuAccessException.menuItemTitle}</TableCell>
+												<TableCell className='w-1/4 text-center font-medium'>{staffMenuAccessException.staffRoleName}</TableCell>
+												<TableCell className='w-1/3'>
+													<Badge className={getStatusClasses(staffMenuAccessException.status)}>{staffMenuAccessException.status}</Badge>
+												</TableCell>
+												<TableCell className='w-[120px]'>
+													<div className='flex items-center justify-center space-x-2'>
+														<Button
+															variant='ghost'
+															size='sm'
+															className='cursor-pointer text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500'
+															onClick={() =>
+																setDeleteModal({
+																	open: true,
+																	staffMenuAccessException,
+																})
+															}>
+															<Trash2 size={16} />
+														</Button>
+													</div>
+												</TableCell>
+											</TableRow>
+										))}
 									</TableBody>
 								</Table>
 							</div>
 						</>
-					)}
+					}
 				</CardBody>
 			</Card>
 
 			{/* Modal for Create/Edit */}
-			<Modal
-				isOpen={showModal}
-				onClose={() => {
-					setShowModal(false);
-					setEditingStaffMenuAccessException(null);
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "STAFF_MENU_EXCEPTION"}
+				onClose={closeModal}
+				title={"Create or Update Staff Menu Access Exceptions"}
+				description='Select a staff member and apply menu access exceptions.'
+				loading={isCreating}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
+						<StaffMenuAccessExceptionForm
+							ref={modalFormRef}
+							allStaff={allStaff}
+							allRoleBasedMenuItems={roleBasedMenuItems}
+							allStaffMenuAccessExceptions={staffMenuAccessExceptions}
+							onSubmit={handleCreateStaffMenuAccessException}
+							isLoading={isCreating}
+						/>
+					);
 				}}
-				size='lg'
-			>
-				<ModalHeader
-					title={
-						editingStaffMenuAccessException
-							? "Edit Batch Cycle"
-							: "Create Batch Cycle"
-					}
-					subtitle={
-						editingStaffMenuAccessException
-							? "Update batch cycle details."
-							: "Add a new batch cycle to the system."
-					}
-					onClose={() => {
-						setShowModal(false);
-						setEditingStaffMenuAccessException(null);
-					}}
-				/>
-				<ModalBody>
-					<PremiseForm
-						premise={editingStaffMenuAccessException}
-						onSubmit={
-							editingStaffMenuAccessException
-								? handleUpdateStaffMenuAccessException
-								: handleCreateStaffMenuAccessException
-						}
-						onCancel={() => {
-							setShowModal(false);
-							setEditingStaffMenuAccessException(null);
-						}}
-						isLoading={creating || updating}
-					/>
-				</ModalBody>
-			</Modal>
+			</ModalForm>
 
 			{/* Confirmation Dialog */}
 			<ConfirmDialog
 				isOpen={deleteModal.open}
-				onClose={() => setDeleteModal({ open: false, Premise: null })}
+				onClose={() => setDeleteModal({ open: false, staffMenuAccessException: null })}
 				onConfirm={() => handleDeleteStaffMenuAccessException()}
-				title='Delete Menu Item'
-				message={`Are you sure you want to delete "${deleteModal.menuItem?.title}"? This action cannot be undone.`}
+				title='Delete Staff Menu Exception'
+				message={`Are you sure you want to delete the exception for "${deleteModal.staffMenuAccessException?.firstName || "Staff"}"? This action cannot be undone.`}
 				confirmText='Delete'
 				type='danger'
 			/>

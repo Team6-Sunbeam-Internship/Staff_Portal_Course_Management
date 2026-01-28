@@ -1,20 +1,45 @@
-import { useEffect, useState } from "react";
-import { FormField, Button, Input, CustomSelect } from "../../../layout";
-
-export const CourseForm = ({ course, batchCycles, premises, courseTypes, onSubmit, onCancel, isLoading = false }) => {
-	const [formData, setFormData] = useState({
-		title: "",
-		courseCode: "",
-		batchCycleId: "",
-		premiseId: "",
-		courseTypeId: "",
-		startDate: "",
-		endDate: "",
-		studentCount: "",
-		groupCount: "",
-		status: "planned",
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { FormField, Button, Input, CustomSelect, CustomDatePicker } from "../../../layout";
+import { useFormState } from "../../../../hooks/uiHook/useFormState";
+import { Building, CalendarDays, LucideChevronDown, Tag } from "lucide-react";
+import { useOutsideClick } from "../../../../hooks";
+import { motion, AnimatePresence } from "motion/react";
+export const CourseForm = forwardRef(({ course, batchCycles, premises, courseTypes, onSubmit, isLoading = false }, ref) => {
+	const { values, errors, setField, setAll, submit, reset, isDirty } = useFormState({
+		initialValues: {
+			title: "",
+			courseCode: "",
+			batchCycleId: "",
+			premiseId: "",
+			courseTypeId: "",
+			startDate: "",
+			endDate: "",
+			studentCount: "",
+			groupCount: "",
+			status: "",
+		},
+		validate: (vals) => {
+			const errs = {};
+			if (!vals.title.trim()) errs.title = "Title is required";
+			if (!vals.courseCode.trim()) errs.courseCode = "Course code is required";
+			if (!vals.batchCycleId) errs.batchCycleId = "Batch cycle is required";
+			if (!vals.premiseId) errs.premiseId = "Location is required";
+			if (!vals.courseTypeId) errs.courseTypeId = "Course type is required";
+			if (!vals.startDate) errs.startDate = "Start date is required";
+			if (!vals.endDate) errs.endDate = "End date is required";
+			if (!vals.studentCount) errs.studentCount = "Student count is required";
+			if (!vals.groupCount) errs.groupCount = "Group count is required";
+			if (!vals.status) errs.status = "Status is required";
+			return errs;
+		},
+		onSubmit: (vals) => {
+			onSubmit({
+				payload: vals,
+				id: course?.id,
+			});
+		},
 	});
-	const [errors, setErrors] = useState({});
+
 	// Options for Custom Dropdowns
 	const batchCycleOptions = [{ value: "", label: "Select batch cycle" }, ...batchCycles.map((c) => ({ value: c.id, label: c.title }))];
 	// Options for Custom Dropdowns
@@ -42,7 +67,7 @@ export const CourseForm = ({ course, batchCycles, premises, courseTypes, onSubmi
 			// Get the full month name and year
 			// 'en-US' locale is standard for full month names
 			const monthName = dateObject
-				.toLocaleString("en-US", {
+				.toLocaleString("en-IN", {
 					month: "short",
 				})
 				.toUpperCase();
@@ -57,246 +82,197 @@ export const CourseForm = ({ course, batchCycles, premises, courseTypes, onSubmi
 
 	// --- EFFECT 1: Handle Initial Load (Creation & Updation) ---
 	useEffect(() => {
-		if (course) {
-			// --- UPDATION CASE ---
-			const newFormData = {
-				title: course.courseName || "",
-				batchCycleId: course.batchCycleId || "",
-				premiseId: course.premiseId || "",
-				courseTypeId: course.courseTypeId || "",
-				startDate: course.startDate?.split("T")[0] || "",
-				endDate: course.endDate?.split("T")[0] || "",
-				studentCount: String(course.studentCount) || "",
-				groupCount: String(course.groupCount) || "",
-				status: course.status || "planned",
-				// IMPORTANT: For updation, use the existing courseCode if available.
-				// If the courseCode field exists in the backend data, use it.
-				// If the backend doesn't store it, generate it (as a fallback).
-				courseCode: course.courseCode || generateCourseCode(course.title, course.startDate?.split("T")[0]),
-			};
-
-			setFormData(newFormData);
-		} else {
-			// --- CREATION CASE (Clear form data, optional if state is initialized correctly) ---
-			// You might want to clear the form on course === null/undefined if component reuses state
-			// For this example, we assume state is correctly initialized.
+		if (!course) {
+			// Reset to empty form when creating new course
+			setAll({
+				title: "",
+				courseCode: "",
+				batchCycleId: "",
+				premiseId: "",
+				courseTypeId: "",
+				startDate: "",
+				endDate: "",
+				studentCount: "",
+				groupCount: "",
+				status: "PLANNED",
+			});
+			return;
 		}
-	}, [course]);
+
+		// Populate form with course data for editing
+		setAll({
+			title: course.title || "",
+			batchCycleId: course.batchCycleId || "",
+			premiseId: course.premiseId || "",
+			courseTypeId: course.courseTypeId || "",
+			startDate: course.startDate?.split("T")[0] || "",
+			endDate: course.endDate?.split("T")[0] || "",
+			studentCount: String(course.studentCount ?? ""),
+			groupCount: String(course.courseGroupCount ?? ""),
+			status: course.courseStatus ? course.courseStatus.toUpperCase() : "PLANNED",
+			courseCode: course.courseCode || generateCourseCode(course.title, course.startDate?.split("T")[0]),
+		});
+	}, [course?.id]);
 
 	// --- EFFECT 2: Handle Real-time Generation from User Input ---
 	useEffect(() => {
-		const { title, startDate } = formData;
-
-		// Generate the code whenever title or startDate changes
-		const generatedCode = generateCourseCode(title, startDate);
-
-		// Only update the state if the generated code is different
-		// This prevents an infinite loop and unnecessary re-renders.
-		if (formData.courseCode !== generatedCode) {
-			setFormData((prevFormData) => ({
-				...prevFormData,
-				courseCode: generatedCode,
-			}));
+		if (course?.id) return;
+		const generatedCode = generateCourseCode(values.title, values.startDate);
+		if (values.courseCode !== generatedCode) {
+			setField("courseCode", generatedCode);
 		}
-	}, [formData.title, formData.startDate, formData.courseCode]); // courseCode is included for comparison
+	}, [values.title, values.startDate]);
 	const statusOptions = [
-		{ value: "planned", label: "Planned" },
-		{ value: "active", label: "Active" },
-		{ value: "completed", label: "Completed" },
-		{ value: "inactive", label: "Inactive" },
+		{ value: "PLANNED", label: "Planned" },
+		{ value: "ACTIVE", label: "Active" },
+		{ value: "COMPLETED", label: "Completed" },
+		{ value: "INACTIVE", label: "Inactive" },
 	];
 
-	const validateForm = () => {
-		const newErrors = {};
+	useImperativeHandle(ref, () => ({
+		submit,
+		reset,
+		isDirty,
+	}));
+	const [isPickerOpen, setIsPickerOpen] = useState(false);
+	const datePickerWrapperRef = useRef(null);
+	useOutsideClick(datePickerWrapperRef, () => setIsPickerOpen(false));
 
-		if (!formData.title.trim()) {
-			newErrors.title = "Course title is required";
-		}
-
-		if (!formData.batchCycleId) {
-			newErrors.batchCycle = "Batch cycle is required";
-		}
-		if (!formData.premiseId) {
-			newErrors.premiseId = "Location is required";
-		}
-		if (!formData.courseTypeId) {
-			newErrors.courseTypeId = "Course type is required";
-		}
-
-		if (!formData.status) {
-			newErrors.status = "Status is required";
-		}
-
-		if (!formData.startDate) {
-			newErrors.startDate = "Start date is required";
-		}
-
-		if (!formData.endDate) {
-			newErrors.endDate = "End date is required";
-		} else if (formData.startDate && formData.endDate && new Date(formData.endDate) < new Date(formData.startDate)) {
-			newErrors.endDate = "End date cannot be before start date";
-		}
-
-		if (!formData.studentCount || isNaN(formData.studentCount) || parseInt(formData.studentCount) <= 0) {
-			newErrors.studentCount = "Student count must be a valid positive number";
-		}
-
-		if (!formData.groupCount || isNaN(formData.groupCount) || parseInt(formData.groupCount) <= 0) {
-			newErrors.groupCount = "Group count must be a valid positive number";
-		}
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
+	const formatDateLocal = (date) => {
+		if (!date) return "";
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const day = String(date.getDate()).padStart(2, "0");
+		return `${year}-${month}-${day}`;
 	};
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (validateForm()) {
-			const dataToSubmit = {
-				...formData,
-				// Parse number strings back to integers for API/submission
-				studentCount: parseInt(formData.studentCount, 10),
-				groupCount: parseInt(formData.groupCount, 10),
-			};
-			onSubmit(dataToSubmit);
-		}
+	const formatDisplayDate = (dateStr) => {
+		if (!dateStr) return "--/--/--";
+		return new Date(dateStr).toLocaleDateString("en-IN", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+		});
 	};
+	const handleDateRangeChange = (range) => {
+		const startStr = range.start ? formatDateLocal(range.start) : "";
+		const endStr = range.end ? formatDateLocal(range.end) : "";
 
-	const handleChange = (e) => {
-		const { name, value, type } = e.target;
-
-		// Handle number inputs: prevent non-digit characters and enforce positive numbers if applicable
-		let processedValue = value;
-		if (type === "number") {
-			// Only allow digits for number fields
-			processedValue = value.replace(/[^0-9]/g, "");
-		}
-
-		setFormData((prev) => ({
-			...prev,
-			[name]: processedValue,
-		}));
-
-		// Clear error on change if it exists
-		if (errors[name]) {
-			setErrors((prev) => ({
-				...prev,
-				[name]: "",
-			}));
-		}
+		setField("startDate", startStr);
+		setField("endDate", endStr);
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className='space-y-6'>
-			<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-				<FormField label='Title' required error={errors.title}>
-					<Input
-						type='text'
-						value={formData.title}
-						onChange={handleChange}
-						placeholder='e.g., PGDAC-AUG-25'
-						error={!!errors.title}
+		<div className='space-y-6'>
+			<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+				<Input
+					type='text'
+					label={"Course Title"}
+					icon={Tag}
+					required
+					value={values.title}
+					onChange={(e) => setField("title", e.target.value)}
+					error={!!errors.title}
+					disabled={isLoading}
+				/>
+				<CustomSelect
+					name='batchCycleId'
+					label={"Batch Cycle"}
+					icon={CalendarDays}
+					required
+					value={values.batchCycleId}
+					onChange={(e) => setField("batchCycleId", e.target.value)}
+					options={batchCycleOptions}
+					error={!!errors.status}
+					disabled={isLoading}
+				/>
+				<CustomSelect
+					name='courseTypeId'
+					label={"Course Type"}
+					icon={Tag}
+					required
+					value={values.courseTypeId}
+					onChange={(e) => setField("courseTypeId", e.target.value)}
+					options={courseTypesOptions}
+					error={!!errors.courseTypeId}
+					disabled={isLoading}
+				/>
+				<CustomSelect
+					name='premiseId'
+					label={"Premise"}
+					icon={Building}
+					required
+					value={values.premiseId}
+					onChange={(e) => setField("premiseId", e.target.value)}
+					options={premiseOptions}
+					error={!!errors.premiseId}
+					disabled={isLoading}
+				/>
+				<div className='relative w-full' ref={datePickerWrapperRef}>
+					<button
+						type='button'
+						onClick={() => setIsPickerOpen(!isPickerOpen)}
 						disabled={isLoading}
-					/>
-				</FormField>
-				<FormField label='Batch Cycle' required error={errors.batchCycleId}>
-					<CustomSelect
-						name='batchCycleId'
-						value={formData.batchCycleId}
-						onChange={handleChange}
-						options={batchCycleOptions}
-						error={!!errors.status}
-						disabled={isLoading}
-					/>
-				</FormField>
-				<FormField label='Course Type' required error={errors.courseTypeId}>
-					<CustomSelect
-						name='courseTypeId'
-						value={formData.courseTypeId}
-						onChange={handleChange}
-						options={courseTypesOptions}
-						error={!!errors.courseTypeId}
-						disabled={isLoading}
-					/>
-				</FormField>
-				<FormField label='Location/Premise' required error={errors.premiseId}>
-					<CustomSelect
-						name='premiseId'
-						value={formData.premiseId}
-						onChange={handleChange}
-						options={premiseOptions}
-						error={!!errors.premiseId}
-						disabled={isLoading}
-					/>
-				</FormField>
-				<FormField label='Start Date' required error={errors.startDate}>
-					<Input
-						type='date'
-						name='startDate'
-						value={formData.startDate}
-						onChange={handleChange}
-						error={!!errors.startDate}
-						disabled={isLoading}
-					/>
-				</FormField>
-
-				{/* End Date */}
-				<FormField label='End Date' required error={errors.endDate}>
-					<Input
-						type='date'
-						name='endDate'
-						value={formData.endDate}
-						onChange={handleChange}
-						error={!!errors.endDate}
-						disabled={isLoading}
-					/>
-				</FormField>
+						className={`flex w-full items-center justify-between gap-2 rounded-2xl px-4 py-3.5 text-left text-[10px] font-black tracking-widest uppercase transition-all ${isPickerOpen ? "bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20" : "border border-zinc-200 bg-white text-amber-400 hover:border-amber-500/50 dark:border-zinc-800 dark:bg-zinc-950"}`}>
+						{values.startDate ? `${formatDisplayDate(values.startDate)} - ${formatDisplayDate(values.endDate)}` : "Select Start-End Date"}
+						<LucideChevronDown size={14} className={`transition-transform duration-300 ${isPickerOpen ? "rotate-180" : "opacity-30"}`} />
+					</button>
+					<div className='absolute top-full left-0 z-[100] mt-2 w-full'>
+						<AnimatePresence mode='wait'>
+							{isPickerOpen && (
+								<motion.div
+									layout
+									initial={{ opacity: 0, height: 0, scale: 0.98, y: -10 }}
+									animate={{ opacity: 1, height: "auto", scale: 1, y: 0 }}
+									exit={{ opacity: 0, height: 0, scale: 0.98, y: -10 }}
+									transition={{ type: "spring", stiffness: 400, damping: 35, opacity: { duration: 0.3 } }}
+									className='w-full origin-top overflow-hidden'>
+									<CustomDatePicker
+										variant='range'
+										value={{
+											start: values.startDate ? new Date(values.startDate) : null,
+											end: values.endDate ? new Date(values.endDate) : null,
+										}}
+										onChange={handleDateRangeChange}
+										disabled={isLoading}
+									/>
+								</motion.div>
+							)}
+						</AnimatePresence>
+					</div>
+				</div>
 				{/* Student Count */}
-				<FormField label='Total Students' required error={errors.studentCount}>
-					<Input
-						type='number'
-						name='studentCount'
-						value={formData.studentCount}
-						onChange={handleChange}
-						placeholder='e.g., 60'
-						error={!!errors.studentCount}
-						disabled={isLoading}
-					/>
-				</FormField>
+				<Input
+					type='number'
+					label={"Student Count"}
+					value={values.studentCount}
+					onChange={(e) => setField("studentCount", e.target.value)}
+					placeholder='e.g., 60'
+					error={!!errors.studentCount}
+					disabled={isLoading}
+				/>
 
 				{/* Group Count */}
-				<FormField label='Number of Groups' required error={errors.groupCount}>
-					<Input
-						type='number'
-						name='groupCount'
-						value={formData.groupCount}
-						onChange={handleChange}
-						placeholder='e.g., 3'
-						error={!!errors.groupCount}
-						disabled={isLoading}
-					/>
-				</FormField>
+				<Input
+					type='number'
+					label={"Group Count"}
+					value={values.groupCount}
+					onChange={(e) => setField("groupCount", e.target.value)}
+					placeholder='e.g., 3'
+					error={!!errors.groupCount}
+					disabled={isLoading}
+				/>
 
 				{/* Status */}
-				<FormField label='Status' required error={errors.status}>
-					<CustomSelect
-						name='status'
-						value={formData.status}
-						options={statusOptions}
-						onChange={handleChange}
-						error={!!errors.status}
-						disabled={isLoading}
-					/>
-				</FormField>
+				<CustomSelect
+					name='status'
+					value={values.status}
+					options={statusOptions}
+					onChange={(e) => setField("status", e.target.value)}
+					error={!!errors.status}
+					disabled={isLoading}
+				/>
 			</div>
-
-			<div className='flex items-center  justify-end space-x-3 pt-4 border-t border-gray-300 dark:border-neutral-200'>
-				<Button type='button' variant='danger' onClick={onCancel} disabled={isLoading}>
-					Cancel
-				</Button>
-				<Button variant='secondary' type='submit' disabled={isLoading}>
-					{isLoading ? "Saving..." : "Save"}
-				</Button>
-			</div>
-		</form>
+		</div>
 	);
-};
+});

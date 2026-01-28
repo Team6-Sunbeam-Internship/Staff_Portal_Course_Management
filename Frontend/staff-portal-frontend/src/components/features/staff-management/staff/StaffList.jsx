@@ -1,58 +1,62 @@
-import { useState, useEffect } from "react";
-import { Trash2, Edit, List } from "lucide-react";
+import { Edit, List, RotateCcw, Search, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { StaffForm } from ".";
+import { useDebounce, useFilteredMenu } from "../../../../hooks";
+import { useModal } from "../../../../providers";
 import {
+	setBreadcrumbs,
+	setHeaderInfo,
+	useCreateStaffMutation,
+	useDeleteStaffMutation,
+	useGetAllStaffQuery,
+	useUpdateStaffMutation,
+} from "../../../../store";
+import { selectUserRole } from "../../../../store/selectors";
+import { selectAllStaff } from "../../../../store/selectors/userSelectors";
+import { notify } from "../../../../utils/Notify";
+import {
+	Button,
 	Card,
 	CardBody,
+	ConfirmDialog,
+	CustomSelect,
+	EmptyState,
+	Input,
+	SkeletonTable,
 	Table,
+	TableBody,
+	TableCell,
 	TableHead,
 	TableHeader,
-	TableBody,
 	TableRow,
-	TableCell,
-	Button,
-	Modal,
-	ModalHeader,
-	ModalBody,
-	ConfirmDialog,
-	EmptyState,
-	SkeletonTable,
-	CustomSelect,
-	SearchInput,
 } from "../../../layout";
-import { PremiseForm } from "../../infrastructure-management";
-import { useDispatch, useSelector } from "react-redux";
-import { setBreadcrumbs, setHeaderInfo, useCreateStaffMutation, useDeleteStaffMutation, useUpdateStaffMutation } from "../../../../store";
-import { useModal } from "../../../../providers";
-import { useGetAllStaffQuery } from "../../../../store";
 import { ErrorFallback } from "../../../layout/errorBoundary";
-import { selectUserRole } from "../../../../store/selectors";
-import { useFilteredMenu } from "../../../../hooks";
-import { StaffForm } from ".";
+import { ModalForm } from "../../../layout/modals/ModalForm";
 
 const StaffList = () => {
 	const dispatch = useDispatch();
 	const userRole = useSelector(selectUserRole);
-	const { filteredMenu = [] } = useFilteredMenu();
-	const canAccessStaffList = filteredMenu.includes("/staff-management/staff") && userRole === "ADMIN";
-	
-	const { showModal, setShowModal } = useModal();
-	const [editingStaff, setEditingStaff] = useState(null);
+	const { pathSet } = useFilteredMenu();
+	const canAccessStaffList = pathSet.has("/staff-management/staff") && userRole === "ADMIN";
+
+	const formRef = useRef(null);
+	const { showModal, openModal, closeModal } = useModal();
 	const [deleteModal, setDeleteModal] = useState({
 		open: false,
 		staff: null,
 	});
 
-	
-
-	const { data: allStaff, isLoading: isLoadingAllStaff, isError: isErrorAllStaff, error: allStaffError } = useGetAllStaffQuery();
-	const [createStaff, { isSuccess: created, isLoading: creating, isError: createError, error: createErrorDetails }] = useCreateStaffMutation();
-	const [updateStaff, { isLoading: updating, isSuccess: updated, isError: updateError, error: updateErrorDetails }] = useUpdateStaffMutation();
-	const [deleteStaffTrigger, { isLoading: deleting, isSuccess: deleted, isError: deleteError, error: deleteErrorDetails }] = useDeleteStaffMutation();
-	
+	const allStaff = useSelector(selectAllStaff);
+	const { isLoading: isLoadingAllStaff, isError: isErrorAllStaff, error: allStaffError } = useGetAllStaffQuery();
+	const [createStaff, { isSuccess: created, isLoading: creating, isError: createError }] = useCreateStaffMutation();
+	const [updateStaff, { isLoading: updating, isSuccess: updated, isError: updateError }] = useUpdateStaffMutation();
+	const [deleteStaffTrigger, { isLoading: deleting, isSuccess: deleted, isError: deleteError }] = useDeleteStaffMutation();
+	console.log("All Staff: ", allStaff);
 	useEffect(() => {
 		if (created) {
 			console.log("Notification: Staff created successfully!");
-		}	
+		}
 		if (createError) {
 			console.log("Notification: Failed to create Staff.");
 		}
@@ -68,8 +72,8 @@ const StaffList = () => {
 		if (deleteError) {
 			console.log("Notification: Failed to delete Staff.");
 		}
-	},[created, createError, updated, updateError, deleted, deleteError]);
-	
+	}, [created, createError, updated, updateError, deleted, deleteError]);
+
 	useEffect(() => {
 		dispatch(
 			setHeaderInfo({
@@ -78,6 +82,8 @@ const StaffList = () => {
 				action: [
 					{
 						label: "Add Staff",
+						entity: "Staff",
+						mode: "CREATE",
 					},
 				],
 			})
@@ -102,40 +108,42 @@ const StaffList = () => {
 		);
 	}, [dispatch]);
 
-	const handleCreateStaff = async (newStaff) => {
+	const handleSubmitStaff = async (data) => {
+		const { id, payload } = data;
 		try {
-			await createStaff(newStaff).unwrap();
-			setShowModal(false);
-			setEditingStaff(null);
+			if (id) {
+				await updateStaff({ id, payload }).unwrap();
+				console.log("Staff updated successfully!");
+				notify.success(`Staff [${payload.firstName} ${payload.lastName}] updated successfully!`);
+			} else {
+				await createStaff(payload).unwrap();
+				console.log("Staff created successfully!");
+				notify.success(`Staff [${payload.firstName} ${payload.lastName}] created successfully!`);
+			}
 		} catch (error) {
-			console.error("Error creating staff:", error);
+			console.error("Error saving staff:", error);
+			if (formRef.current) {
+				formRef.current.reset();
+			}
 		}
-	};
-
-	const handleUpdateStaff = async (updatedStaff) => {
-		try {
-			await updateStaff(updatedStaff).unwrap();
-			setShowModal(false);
-			setEditingStaff(null);
-		} catch (error) {
-			console.error("Error updating staff:", error);
-		}
+		closeModal();
 	};
 
 	const handleDeleteStaff = async () => {
-		const idToDelete = deleteModal.staff.id;
+		const idToDelete = deleteModal.staff.staffId;
 		if (!idToDelete) return;
 		try {
 			await deleteStaffTrigger(idToDelete).unwrap();
 			setDeleteModal({ open: false, staff: null });
+			notify.success(`Staff [${deleteModal.staff.firstName} ${deleteModal.staff.lastName}] deleted successfully!`);
 		} catch (error) {
 			console.error("Error deleting staff:", error);
 		}
+		setDeleteModal({ open: false, staff: null });
 	};
 
 	const handleOpenEditModal = (staff) => {
-		setEditingStaff(staff);
-		setShowModal(true);
+		openModal("Staff", "EDIT", staff);
 	};
 
 	const [filters, setFilters] = useState({
@@ -146,16 +154,62 @@ const StaffList = () => {
 	const handleFilterChange = (name, value) => {
 		setFilters((prev) => ({ ...prev, [name]: value }));
 	};
+
+	// Debounce search term to avoid filtering on every keystroke
+	const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
+
+	// Client-side filtering - no backend requests
+	const filteredStaff = useMemo(() => {
+		if (!allStaff || allStaff.length === 0) return [];
+
+		let result = allStaff;
+
+		// Filter by staff type
+		if (filters.staffType) {
+			result = result.filter((staff) => staff.staffType === filters.staffType);
+		}
+
+		// Filter by role
+		if (filters.role) {
+			result = result.filter((staff) => staff.role === filters.role);
+		}
+
+		// Filter by search term (debounced)
+		if (debouncedSearchTerm) {
+			const searchLower = debouncedSearchTerm.toLowerCase();
+			result = result.filter((staff) => {
+				const fullName = `${staff.firstName} ${staff.lastName}`.toLowerCase();
+				const email = staff.email?.toLowerCase() || "";
+				const phone = staff.phoneNumber?.toString() || "";
+				const courseSpecialization = staff.courseSpecialization?.toLowerCase() || "";
+				const role = staff.role?.toLowerCase() || "";
+				const staffType = staff.staffType?.toLowerCase() || "";
+				return (
+					fullName.includes(searchLower) ||
+					email.includes(searchLower) ||
+					phone.includes(searchLower) ||
+					courseSpecialization.includes(searchLower) ||
+					role.includes(searchLower) ||
+					staffType.includes(searchLower)
+				);
+			});
+		}
+
+		return result;
+	}, [allStaff, filters.staffType, filters.role, debouncedSearchTerm]);
+	if (!canAccessStaffList) {
+		return <ErrorFallback errorMessage='You are not authorized to view this page.' />;
+	}
 	if (isErrorAllStaff) {
 		return <ErrorFallback error={allStaffError} />;
 	}
 	const staffTypeOptions = [
-		{ value: "", label: "All Staff Type" },
-		{ value: "INHOUSE", label: "Inhouse" },
-		{ value: "GUEST", label: "Guest" },
+		{ value: "", label: "Select Staff Type" },
+		{ value: "IN_HOUSE", label: "Inhouse" },
+		{ value: "VISITING", label: "Visiting" },
 	];
 	const roleOptions = [
-		{ value: "", label: "All Roles" },
+		{ value: "", label: "Select Staff Role" },
 		{
 			label: "Admin",
 			value: "ADMIN",
@@ -169,76 +223,113 @@ const StaffList = () => {
 			value: "GENERAL_USER",
 		},
 	];
+	const handleResetFilters = () => {
+		setFilters({
+			staffType: "",
+			searchTerm: "",
+			role: "",
+		});
+	};
+
+	// Helper function to highlight search term in text
+	const highlightText = (text, searchTerm) => {
+		if (!searchTerm || !text) return text;
+
+		const parts = text.toString().split(new RegExp(`(${searchTerm})`, "gi"));
+		return (
+			<>
+				{parts.map((part, index) =>
+					part.toLowerCase() === searchTerm.toLowerCase() ?
+						<span key={index} className='bg-amber-200 font-semibold text-amber-900 dark:bg-amber-500/30 dark:text-amber-300'>
+							{part}
+						</span>
+					:	part
+				)}
+			</>
+		);
+	};
 	return (
 		<>
-			<div className='grid grid-cols-6 gap-4 mb-4'>
+			<div className='mt-2 mb-4 grid grid-cols-6 gap-4'>
 				<CustomSelect
+					label='Staff Type'
 					value={filters.staffType}
 					options={staffTypeOptions}
 					onChange={(e) => handleFilterChange("staffType", e.target.value)}
 				/>
-				<CustomSelect value={filters.role} options={roleOptions} onChange={(e) => handleFilterChange("role", e.target.value)} />
-				<SearchInput value={filters.searchTerm} onChange={(e) => handleFilterChange("searchTerm", e.target.value)} />
+				<CustomSelect label='Staff Role' value={filters.role} options={roleOptions} onChange={(e) => handleFilterChange("role", e.target.value)} />
+				<Input label='Search' value={filters.searchTerm} icon={Search} onChange={(e) => handleFilterChange("searchTerm", e.target.value)} />
+				<button
+					title='reset filters'
+					className='flex h-11 w-11 cursor-pointer items-center justify-center transition-all duration-300 ease-in-out active:scale-90'
+					onClick={handleResetFilters}>
+					<RotateCcw className='text-amber-500' size={24} />
+				</button>
 			</div>
 			<Card className={"h-[510px]"}>
 				<CardBody>
-					{isLoadingAllStaff ? (
+					{isLoadingAllStaff ?
 						<SkeletonTable />
-					) : allStaff.length === 0 ? (
+					: allStaff?.length === 0 ?
 						<EmptyState
-							icon={<List className='w-12 h-12' />}
+							icon={<List className='h-12 w-12' />}
 							title='No Staff Found'
 							description='There are no staff members in the system. Get started by adding a new one.'
 						/>
-					) : (
-						<>
+					: filteredStaff?.length === 0 ?
+						<EmptyState
+							icon={<List className='h-12 w-12' />}
+							title='No Staff Found'
+							description='No staff members match your current filters. Try adjusting your search criteria.'
+						/>
+					:	<>
 							<Table>
 								<TableHead>
-											<TableRow>
-										<TableHeader className='w-1/5 rounded-tl-2xl'>S.No.</TableHeader>
-										<TableHeader className='w-1/5 rounded-tl-2xl'>Title</TableHeader>
+									<TableRow>
+										<TableHeader className='w-1/12 rounded-tl-2xl'>S.No.</TableHeader>
+										<TableHeader className='w-1/5'>Title</TableHeader>
 										<TableHeader className='w-1/3'>Email</TableHeader>
+										<TableHeader className='w-1/6'>Gender</TableHeader>
 										<TableHeader className='w-1/6'>Phone</TableHeader>
 										<TableHeader className='w-1/6'>Course Specialization</TableHeader> {/**MULTIPLE OR COURSE CODE */}
 										<TableHeader className='w-1/6'>Staff Role</TableHeader>
 										<TableHeader className='w-1/6'>Staff Type</TableHeader>
-										<TableHeader className='text-center rounded-tr-2xl w-[120px]'>Actions</TableHeader>
+										<TableHeader className='w-[120px] rounded-tr-2xl text-center'>Actions</TableHeader>
 									</TableRow>
 								</TableHead>
 							</Table>
-							<div className='h-[440px] rounded-b-2xl overflow-y-auto scrollbar-none'>
+							<div className='scrollbar-none h-[440px] overflow-y-auto rounded-b-2xl'>
 								<Table>
 									<TableBody>
-										{allStaff.map((staff, index) => (
+										{filteredStaff?.map((staff, index) => (
 											<TableRow key={staff.id}>
-												<TableCell className='w-1/5'>{index + 1}</TableCell>
-												<TableCell className='w-1/5'>{staff.firstName + " " + staff.lastName}</TableCell>
-												<TableCell className='font-medium text-center w-1/3'>{staff.email}</TableCell>
-												<TableCell className='font-medium text-center w-1/6'>{staff.phone}</TableCell>
-												<TableCell className='w-1/6'>{staff.courseSpecialization}</TableCell>
-												<TableCell className='w-1/6'>{staff.staffRole}</TableCell>
-												<TableCell className='w-1/6'>{staff.staffType}</TableCell>
-												<TableCell className='w-[120px]'>
+												<TableCell className={`w-1/12 ${filteredStaff.length - 1 === index ? "rounded-bl-2xl" : ""}`}>{index + 1}</TableCell>
+												<TableCell className='w-1/5'>{highlightText(`${staff.firstName} ${staff.lastName}`, debouncedSearchTerm)}</TableCell>
+												<TableCell className='w-1/3 text-center font-medium'>{highlightText(staff.email, debouncedSearchTerm)}</TableCell>
+												<TableCell className='w-1/6 text-center font-medium'>{highlightText(staff.gender, debouncedSearchTerm)}</TableCell>
+												<TableCell className='w-1/6 text-center font-medium'>{highlightText(staff.phoneNumber, debouncedSearchTerm)}</TableCell>
+												<TableCell className='w-1/6'>{highlightText(staff.courseSpecialization, debouncedSearchTerm)}</TableCell>
+												<TableCell className='w-1/6'>{highlightText(staff.role, debouncedSearchTerm)}</TableCell>
+												<TableCell className='w-1/6'>{highlightText(staff.staffType, debouncedSearchTerm)}</TableCell>
+												<TableCell className={`w-[120px] ${filteredStaff.length - 1 === index ? "rounded-br-2xl" : ""}`}>
 													<div className='flex items-center justify-center space-x-2'>
 														<Button
-															variant='ghost'
-															className='cursor-pointer dark:hover:text-yellow-400'
-															size='sm'
-															onClick={() => handleOpenEditModal(staff)}>
-															<Edit size={16} />
-														</Button>
+															variant='gradientAmber'
+															icon={Edit}
+															className='h-6 w-6 rounded-lg'
+															onClick={() => handleOpenEditModal(staff)}
+															disabled={creating || deleting}></Button>
 														<Button
-															variant='ghost'
-															size='sm'
-															className='text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 cursor-pointer'
+															variant='gradientRose'
+															icon={Trash2}
+															className='h-6 w-6 rounded-lg'
 															onClick={() =>
 																setDeleteModal({
 																	open: true,
 																	staff,
 																})
-															}>
-															<Trash2 size={16} />
-														</Button>
+															}
+															disabled={creating || updating}></Button>
 													</div>
 												</TableCell>
 											</TableRow>
@@ -247,43 +338,37 @@ const StaffList = () => {
 								</Table>
 							</div>
 						</>
-					)}
+					}
 				</CardBody>
 			</Card>
 
 			{/* Modal for Create/Edit */}
-			<Modal
-				isOpen={showModal}
-				onClose={() => {
-					setShowModal(false);
-					setEditingStaff(null);
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "Staff"}
+				onClose={closeModal}
+				title={showModal.mode === "EDIT" ? "Edit Staff Details" : "Create Staff Member"}
+				description={showModal.mode === "EDIT" ? "Update staff member details." : "Add a new staff member to the system."}
+				formRef={formRef}
+				loading={creating || updating}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
+						<StaffForm
+							ref={modalFormRef}
+							staff={showModal.payload}
+							onSubmit={handleSubmitStaff}
+							staffRoleOptions={roleOptions}
+							staffTypeOptions={staffTypeOptions}
+							isLoading={creating || updating}
+						/>
+					);
 				}}
-				size='lg'>
-				<ModalHeader
-					title={editingStaff ? "Edit Staff Details" : "Create Staff Member"}
-					subtitle={editingStaff ? "Update staff member details." : "Add a new staff member to the system."}
-					onClose={() => {
-						setShowModal(false);
-						setEditingStaff(null);
-					}}
-				/>
-				<ModalBody>
-					<StaffForm
-						staff={editingStaff}
-						onSubmit={editingStaff ? handleUpdateStaff : handleCreateStaff}
-						onCancel={() => {
-							setShowModal(false);
-							setEditingStaff(null);
-						}}
-						isLoading={creating || updating}
-					/>
-				</ModalBody>
-			</Modal>
+			</ModalForm>
 
 			{/* Confirmation Dialog */}
 			<ConfirmDialog
 				isOpen={deleteModal.open}
-				onClose={() => setDeleteModal({ open: false, Premise: null })}
+				onClose={() => setDeleteModal({ open: false, staff: null })}
 				onConfirm={() => handleDeleteStaff()}
 				title='Delete Batch Cycle'
 				message={`Are you sure you want to delete "${

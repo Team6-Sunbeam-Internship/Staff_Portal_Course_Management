@@ -1,46 +1,18 @@
 import { Line, Bar } from "react-chartjs-2";
-import {
-	Chart as ChartJS,
-	CategoryScale,
-	LinearScale,
-	PointElement,
-	LineElement,
-	BarElement,
-	Title,
-	Tooltip,
-	Legend,
-} from "chart.js";
-import {
-	Users,
-	BookOpen,
-	ClipboardCheck,
-	Calendar,
-	FileText,
-	Bell,
-	User,
-	ChevronDown,
-} from "lucide-react";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { Users, BookOpen, ClipboardCheck, Calendar, FileText, Bell, User, ChevronDown } from "lucide-react";
 
 // Register Chart.js components
-ChartJS.register(
-	CategoryScale,
-	LinearScale,
-	PointElement,
-	LineElement,
-	BarElement,
-	Title,
-	Tooltip,
-	Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
 // --- Dummy Data ---
 import {
 	DUMMY_UPCOMING_EVENTS,
-	DUMMY_ANNOUNCEMENTS,
 	DUMMY_BAR_CHART_DATA,
 	DUMMY_LINE_CHART_DATA,
 	DUMMY_OVERVIEW_STATS,
 	DUMMY_RECENT_ACTIVITIES,
+	DUMMY_ANNOUNCEMENTS,
 } from "../../../utils";
 import { StatCard } from "./StatCard";
 import { ChartCard } from "./ChatCard";
@@ -75,9 +47,7 @@ const getAnnouncementColor = (type) => {
 };
 
 const ListItem = ({ children }) => (
-	<div className='flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer'>
-		{children}
-	</div>
+	<div className='flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer'>{children}</div>
 );
 
 const Dashboard = () => {
@@ -114,20 +84,12 @@ const Dashboard = () => {
 						<ActivityCard title='Recent Activity'>
 							{DUMMY_RECENT_ACTIVITIES.map((activity) => (
 								<ListItem key={activity.id}>
-									<div
-										className={`flex items-center justify-center w-8 h-8 rounded-full ${getEventColor(
-											activity.type
-										)}`}
-									>
+									<div className={`flex items-center justify-center w-8 h-8 rounded-full ${getEventColor(activity.type)}`}>
 										<FileText className='w-4 h-4' />
 									</div>
 									<div className='ml-3 flex-1'>
-										<p className='text-sm font-medium'>
-											{activity.text}
-										</p>
-										<span className='text-xs text-gray-500 dark:text-gray-400'>
-											{activity.timestamp}
-										</span>
+										<p className='text-sm font-medium'>{activity.text}</p>
+										<span className='text-xs text-gray-500 dark:text-gray-400'>{activity.timestamp}</span>
 									</div>
 								</ListItem>
 							))}
@@ -140,9 +102,7 @@ const Dashboard = () => {
 										<Calendar className='w-4 h-4' />
 									</div>
 									<div className='ml-3 flex-1'>
-										<p className='text-sm font-medium'>
-											{event.title}
-										</p>
+										<p className='text-sm font-medium'>{event.title}</p>
 										<span className='text-xs text-gray-500 dark:text-gray-400'>
 											{event.date} at {event.time}
 										</span>
@@ -157,17 +117,12 @@ const Dashboard = () => {
 									<div
 										className={`flex items-center justify-center w-8 h-8 rounded-full ${getAnnouncementColor(
 											announcement.type
-										)}`}
-									>
+										)}`}>
 										<Bell className='w-4 h-4' />
 									</div>
 									<div className='ml-3 flex-1'>
-										<p className='text-sm font-medium'>
-											{announcement.title}
-										</p>
-										<span className='text-xs text-gray-500 dark:text-gray-400'>
-											{announcement.content}
-										</span>
+										<p className='text-sm font-medium'>{announcement.title}</p>
+										<span className='text-xs text-gray-500 dark:text-gray-400'>{announcement.content}</span>
 									</div>
 								</ListItem>
 							))}

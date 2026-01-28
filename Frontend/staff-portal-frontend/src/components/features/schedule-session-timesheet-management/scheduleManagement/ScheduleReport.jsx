@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Download, Printer, Calendar, Filter } from "lucide-react";
-import { useGetSchedulesQuery } from "../../../../../store/api/schedulingApi";
-import { setBreadcrumbs } from "../../../../../store/slices/breadcrumbSlice";
-import { selectAccessibleMenus } from "../../../../../store/selectors/authSelectors";
+import { setBreadcrumbs, useGetAllCourseTypesQuery, useGetSchedulesQuery } from "../../../../store";
+
 import {
 	Card,
 	CardBody,
-	CardHeader,
+	// CardHeader,
 	Table,
 	TableHead,
 	TableRow,
@@ -16,31 +15,24 @@ import {
 	TableCell,
 	Badge,
 	Button,
-	Select,
 	Input,
-	FormField,
 	Grid,
 	GridItem,
 	VStack,
 	HStack,
 	EmptyState,
 	SkeletonTable,
-} from "../../../../common";
+} from "../../../layout";
 import { CustomSelect } from "../../../layout";
-import {
-	useCreateScheduleMutation,
-	useUpdateScheduleMutation,
-	useDeleteScheduleMutation,
-	useCheckScheduleConflictsMutation,
-	useGetBatchCyclesQuery,
-	useGetCourseTypesQuery,
-	useGetCoursesQuery,
-	useGetModulesQuery,
-	useGetInfrastructuresQuery,
-} from "../../../../../store/api/schedulingApi";
+
+import { selectUserRole } from "../../../../store/selectors";
+import { useFilteredMenu } from "../../../../hooks";
+import { useGetAssignCourseAndModulesQuery, useGetBatchCycleQuery } from "../../../../store";
 export const ScheduleReport = () => {
 	const dispatch = useDispatch();
-	const accessibleMenus = useSelector(selectAccessibleMenus);
+	const userRole = useSelector(selectUserRole);
+	const { pathSet } = useFilteredMenu();
+	const canViewReports = pathSet.has("/schedule-session-timesheet-management") && userRole === "COURSE_COORDINATOR";
 
 	const [filters, setFilters] = useState({
 		batchCycle: "",
@@ -57,58 +49,51 @@ export const ScheduleReport = () => {
 		isLoading,
 		error,
 	} = useGetSchedulesQuery(filters, {
-		skip: !filters.batchCycle || !filters.courseType,
+		skip: !filters.batchCycle && !filters.courseType && !filters.course && !filters.startDate && !filters.endDate,
 	});
-	const { data: batchCycles = [], isLoading: loadingBatchCycles } =
-		useGetBatchCyclesQuery();
-	const { data: courseTypes = [], isLoading: loadingCourseTypes } =
-		useGetCourseTypesQuery();
-	const batchCycleOptions = [
-		{
-			label: "All",
-			value: "",
-		},
-		...batchCycles.map((batchCycle) => ({
+	const DEFAULT_BATCH_CYCLE_OPTION = {
+		value: "",
+		label: "Select batch cycle",
+	};
+	const selectBatchCycleOptions = (data) => {
+		if (!data) return [DEFAULT_BATCH_CYCLE_OPTION];
+
+		const mappedOptions = data.map((batchCycle) => ({
 			label: batchCycle.name,
 			value: batchCycle.id,
-		})),
-	];
-	const courseTypeOptions = [
-		{
-			label: "All",
-			value: "",
-		},
-		...courseTypes.map((courseType) => ({
-			label: courseType.name,
+		}));
+
+		return [DEFAULT_BATCH_CYCLE_OPTION, ...mappedOptions];
+	};
+	const { data: batchCycleOptions } = useGetBatchCycleQuery(undefined, {
+		selectFromResult: ({ data, isLoading }) => ({
+			data: selectBatchCycleOptions(data),
+			isLoading,
+		}),
+	});
+
+	const { data: courseTypes = [], isLoading: loadingCourseTypes } = useGetAllCourseTypesQuery();
+
+	const courseTypeOptions = useMemo(() => {
+		return courseTypes.map((courseType) => ({
 			value: courseType.id,
-		})),
-	];
+			label: courseType.title,
+		}));
+	}, [courseTypes]);
 	// send course_code also
-	const { data: courses = [], isLoading: loadingCourses } =
-		useGetCoursesQuery(
-			{
-				batchCycle: filters.batchCycle,
-				courseType: filters.courseType,
-			},
-			{ skip: !filters.batchCycle || !filters.courseType }
-		);
-	const courseOptions = [
-		{
-			label: "All",
-			value: "",
-		},
-		...courses.map((course) => ({
-			label: course.name,
-			value: course.id,
-		})),
-	];
-	// get all coordinators : this is for admin only
-	// for course coordinator this will be directly fetch using getSchedule
-	// write rtk query hook here
-	/*
-		useGetAllStaff,
-		filter it by role: COURSE_COORDINATOR
-	*/
+	// assignCourseAndModules =  List<CourseCoordinatorAssignResponseDTO> = courseCode, courseName, isCurrent, List<ModuleResponseDTO>
+	// ModuleResponseDTO = id, title, theoryHours, practicalHours, moduleRouterId
+	const { data: assignCourseAndModules = [], isLoading: loadingAssignCourseAndModules } = useGetAssignCourseAndModulesQuery();
+
+	const courseOptions = useMemo(() => {
+		return [
+			{ value: "", label: "Select Course" },
+			...assignCourseAndModules.map((item) => ({
+				value: item.courseCode,
+				label: item.courseCode,
+			})),
+		];
+	}, [assignCourseAndModules]);
 
 	useEffect(() => {
 		dispatch(
@@ -168,18 +153,18 @@ export const ScheduleReport = () => {
                 <th>Module</th>
                 <th>Faculty</th>
                 <th>Venue</th>
-              </tr>
+            </tr>
             </thead>
             <tbody>
-              ${schedules
-					.map(
-						(schedule) => `
-                <tr>
-                  <td>${new Date(schedule.date).toLocaleDateString("en-US", {
-						weekday: "short",
-						day: "2-digit",
-						month: "short",
-					})}</td>
+            ${schedules
+							.map(
+								(schedule) => `
+            <tr>
+                <td>${new Date(schedule.date).toLocaleDateString("en-US", {
+									weekday: "short",
+									day: "2-digit",
+									month: "short",
+								})}</td>
                   <td>${schedule.time}</td>
                   <td>
                     <span class="badge ${schedule.activity.toLowerCase()}">
@@ -187,16 +172,12 @@ export const ScheduleReport = () => {
                     </span>
                   </td>
                   <td>${schedule.module}</td>
-                  <td>${
-						Array.isArray(schedule.faculty)
-							? schedule.faculty.join(", ")
-							: schedule.faculty
-					}</td>
+                  <td>${Array.isArray(schedule.faculty) ? schedule.faculty.join(", ") : schedule.faculty}</td>
                   <td>${schedule.venue}</td>
                 </tr>
               `
-					)
-					.join("")}
+							)
+							.join("")}
             </tbody>
           </table>
           <div class="no-print" style="margin-top: 20px; text-align: center;">
@@ -221,9 +202,7 @@ export const ScheduleReport = () => {
 				schedule.time,
 				schedule.activity,
 				schedule.module,
-				Array.isArray(schedule.faculty)
-					? schedule.faculty.join("; ")
-					: schedule.faculty,
+				Array.isArray(schedule.faculty) ? schedule.faculty.join("; ") : schedule.faculty,
 				schedule.venue,
 			]),
 		];
@@ -233,10 +212,7 @@ export const ScheduleReport = () => {
 		const link = document.createElement("a");
 		const url = URL.createObjectURL(blob);
 		link.setAttribute("href", url);
-		link.setAttribute(
-			"download",
-			`schedule-report-${new Date().toISOString().split("T")[0]}.csv`
-		);
+		link.setAttribute("download", `schedule-report-${new Date().toISOString().split("T")[0]}.csv`);
 		link.style.visibility = "hidden";
 		document.body.appendChild(link);
 		link.click();
@@ -253,25 +229,24 @@ export const ScheduleReport = () => {
 		return variants[activity] || "outline";
 	};
 
-	const canViewReports = accessibleMenus.includes(
-		"/scheduling-sessions/schedule-reports"
-	);
-
 	if (!canViewReports) {
 		return (
 			<EmptyState
 				title='Access Restricted'
 				description="You don't have permission to view schedule reports."
-				icon={<Calendar className='w-12 h-12' />}
+				icon={<Calendar className='h-12 w-12' />}
 			/>
 		);
 	}
+
+	const showFilterWarning = !filters.batchCycle || !filters.courseType;
+	const hasError = error && !isLoading;
 
 	return (
 		<VStack spacing='lg'>
 			{/* Filter Section */}
 			<Card>
-				<CardHeader
+				{/* <CardHeader
 					title='Schedule Report Filters'
 					action={
 						<HStack spacing='sm'>
@@ -280,8 +255,7 @@ export const ScheduleReport = () => {
 								size='sm'
 								leftIcon={<Download className='w-4 h-4' />}
 								onClick={exportToCSV}
-								disabled={schedules.length === 0}
-							>
+								disabled={schedules.length === 0}>
 								Export CSV
 							</Button>
 							<Button
@@ -289,74 +263,41 @@ export const ScheduleReport = () => {
 								size='sm'
 								leftIcon={<Printer className='w-4 h-4' />}
 								onClick={exportToPrint}
-								disabled={schedules.length === 0}
-							>
+								disabled={schedules.length === 0}>
 								Print Report
 							</Button>
 						</HStack>
 					}
-				/>
+				/> */}
 				<CardBody>
 					<Grid columns={{ base: 5 }} gap='md'>
 						<GridItem>
-							<CustomSelect
-								value={filters.batchCycle}
-								onChange={(e) =>
-									updateFilter("batchCycle", e.target.value)
-								}
-								options={batchCycleOptions}
-							/>
+							<CustomSelect value={filters.batchCycle} onChange={(e) => updateFilter("batchCycle", e.target.value)} options={batchCycleOptions} />
 						</GridItem>
 						<GridItem>
-							<CustomSelect
-								value={filters.courseType}
-								onChange={(e) =>
-									updateFilter("courseType", e.target.value)
-								}
-								options={courseTypeOptions}
-							/>
+							<CustomSelect value={filters.courseType} onChange={(e) => updateFilter("courseType", e.target.value)} options={courseTypeOptions} />
 						</GridItem>
 						<GridItem>
-							<CustomSelect
-								value={filters.course}
-								onChange={(e) =>
-									updateFilter("course", e.target.value)
-								}
-								options={courseOptions}
-							/>
-						</GridItem>
-						<GridItem>
-							<CustomSelect
-							// for faculty
-							/>
-						</GridItem>
-						<GridItem>
-							<CustomSelect
-							// for venue
-							/>
+							<CustomSelect value={filters.course} onChange={(e) => updateFilter("course", e.target.value)} options={courseOptions} />
 						</GridItem>
 					</Grid>
-					<Grid columns={{ base: 1, md: 2 }} gap='md'>
+					<Grid columns={{ base: 2, md: 2 }} gap='md'>
 						<GridItem>
 							<Input
 								type='date'
+								label='Start Date (Optional)'
 								value={filters.startDate}
-								onChange={(e) =>
-									updateFilter("startDate", e.target.value)
-								}
+								onChange={(e) => updateFilter("startDate", e.target.value)}
 							/>
 						</GridItem>
 						<GridItem>
-							<FormField label='End Date'>
-								<Input
-									type='date'
-									value={filters.endDate}
-									onChange={(e) =>
-										updateFilter("endDate", e.target.value)
-									}
-									min={filters.startDate}
-								/>
-							</FormField>
+							<Input
+								type='date'
+								label='End Date (Optional)'
+								value={filters.endDate}
+								onChange={(e) => updateFilter("endDate", e.target.value)}
+								min={filters.startDate}
+							/>
 						</GridItem>
 					</Grid>
 				</CardBody>
@@ -364,20 +305,28 @@ export const ScheduleReport = () => {
 
 			{/* Schedule Report Table */}
 			<Card>
-				<CardHeader title='Schedule Report' />
 				<CardBody>
-					{isLoading ? (
+					{showFilterWarning ?
+						<EmptyState
+							title='Select Filters to View Report'
+							description='Please select a Batch Cycle and Course Type to fetch schedules.'
+							icon={<Filter className='h-12 w-12 text-indigo-500' />}
+						/>
+					: isLoading ?
 						<SkeletonTable rows={10} columns={6} />
-					) : error ? (
+					: hasError ?
 						<EmptyState
 							title='Error Loading Schedules'
-							description={
-								error.message || "Failed to load schedule data"
-							}
-							icon={<Calendar className='w-12 h-12' />}
+							description={error.message || "Failed to load schedule data."}
+							icon={<X className='h-12 w-12 text-red-500' />}
 						/>
-					) : (
-						<>
+					: schedules.length === 0 ?
+						<EmptyState
+							title='No Schedules Found'
+							description='No sessions match the current filter criteria.'
+							icon={<Calendar className='h-12 w-12 text-gray-500' />}
+						/>
+					:	<>
 							<Table>
 								<TableHead>
 									<TableRow>
@@ -395,45 +344,25 @@ export const ScheduleReport = () => {
 									{schedules.map((schedule, index) => (
 										<TableRow key={index}>
 											<TableCell>
-												{new Date(
-													schedule.date
-												).toLocaleDateString("en-US", {
+												{new Date(schedule.date).toLocaleDateString("en-US", {
 													weekday: "short",
 													day: "2-digit",
 													month: "short",
 												})}
 											</TableCell>
+											<TableCell>{schedule.time}</TableCell>
 											<TableCell>
-												{schedule.time}
+												<Badge variant={getActivityVariant(schedule.activity)}>{schedule.activity}</Badge>
 											</TableCell>
-											<TableCell>
-												<Badge
-													variant={getActivityVariant(
-														schedule.activity
-													)}
-												>
-													{schedule.activity}
-												</Badge>
-											</TableCell>
-											<TableCell>
-												{schedule.module}
-											</TableCell>
-											<TableCell>
-												{Array.isArray(schedule.faculty)
-													? schedule.faculty.join(
-															", "
-													  )
-													: schedule.faculty}
-											</TableCell>
-											<TableCell>
-												{schedule.venue}
-											</TableCell>
+											<TableCell>{schedule.module}</TableCell>
+											<TableCell>{Array.isArray(schedule.faculty) ? schedule.faculty.join(", ") : schedule.faculty}</TableCell>
+											<TableCell>{schedule.venue}</TableCell>
 										</TableRow>
 									))}
 								</TableBody>
 							</Table>
 						</>
-					)}
+					}
 				</CardBody>
 			</Card>
 		</VStack>

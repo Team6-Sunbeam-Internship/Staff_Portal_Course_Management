@@ -1,11 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useGetTimesheetsQuery } from "../../../../../store";
-import {
-	setBreadcrumbs,
-	selectCurrentUser,
-	selectAccessibleMenus,
-} from "../../../../../store";
+
 import { CheckCircle, Calendar } from "lucide-react";
 import {
 	Table,
@@ -17,11 +12,12 @@ import {
 	Badge,
 	Card,
 	CardBody,
-	CardHeader,
+	// CardHeader,
 	EmptyState,
 	SkeletonTable,
-} from "../../../../common";
+} from "../../../layout";
 import { selectUserRole } from "../../../../store/selectors";
+import { setBreadcrumbs, useGetTimeSheetsQuery } from "../../../../store";
 
 export const TimesheetVerifyLogs = () => {
 	const dispatch = useDispatch();
@@ -29,7 +25,7 @@ export const TimesheetVerifyLogs = () => {
 	
 	const canViewLogs = userRole !== 'ADMIN' && userRole !== 'COURSE_COORDINATOR';
 
-	const { data: timesheets = [], isLoading } = useGetTimesheetsQuery(
+	const { data: timesheets = [], isLoading } = useGetTimeSheetsQuery(
 		{
 			status: "approved",
 		},
@@ -87,7 +83,7 @@ export const TimesheetVerifyLogs = () => {
 
 	return (
 		<Card>
-			<CardHeader title='Verified Timesheet Logs' />
+			{/* <CardHeader title='Verified Timesheet Logs' /> */}
 			<CardBody>
 				<Table>
 					<TableHead>

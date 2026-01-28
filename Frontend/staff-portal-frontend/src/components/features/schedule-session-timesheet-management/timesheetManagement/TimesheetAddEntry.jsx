@@ -1,42 +1,39 @@
-import { useState, useEffect, useMemo } from "react";
-import { useDispatch } from "react-redux";
-import { Plus, Trash2, ChevronRight } from "lucide-react";
+import { ChevronRight, Plus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 // --- Service-Specific RTK Query Imports ---
+// Adjusted path/api name based on functionality
+import { useFilteredMenu } from "../../../../hooks";
 import {
-	useSubmitTimesheetMutation,
-} from "../../../../../store/api/academicApi"; // Adjusted path/api name based on functionality
-import {
-	showNotification,
 	setBreadcrumbs, // Assumed to provide { course_code, locationId, batchCycleId, ... }
-} from "../../../../../store";
+} from "../../../../store";
+import { useGetModuleRouterCoursehierarchyQuery, useSubmitTimesheetMutation } from "../../../../store/api/timesheet-mgmtApi";
+import { selectUserRole } from "../../../../store/selectors";
+import { notify } from "../../../../utils/Notify";
 import {
+	Badge,
+	Button,
 	Card,
 	CardBody,
 	CardHeader,
-	Input,
-	CustomSelect, // <<--- Select replaced with CustomSelect
-	Button,
+	CustomSelect,
+	FormField,
 	Grid,
 	GridItem,
-	VStack,
-	Table,
-	TableHead,
-	TableHeader,
-	TableBody,
-	TableCell,
-	TableRow, // <<-- TableRow added here for consistency
-	Badge,
-	FormField,
+	Input,
 	Modal,
-	ModalHeader,
 	ModalBody,
 	ModalFooter,
-	// Assuming a Checkbox component is available in common
-} from "../../../../common";
-import { useGetModuleRouterCoursehierarchyQuery } from "../../../../store/api/timesheet-mgmtApi";
-// import { selectUserRole } from "../../../../store/selectors";
-// import { useFilteredMenu } from "../../../../hooks";
+	ModalHeader,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+	VStack,
+} from "../../../layout";
 
 // Helper to calculate duration in hours as a decimal (e.g., 1.5 for 1 hour 30 mins)
 const getDurationHoursDecimal = (startTime, endTime) => {
@@ -55,11 +52,9 @@ const getDurationHoursDecimal = (startTime, endTime) => {
 
 const TimesheetAddEntry = () => {
 	const dispatch = useDispatch();
-	// const userRole = useSelector(selectUserRole);
-	// const { filteredMenu = [] } = useFilteredMenu();
-	// const canAccessTimesheetAddEntry =
-	// 	(filteredMenu.includes("/scheduling-session-timesheet-mgmt/timesheet-add-entry") && userRole === "GENERAL_USER") ||
-	// 	userRole === "COURSE_COORDINATOR";
+	const userRole = useSelector(selectUserRole);
+	const { pathSet } = useFilteredMenu();
+	const canAccessTimesheetAddEntry = pathSet.has("/scheduling-session-timesheet-mgmt/timesheet-add-entry") && userRole === "GENERAL_USER";
 
 	const [submitTimesheet, { isLoading: submitting }] = useSubmitTimesheetMutation();
 
@@ -117,14 +112,12 @@ const TimesheetAddEntry = () => {
 	}, [courseHierarchy]);
 
 	const availableSubjects = useMemo(() => {
-		const moduleIdInt = parseInt(selectedModuleId);
-		const module = availableModules.find((m) => m.moduleId === moduleIdInt);
+		const module = availableModules.find((m) => m.moduleId === selectedModuleId);
 		return module?.subjects || [];
 	}, [availableModules, selectedModuleId]);
 
 	const availableSections = useMemo(() => {
-		const subjectIdInt = parseInt(selectedSubjectId);
-		const subject = availableSubjects.find((s) => s.subjectId === subjectIdInt);
+		const subject = availableSubjects.find((s) => s.subjectId === selectedSubjectId);
 		// Note: The original code defined availableSections based on availableSubjects,
 		// but for the modal logic, we need ALL sections within the currently selected subject.
 		return subject?.sections || [];
@@ -232,12 +225,7 @@ const TimesheetAddEntry = () => {
 
 	const handleAddTopics = () => {
 		if (!selectedModuleId || !selectedSubjectId || !selectedSectionId || selectedModalTopics.length === 0) {
-			dispatch(
-				showNotification({
-					message: "Please select module, subject, section, and at least one topic.",
-					type: "error",
-				})
-			);
+			notify.error("Please select module, subject, section, and at least one topic.");
 			return;
 		}
 
@@ -249,12 +237,7 @@ const TimesheetAddEntry = () => {
 		const section = availableSections.find((s) => s.sectionId === sectionIdInt);
 
 		if (!module || !subject || !section) {
-			dispatch(
-				showNotification({
-					message: "Academic structure lookup failed. Please refresh.",
-					type: "error",
-				})
-			);
+			notify.error("Academic structure lookup failed. Please refresh.");
 			return;
 		}
 
@@ -287,33 +270,18 @@ const TimesheetAddEntry = () => {
 
 	const handleSubmit = async () => {
 		if (!selectedCourseCode) {
-			dispatch(
-				showNotification({
-					message: "Please select a Course.",
-					type: "error",
-				})
-			);
+			notify.error("Please select a Course.");
 			return;
 		}
 
 		if (selectedTopicGroups.length === 0) {
-			dispatch(
-				showNotification({
-					message: "Please add at least one topic group.",
-					type: "error",
-				})
-			);
+			notify.error("Please add at least one topic group.");
 			return;
 		}
 
 		const duration = calculatedDuration; // Use the calculated duration
 		if (duration <= 0) {
-			dispatch(
-				showNotification({
-					message: "Start time must be before end time and endTime must be later.",
-					type: "error",
-				})
-			);
+			notify.error("Start time must be before end time and endTime must be later.");
 			return;
 		}
 
@@ -328,12 +296,7 @@ const TimesheetAddEntry = () => {
 
 		try {
 			await submitTimesheet(payload).unwrap();
-			dispatch(
-				showNotification({
-					message: "Timesheet entry submitted successfully!",
-					type: "success",
-				})
-			);
+			notify.success("Timesheet entry submitted successfully!");
 			// Reset form and state after successful submission
 			setFormData({
 				date: "",
@@ -348,12 +311,7 @@ const TimesheetAddEntry = () => {
 			setSelectedSubjectId(null);
 			setSelectedSectionId(null);
 		} catch (error) {
-			dispatch(
-				showNotification({
-					message: `Submission failed: ${error.data?.message || "Unknown error"}`,
-					type: "error",
-				})
-			);
+			notify.error(`Submission failed: ${error.data?.message || "Unknown error"}`);
 		}
 	};
 
@@ -395,7 +353,7 @@ const TimesheetAddEntry = () => {
 				{/* ------------------------------------------- */}
 				<GridItem colSpan={{ base: 1, md: 1 }}>
 					<Card>
-						<CardHeader title='Session & Entry Details' />
+						{/* <CardHeader title='Session & Entry Details' /> */}
 						<CardBody>
 							<FormField label='Date'>
 								<Input type='date' value={formData.date} onChange={(e) => updateFormData("date", e.target.value)} />
@@ -413,7 +371,7 @@ const TimesheetAddEntry = () => {
 									readOnly
 									value={calculatedDuration > 0 ? calculatedDuration.toFixed(2) : "0.00"}
 									title='Calculated automatically from Start/End Time'
-									className='bg-gray-100 dark:bg-gray-700 cursor-not-allowed'
+									className='cursor-not-allowed bg-gray-100 dark:bg-gray-700'
 								/>
 							</FormField>
 							<FormField label='Entry Type'>
@@ -454,13 +412,12 @@ const TimesheetAddEntry = () => {
 								</FormField>
 
 								{/* READ-ONLY DISPLAY of Course & Module Name */}
-								<div className='mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm'>
+								<div className='mt-2 rounded bg-gray-50 p-2 text-sm dark:bg-gray-700'>
 									<p>
 										<strong>Course:</strong> {availableCourse}
 									</p>
 									<p>
-										<strong>Module:</strong>{" "}
-										{availableModules.find((m) => m.moduleId === parseInt(selectedModuleId))?.moduleName || "N/A"}
+										<strong>Module:</strong> {availableModules.find((m) => m.moduleId === parseInt(selectedModuleId))?.moduleName || "N/A"}
 									</p>
 								</div>
 							</CardBody>
@@ -479,26 +436,20 @@ const TimesheetAddEntry = () => {
 												// Reset only transient modal state
 												setSelectedModalTopics([]);
 											} else {
-												dispatch(
-													showNotification({
-														message: "Please select a Course first.",
-														type: "warning",
-													})
-												);
+												notify.warning("Please select a Course first.");
 											}
 										}}
 										size='sm'
 										disabled={!selectedCourseCode || courseHierarchyLoading}>
-										<Plus className='w-4 h-4 mr-2' />
+										<Plus className='mr-2 h-4 w-4' />
 										Add Topics
 									</Button>
 								}
 							/>
 							<CardBody className='p-0'>
-								{selectedTopicGroups.length === 0 ? (
-									<div className='text-center text-gray-500 py-4'>No topics added yet.</div>
-								) : (
-									<Table>
+								{selectedTopicGroups.length === 0 ?
+									<div className='py-4 text-center text-gray-500'>No topics added yet.</div>
+								:	<Table>
 										<TableHead>
 											<TableRow>
 												<TableHeader>Subject /Section</TableHeader>
@@ -510,11 +461,11 @@ const TimesheetAddEntry = () => {
 												<TableRow key={index}>
 													<TableCell className='py-2'>
 														<div className='text-sm font-semibold'>{group.subjectName}</div>
-														<div className='text-xs text-gray-500 flex items-center mt-1'>
-															<ChevronRight className='w-3 h-3 inline mx-1 text-gray-400' />
+														<div className='mt-1 flex items-center text-xs text-gray-500'>
+															<ChevronRight className='mx-1 inline h-3 w-3 text-gray-400' />
 															{group.sectionName}
 														</div>
-														<div className='flex flex-wrap gap-1 mt-2'>
+														<div className='mt-2 flex flex-wrap gap-1'>
 															{group.topics.map((topic) => (
 																<Badge key={topic.id} variant='success' size='xs'>
 																	{topic.name}
@@ -524,14 +475,14 @@ const TimesheetAddEntry = () => {
 													</TableCell>
 													<TableCell>
 														<Button variant='ghost' size='icon' onClick={() => removeTopicGroup(group.sectionId)}>
-															<Trash2 className='w-5 h-5 text-red-500' />
+															<Trash2 className='h-5 w-5 text-red-500' />
 														</Button>
 													</TableCell>
 												</TableRow>
 											))}
 										</TableBody>
 									</Table>
-								)}
+								}
 							</CardBody>
 						</Card>
 					</VStack>
@@ -562,15 +513,10 @@ const TimesheetAddEntry = () => {
 
 							<Button
 								variant='primary'
-								className='w-full mt-6'
+								className='mt-6 w-full'
 								onClick={handleSubmit}
 								disabled={
-									submitting ||
-									selectedTopicGroups.length === 0 ||
-									!formData.date ||
-									!formData.startTime ||
-									!formData.endTime ||
-									!selectedCourseCode
+									submitting || selectedTopicGroups.length === 0 || !formData.date || !formData.startTime || !formData.endTime || !selectedCourseCode
 								}>
 								{submitting ? "Submitting..." : "Submit Timesheet Entry"}
 							</Button>
@@ -598,12 +544,11 @@ const TimesheetAddEntry = () => {
 				/>
 				<ModalBody>
 					<VStack spacing='lg' className='w-full'>
-						{courseHierarchyLoading ? (
-							<div className='flex justify-center items-center h-40'>
+						{courseHierarchyLoading ?
+							<div className='flex h-40 items-center justify-center'>
 								<span className='text-gray-500'>Loading Academic Structure...</span>
 							</div>
-						) : (
-							<Grid templateColumns='repeat(1, 1fr) md:repeat(3, 1fr)' gap='lg' className='w-full'>
+						:	<Grid templateColumns='repeat(1, 1fr) md:repeat(3, 1fr)' gap='lg' className='w-full'>
 								{/* COLUMN 1: Subject Dropdown (Dependent on Module selected in main form) */}
 								<GridItem colSpan={1}>
 									<Card>
@@ -626,7 +571,7 @@ const TimesheetAddEntry = () => {
 									<Card>
 										<CardHeader title='Section List' />
 										<CardBody className='max-h-80 overflow-y-auto'>
-											{availableSections.length > 0 ? (
+											{availableSections.length > 0 ?
 												<VStack spacing='sm'>
 													{availableSections.map((section) => (
 														<Button
@@ -638,11 +583,10 @@ const TimesheetAddEntry = () => {
 														</Button>
 													))}
 												</VStack>
-											) : (
-												<div className='text-sm text-gray-500 p-3'>
+											:	<div className='p-3 text-sm text-gray-500'>
 													{selectedSubjectId ? "No sections available or Select a subject." : "Select a Subject first."}
 												</div>
-											)}
+											}
 										</CardBody>
 									</Card>
 								</GridItem>
@@ -653,11 +597,11 @@ const TimesheetAddEntry = () => {
 										<CardHeader title='Topic List' />
 										<CardBody className='max-h-80 overflow-y-auto'>
 											<VStack spacing='sm'>
-												{selectedSectionId && availableTopics.length > 0 ? (
+												{selectedSectionId && availableTopics.length > 0 ?
 													availableTopics.map((topic) => (
 														<label
 															key={topic.id}
-															className='flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded cursor-pointer w-full'>
+															className='flex w-full cursor-pointer items-center space-x-3 rounded p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50'>
 															<input
 																type='checkbox'
 																checked={selectedModalTopics.some((t) => t.id === topic.id)}
@@ -667,19 +611,16 @@ const TimesheetAddEntry = () => {
 															<span className='text-sm'>{topic.name}</span>
 														</label>
 													))
-												) : (
-													<div className='text-sm text-gray-500 p-3'>
-														{selectedSectionId
-															? "No topics available for this section."
-															: "Select a Section to see topics."}
+												:	<div className='p-3 text-sm text-gray-500'>
+														{selectedSectionId ? "No topics available for this section." : "Select a Section to see topics."}
 													</div>
-												)}
+												}
 											</VStack>
 										</CardBody>
 									</Card>
 								</GridItem>
 							</Grid>
-						)}
+						}
 					</VStack>
 				</ModalBody>
 				<ModalFooter>

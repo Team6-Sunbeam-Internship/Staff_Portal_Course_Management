@@ -1,3 +1,5 @@
-export const ModalBody = ({ children }) => (
-	<div className='rounded-b-2xl bg-white dark:bg-sky-600/75 p-6'>{children}</div>
+export const ModalBody = ({ children, className = "" }) => (
+	<div className={`relative z-10 flex-1 scrollbar-none overflow-y-auto bg-white px-5 py-6 dark:bg-zinc-950 ${className}`}>
+		{children}
+	</div>
 );

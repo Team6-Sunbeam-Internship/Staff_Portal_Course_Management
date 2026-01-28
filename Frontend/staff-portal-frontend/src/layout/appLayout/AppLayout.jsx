@@ -1,98 +1,96 @@
-import { useEffect, useState } from "react";
-import { Sidebar } from "../../components/layout";
-import Header from "../header/Header";
-import MainContent from "../mainContent/MainContent";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet } from "react-router";
-import Footer from "../footer/Footer";
+import { Header } from "../header";
+import { Footer } from "../footer";
+import { MainContent } from "../mainContent";
+import { Sidebar } from "../../components/features";
+import { useFilteredMenu } from "../../hooks";
+import { ModalProvider } from "../../providers";
 
 const AppLayout = () => {
-	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [isMobile, setIsMobile] = useState(false);
-	const [user, setUser] = useState({
-		firstName: "Abhinav",
-		lastName: "Mishra",
-		role: "ADMIN",
-	});
+
+	const { filteredMenu } = useFilteredMenu();
+	const memoizedMenu = useMemo(() => filteredMenu, [filteredMenu]);
 	useEffect(() => {
 		const handleResize = () => {
-			const isMobileScreen = window.innerWidth < 768;
+			const innerWidth = window.innerWidth;
+			const isMobileScreen = innerWidth < 1024;
 			setIsMobile(isMobileScreen);
 			if (isMobileScreen) {
-				setIsSidebarOpen(false);
+				setIsSidebarCollapsed(true);
+				setIsMobileMenuOpen(false);
 			} else {
-				setIsSidebarOpen(true);
+				setIsSidebarCollapsed(false);
+				setIsMobileMenuOpen(false);
 			}
 		};
-
+		handleResize();
 		window.addEventListener("resize", handleResize);
-		handleResize(); // Set initial state
-
-		return () => window.removeEventListener("resize", handleResize);
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
 	}, []);
-	const handleSidebarToggle = () => {
-		setIsSidebarOpen(!isSidebarOpen);
-		setIsSidebarCollapsed(false); // Reset collapse state on mobile toggle
-	};
 
-	const handleSidebarCollapse = () => {
-		// On mobile, this button closes the sidebar completely
+	// Toggle sidebar collapse state
+	const handleToggleSidebar = () => {
 		if (isMobile) {
-			setIsSidebarOpen(false);
+			setIsMobileMenuOpen(!isMobileMenuOpen);
 		} else {
-			// On desktop, this button toggles the collapsed state
+			// On desktop, just toggle collapsed state
 			setIsSidebarCollapsed(!isSidebarCollapsed);
 		}
 	};
-
-	// Dynamically determine the margin for the main content to clear the sidebar
-	const getMarginClass = () => {
-		if (isMobile) {
-			return "";
-		}
-		if (isSidebarCollapsed) {
-			return "md:ml-16";
-		}
-		return "md:ml-80";
+	console.log("window.innerWidth: ", window.innerWidth);
+	// Close mobile menu (called from backdrop click)
+	const handleCloseMobileMenu = () => {
+		setIsMobileMenuOpen(false);
 	};
 
-	return (
-		<div className='flex md:flex-row h-screen bg-gray-100 dark:bg-neutral-900  text-gray-900 dark:text-neutral-100 overflow-hidden'>
-			{/* Mobile backdrop */}
-			{isSidebarOpen && isMobile && (
-				<div
-					className='fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 ease-in-out'
-					onClick={handleSidebarToggle}
-				></div>
-			)}
+	// Open mobile menu (called from header menu button)
+	const handleOpenMobileMenu = () => {
+		setIsMobileMenuOpen(true);
+	};
+	// const getMainContentMargin = () => {
+	// 	if (isMobile) {
+	// 		return "";
+	// 	}
+	// 	return isSidebarCollapsed ? "lg:ml-[88px]" : "lg:ml-[280px]";
+	// };
 
+	// const getMainContentLength = () => {
+	// 	if (isMobile) return "";
+	// 	return isSidebarCollapsed ? "md:ml-16":""
+	// };
+
+	return (
+		<div className='flex h-screen overflow-hidden md:flex-row'>
 			{/* Sidebar */}
 			<Sidebar
+				filteredMenu={memoizedMenu}
 				isCollapsed={isSidebarCollapsed}
-				onToggle={handleSidebarToggle}
-				onCollapsed={handleSidebarCollapse}
-				className={`${
-					isMobile && !isSidebarOpen
-						? "-translate-x-full"
-						: "translate-x-0"
-				} z-40`}
+				isMobileMenuOpen={isMobileMenuOpen}
+				isMobile={isMobile}
+				onToggleSidebar={handleToggleSidebar}
+				onCloseMobileMenu={handleCloseMobileMenu}
 			/>
 
 			{/* Main Content Area */}
-			<div
-				className={`flex-1 flex flex-col transition-all duration-300 z-10 ${getMarginClass()}`}
-			>
+
+			<div className={`z-10 flex flex-1 flex-col transition-all duration-300`}>
 				{/* Header */}
-				<Header
-					onSidebarToggle={handleSidebarToggle}
-					isMobile={isMobile}
-					user={user}
-				/>
+				<Header onSidebarToggle={handleOpenMobileMenu} isMobile={isMobile} />
+
+				{/* <Profile /> */}
 				{/* Main Content */}
-				<MainContent className='scrollbar-none'>
-					<Outlet />
-				</MainContent>
-				{/* Footer */}
+				<ModalProvider>
+					<MainContent className='scrollbar-none'>
+						<Outlet />
+					</MainContent>
+					{/* Footer */}
+				</ModalProvider>
 				<Footer />
 			</div>
 		</div>

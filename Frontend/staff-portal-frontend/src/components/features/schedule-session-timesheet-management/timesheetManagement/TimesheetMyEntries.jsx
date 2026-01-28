@@ -9,15 +9,9 @@ import {
 	ChevronDown,
 	ChevronUp,
 } from "lucide-react";
-import { showNotification } from "../../../../../store/slices/uiSlice";
-import {
-	useGetTimesheetsQuery,
-	useUpdateTimesheetMutation,
-} from "../../../../../store";
-import {
-	setBreadcrumbs,
-	// selectAccessibleMenus,
-} from "../../../../../store";
+// import { showNotification } from "../../../../../store/slices/uiSlice";
+
+
 import {
 	Table,
 	TableHead,
@@ -27,18 +21,18 @@ import {
 	TableCell,
 	Button,
 	Badge,
-	Progress,
+	// Progress,
 	Card,
 	CardBody,
-	CardHeader,
+	// CardHeader,
 	EmptyState,
 	SkeletonTable,
 	Modal,
 	ModalHeader,
 	ModalBody,
 	ModalFooter,
-} from "../../../../common";
-import { setHeaderInfo } from "../../../../store";
+} from "../../../layout";
+import { setBreadcrumbs, setHeaderInfo, useGetTimeSheetsQuery, useUpdateTimeSheetMutation } from "../../../../store";
 
 // Helper function to determine the color variant of the status badge
 const getStatusVariant = (status) => {
@@ -67,10 +61,10 @@ export const TimesheetMyEntries = () => {
 	const dispatch = useDispatch();
 	
 
-	const { data: timesheets = [], isLoading } = useGetTimesheetsQuery(); // get staff id from access token
+	const { data: timesheets = [], isLoading } = useGetTimeSheetsQuery(); // get staff id from access token
 
 	const [updateTimesheet, { isLoading: updating }] =
-		useUpdateTimesheetMutation();
+		useUpdateTimeSheetMutation();
 
 	const [selectedEntry, setSelectedEntry] = useState(null);
 	const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -154,20 +148,20 @@ export const TimesheetMyEntries = () => {
 			}).unwrap();
 
 			dispatch(
-				showNotification({
-					message: "Timesheet topics successfully updated.",
-					type: "success",
-				})
+				// showNotification({
+				// 	message: "Timesheet topics successfully updated.",
+				// 	type: "success",
+				// })
 			);
 			setShowUpdateModal(false);
 		} catch (error) {
 			dispatch(
-				showNotification({
-					message: `Failed to update timesheet: ${
-						error.data?.message || "Unknown error"
-					}`,
-					type: "error",
-				})
+				// showNotification({
+				// 	message: `Failed to update timesheet: ${
+				// 		error.data?.message || "Unknown error"
+				// 	}`,
+				// 	type: "error",
+				// })
 			);
 		}
 	};
@@ -227,7 +221,7 @@ export const TimesheetMyEntries = () => {
 	return (
 		<>
 			<Card className='mt-6'>
-				<CardHeader
+				{/* <CardHeader
 					title='My Timesheet Entries'
 					action={
 						<Button
@@ -237,7 +231,7 @@ export const TimesheetMyEntries = () => {
 							Add New Entry
 						</Button>
 					}
-				/>
+				/> */}
 				<CardBody>
 					{isLoading && <SkeletonTable rows={5} cols={6} />}
 
@@ -335,10 +329,10 @@ export const TimesheetMyEntries = () => {
 													{entry.duration} hrs
 												</TableCell>
 												<TableCell>
-													<Progress
+													{/* <Progress
 														value={progress}
 														label={`${progress}%`}
-													/>
+													/> */}
 												</TableCell>
 												<TableCell className='text-center space-x-2'>
 													{canEdit(entry) && (

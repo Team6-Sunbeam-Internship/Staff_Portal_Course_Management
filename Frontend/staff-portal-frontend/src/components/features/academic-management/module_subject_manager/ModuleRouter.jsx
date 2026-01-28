@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
-import { Trash2, Edit, List, UserPlus } from "lucide-react";
+import { useState, useEffect, useMemo} from "react";
 import {
 	Card,
 	CardBody,
@@ -10,77 +9,117 @@ import {
 	TableRow,
 	TableCell,
 	Button,
-	Modal,
-	ModalHeader,
-	ModalBody,
-	ConfirmDialog,
 	EmptyState,
 	SkeletonTable,
 	CustomSelect,
-	SearchInput,
+	Grid,
+	GridItem,
+	Badge,
 } from "../../../layout";
-// Assuming the form component is for assignment, not premise
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
 	setBreadcrumbs,
 	setHeaderInfo,
 	useAssignModuleRouterMutation,
-	useGetAssignCourseQuery,
+	useGetAssignCourseAndModulesQuery,
 	useGetEligibleStaffQuery,
-	useGetModulesForCoordinatorQuery,
 } from "../../../../store";
 import { useModal } from "../../../../providers";
-// import { useGetAllStaffQuery, useGetCourseOfferingsQuery, useGetAssignmentsQuery, useCreateAssignmentMutation, useUpdateAssignmentMutation, useDeleteAssignmentMutation } from "../../../store"; // RTK Query hooks placeholder
-import { ErrorFallback } from "../.././../layout/errorBoundary";
-import { CourseCoordinatorAssignForm } from "./CourseCoordinatorAssignForm";
+import { useFilteredMenu } from "../../../../hooks";
+import { selectUserRole } from "../../../../store/selectors";
+import { ErrorFallback } from "../../../layout/errorBoundary";
 
 const ModuleRouter = () => {
 	const dispatch = useDispatch();
+	const userRole = useSelector(selectUserRole);
+
+	const { pathSet } = useFilteredMenu();
+	const canAccessModuleRouter = pathSet.has("/academic-management/module-subject-manager") && userRole === "COURSE_COORDINATOR";
 
 	// RTK Query Hooks
 	// before this COURSE_COORDINATOR has to get the assign course, from which it will get the , course name
 	// rtk query hook: useGetAssignCourseQuery, param: coordinator staff id(extract from access token)
 
-	const { data: assignCourse, isLoading: loadingAssignCourse, isError: isErrorAssignCourse, error: errorAssignCourse } = useGetAssignCourseQuery();
+	// list of coursecode, coursename, isCurrent, list<moduleresponsedto>
 	const {
-		data: initialModules,
-		isLoading: loadingModules,
-		isError: isErrorModules,
-		error: errorModules,
-	} = useGetModulesForCoordinatorQuery(
-		{
-			courseCode: assignCourse?.data?.courseCode,
-		},
-		{
-			skip: !assignCourse?.data?.courseCode,
-		}
-		);
-	
-	const { data: eligibleStaff, isLoading: loadingStaff } = useGetEligibleStaffQuery({cs1: 'MULTIPLE', cs2: assignCourse?.data?.courseName});
+		data: assignCourseAndModules = [],
+		isLoading: loadingAssignCourseAndModules,
+		isError: isErrorAssignCourseAndModules,
+		error: errorAssignCourseAndModules,
+	} = useGetAssignCourseAndModulesQuery();
 
-	const [assignCoordinator, { isLoading: isSaving , isSuccess: assigned}] = useAssignModuleRouterMutation(/**module_id, module_router_id, module_router_name */);
+	const uniqueCourseNames = useMemo(() => {
+		return Array.from(new Set(assignCourseAndModules.map((item) => item.courseName)));
+	}, [assignCourseAndModules]);
 
-	const { showModal, setShowModal } = useModal();
+	// course_coordinator can also become module router
+	const {
+		data: eligibleStaff,
+		isLoading: loadingStaff,
+		isError: isErrorStaff,
+		error: errorStaff,
+	} = useGetEligibleStaffQuery({courseNames:uniqueCourseNames, multiple: true}, { skip: uniqueCourseNames.length === 0 });
+
+	const [assignCoordinator, { isLoading: isSaving, isSuccess: assigned }] =
+		useAssignModuleRouterMutation(/**id, module_router_id, module_router_name */);
+
+	const [filters, setFilters] = useState({
+		courseCode: "",
+	});
 	const [modules, setLocalModules] = useState([]);
 	const [activeModule, setActiveModule] = useState(null); // Module for the Subject modal
+	const { showModal, setShowModal } = useModal();
 	const [savingModuleId, setSavingModuleId] = useState(null);
 
-	// Sync initial data to local state for editing
+	// Find the currently selected course object from the fetched data
+	const currentCourseBatch = useMemo(() => {
+		return assignCourseAndModules.find((acm) => acm.courseCode === filters.courseCode);
+	}, [assignCourseAndModules, filters.courseCode]);
+
+	// Find the designated "Current" batch cycle from the initial fetch
+	const currentEditableCourse = useMemo(() => {
+		return assignCourseAndModules.find((acm) => acm.isCurrent);
+	}, [assignCourseAndModules]);
+
+	// 1. Initial Load & Filter Selection
 	useEffect(() => {
-		if (initialModules && !loadingModules) {
-			setLocalModules(
-				initialModules.map((m) => ({
-					...m,
-					// Add a temporary state to track changes before official save
-					tempAssignedStaffId: m.assignedStaffId,
-					isModified: false,
-				}))
-			);
+		// Auto select the current batch cycle on load
+		if (assignCourseAndModules.length > 0 && filters.courseCode === null && currentEditableCourse) {
+			setFilters({ courseCode: currentEditableCourse.courseCode });
 		}
-	}, [initialModules, loadingModules]);
+	}, [assignCourseAndModules, currentEditableCourse, filters.courseCode]);
+
+	// 2. Sync Modules to Local State based on selection
+	useEffect(() => {
+		const selectedModules = currentCourseBatch ? currentCourseBatch.assignCourseModuleList : [];
+
+		setLocalModules(
+			selectedModules.map((module) => ({
+				...module,
+				// Map moduleRouterId (UUID) to tempAssignedStaffId for UI
+				assignedStaffId: module.moduleRouterId,
+				tempAssignedStaffId: module.moduleRouterId,
+				isModified: false,
+				isSaved: !!module.moduleRouterId,
+			}))
+		);
+	}, [currentCourseBatch]);
+
 	// =========================================================================
 	// 3. UI/EFFECTS/HANDLERS
 	// =========================================================================
+
+	useEffect(() => {
+		if (isErrorAssignCourseAndModules) {
+			console.log(errorAssignCourseAndModules);
+		}
+		if (isErrorStaff) {
+			console.log(errorStaff);
+		}
+		if (isSaving) {
+			console.log("Saving...");
+		}
+	}, [isSaving, isErrorAssignCourseAndModules, isErrorStaff, errorAssignCourseAndModules, errorStaff]);
 
 	useEffect(() => {
 		dispatch(
@@ -119,31 +158,55 @@ const ModuleRouter = () => {
 		);
 	}, [dispatch]);
 
+	const courseOptions = useMemo(() => {
+		return assignCourseAndModules.map((course) => ({
+			value: course.courseCode,
+			label: course.courseCode,
+		}));
+	}, [assignCourseAndModules]);
+
 	const staffOptions = useMemo(() => {
 		const options = eligibleStaff.map((staff) => ({
-			value: staff.id,
-			label: `${staff.firstName} ${staff.designation}`,
+			value: staff.staffId,
+			label: `${staff.name} ${staff.courseSpecialization === "multiple" ? "Multiple Specialization" : staff.courseSpecialization}`,
 		}));
 		// Add an initial unassigned option
 		options.unshift({ value: null, lable: "---Select Staff---" });
 		return options;
 	}, [eligibleStaff]);
 
+	if(!canAccessModuleRouter) {
+		return <ErrorFallback errorMessage="You do not have permission to access this page." />;
+	}
+	
+	const isCurrentBatch = currentEditableCourse ? filters.courseCode === currentEditableCourse.courseCode : false;
+
+	const handleFilterChange = (newCourseCode) => {
+		const selectedCourse = assignCourseAndModules.find((acm) => acm.courseCode === newCourseCode);
+		if (selectedCourse) {
+			setFilters({
+				courseCode: selectedCourse.courseCode,
+			});
+		}
+	};
+
 	// Handler for inline select change
 	const handleAssignmentChange = (moduleId, newStaffId) => {
+		if (!isCurrentBatch) return;
+
 		setLocalModules((prevModules) =>
 			prevModules.map((m) => {
 				if (m.moduleId === moduleId) {
 					// Convert to integer or null for comparison
 					const currentStaffId = m.assignedStaffId;
-					const newStaffIdInt = parseInt(newStaffId) || null;
+					// const newStaffIdInt = parseInt(newStaffId) || null;
 
 					// Check if the new value is different from the last officially saved value
-					const isModified = currentStaffId !== newStaffIdInt;
+					const isModified = currentStaffId !== newStaffId;
 
 					return {
 						...m,
-						tempAssignedStaffId: newStaffIdInt,
+						tempAssignedStaffId: newStaffId,
 						isModified: isModified,
 						isSaved: !isModified && m.isSaved, // Mark as unsaved if modified
 					};
@@ -155,6 +218,10 @@ const ModuleRouter = () => {
 
 	// Handler for saving the assignment
 	const handleSaveAssignment = async (moduleId, staffId) => {
+		if (!isCurrentBatch) {
+			//dispatch(showNotification({ type: 'error', message: 'Assignment cannot be saved for an old batch cycle.' }));
+			return;
+		}
 		if (!staffId) {
 			// dispatch(
 			// 	showNotification({
@@ -219,101 +286,137 @@ const ModuleRouter = () => {
 		setShowModal(true);
 	};
 
-	const isLoading = loadingModules || loadingStaff;
-	const isDataReady = !isLoading && modules.length > 0;
-	const isModulesEmpty = !isLoading && modules.length === 0;
+	const isLoading = loadingAssignCourseAndModules || loadingStaff;
+	const isDataReady = !isLoading && filters.courseCode !== null && modules.length > 0;
+	const isModulesEmpty = !isLoading && filters.courseCode !== null && modules.length === 0;
 
 	return (
 		<>
+			<Grid columns={{ base: 1, md: 2, lg: 3 }}>
+				<GridItem>
+					<CustomSelect
+						value={filters.courseCode}
+						options={courseOptions}
+						placeholder='Select a Course'
+						onChange={(e) => handleFilterChange(e.target.value)}
+						disabled={loadingAssignCourseAndModules}
+					/>
+				</GridItem>
+				<GridItem>
+					{currentCourseBatch && (
+						<Badge variant={isCurrentBatch ? "success" : "default"} className='text-base p-2 w-full justify-center'>
+							Status: {isCurrentBatch ? "Current-Editable" : "Old Batch-Read Only"}
+						</Badge>
+					)}
+				</GridItem>
+			</Grid>
+
 			<Card className={"h-[510px]"}>
 				<CardBody>
-					{isLoading ? (
-						<SkeletonTable />
-					) : isModulesEmpty ? (
+					{isLoading && filters.courseId && <SkeletonTable rows={5} />}
+
+					{filters.courseId === null && !loadingAssignCourseAndModules && (
 						<EmptyState
-							icon={<List className='w-12 h-12' />}
-							title='No Course Offerings Found'
-							description='There are no course offerings available to assign a coordinator.'
+							title='Select a Course and Batch Cycle'
+							description='Please use the filter above to load the modules you wish to assign Coordinators for.'
+							icon={<Filter className='w-12 h-12' />}
 						/>
-					) : (
-						<>
-							<Table>
-								<TableHead>
-									<TableRow>
-										<TableHeader className='w-[5%] rounded-tl-2xl'>S.No</TableHeader>
-										<TableHeader className='w-[20%]'>Module Title</TableHeader>
-										<TableHeader className='w-[15%]'>Theory Hours</TableHeader>
-										<TableHeader className='w-[15%]'>Practical Hours</TableHeader>
-										<TableHeader className='w-[25%]'>Module Coordinator</TableHeader>
-										<TableHeader className='w-[25%]'>Assignment Status</TableHeader>
-										<TableHeader className='text-center rounded-tr-2xl w-[20%]'>View Subjects</TableHeader>
-									</TableRow>
-								</TableHead>
-							</Table>
-							{isDataReady && (
-								<div className='h-[440px] rounded-b-2xl overflow-y-auto scrollbar-none'>
-									<Table>
-										<TableBody>
-											{modules.map((module, index) => {
-												const isCurrentlySaving = savingModuleId === module.moduleId;
-												const isAssigned = module.assignedStaffId !== null;
-												return (
-													<TableRow key={module.moduleId}>
-														<TableCell className='font-medium text-center w-[5%]'>{index + 1}</TableCell>
-														<TableCell className='w-[20%]'>{module.moduleTitle}</TableCell>
-														<TableCell className='w-[15%]'>{module.theoryHours}</TableCell>
-														<TableCell className='w-[15%]'>{module.practicalHours}</TableCell>
-														<TableCell className='w-[25%] font-medium'>
-															<CustomSelect
-																value={module.tempAssignedStaffId}
-																options={staffOptions}
-																placeholder='Select Module Coordinator'
-																onChange={(e) => handleAssignmentChange(module.moduleId, e.target.value)}
-																disabled={isCurrentlySaving}
-															/>
-														</TableCell>
-														<TableCell className='w-[20%]'>
-															<Button
-																size='sm'
-																variant={module.isModified ? "primary" : "success"}
-																onClick={() => handleSaveAssignment(module.moduleId, module.tempAssignedStaffId)}
-																isLoading={isCurrentlySaving}
-																disabled={isCurrentlySaving || !module.isModified}
-																className='w-[120px]'>
-																{module.isSaved && !module.isModified ? (
-																	<HStack spacing='xs'>
-																		<CheckCircle size={16} /> Saved
-																	</HStack>
-																) : (
-																	<HStack spacing='xs'>
-																		<Save size={16} /> Save
-																	</HStack>
-																)}
-															</Button>
-														</TableCell>
-														<TableCell className='text-center'>
-															<Button
-																variant='ghost'
-																size='sm'
-																onClick={() => handleViewSubjects(module)}
-																title='View Subjects in this Module'>
-																<Eye size={18} className='text-gray-500 hover:text-indigo-600' />
-															</Button>
-														</TableCell>
-													</TableRow>
-												);
-											})}
-										</TableBody>
-									</Table>
-								</div>
-							)}
-						</>
 					)}
+
+					{isModulesEmpty && currentCourseBatch && (
+						<EmptyState
+							title='No Modules Found'
+							description={`There are no modules defined for the course "${currentCourseBatch.courseName}" in this batch cycle.`}
+							icon={<BookOpen className='w-12 h-12' />}
+						/>
+					)}
+					<>
+						<Table>
+							<TableHead>
+								<TableRow>
+									<TableHeader className='w-[5%] rounded-tl-2xl'>S.No</TableHeader>
+									<TableHeader className='w-[20%]'>Module Title</TableHeader>
+									<TableHeader className='w-[15%]'>Theory Hours</TableHeader>
+									<TableHeader className='w-[15%]'>Practical Hours</TableHeader>
+									<TableHeader className='w-[25%]'>Module Coordinator</TableHeader>
+									<TableHeader className='w-[25%]'>Assignment Status</TableHeader>
+									<TableHeader className='text-center rounded-tr-2xl w-[20%]'>View Subjects</TableHeader>
+								</TableRow>
+							</TableHead>
+						</Table>
+						{isDataReady && (
+							<div className='h-[440px] rounded-b-2xl overflow-y-auto scrollbar-none'>
+								<Table>
+									<TableBody>
+										{modules.map((module, index) => {
+											const isCurrentlySaving = savingModuleId === module.moduleId;
+											const isAssigned = module.assignedStaffId !== null;
+											const isEditable = isCurrentBatch;
+											return (
+												<TableRow key={module.moduleId}>
+													<TableCell className='font-medium text-center w-[5%]'>{index + 1}</TableCell>
+													<TableCell className='w-[20%]'>{module.title}</TableCell>
+													<TableCell className='w-[15%]'>{module.theoryHours}</TableCell>
+													<TableCell className='w-[15%]'>{module.practicalHours}</TableCell>
+													<TableCell className='w-[25%] font-medium'>
+														<CustomSelect
+															value={module.tempAssignedStaffId}
+															options={staffOptions}
+															placeholder='Select Module Coordinator'
+															onChange={(e) => handleAssignmentChange(module.id, e.target.value)}
+															disabled={isCurrentlySaving || !isEditable || loadingStaff}
+															className={`${
+																isAssigned && !module.isModified
+																	? "border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/10"
+																	: module.isModified
+																	? "border-yellow-400 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/10"
+																	: "border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-900/10"
+															}`}
+														/>
+													</TableCell>
+													<TableCell className='w-[20%]'>
+														<Button
+															size='sm'
+															variant={module.isModified ? "primary" : "success"}
+															onClick={() => handleSaveAssignment(module.id, module.tempAssignedStaffId)}
+															isLoading={isCurrentlySaving}
+															disabled={
+																isCurrentlySaving || !module.isModified || !isEditable || !module.tempAssignedStaffId
+															}
+															className='w-[120px]'>
+															{module.isSaved && !module.isModified ? (
+																<HStack spacing='xs' className='justify-center'>
+																	<CheckCircle size={16} /> Assigned
+																</HStack>
+															) : (
+																<HStack spacing='xs'>
+																	<Save size={16} /> Save
+																</HStack>
+															)}
+														</Button>
+													</TableCell>
+													<TableCell className='text-center'>
+														<Button
+															variant='ghost'
+															size='sm'
+															onClick={() => handleViewSubjects(module)}
+															title='View detailed subjects'>
+															<Eye size={18} className='text-gray-500 hover:text-indigo-600' /> View
+														</Button>
+													</TableCell>
+												</TableRow>
+											);
+										})}
+									</TableBody>
+								</Table>
+							</div>
+						)}
+					</>
 				</CardBody>
 			</Card>
 
 			{/* Modal for viewing associated Subjects */}
-			<SubjectDetailModal isOpen={showModal} onClose={() => setShowModal(false)} module={activeModule} />
+			<SubjectDetailModule isOpen={showModal} onClose={() => setShowModal(false)} module={activeModule} />
 		</>
 	);
 };

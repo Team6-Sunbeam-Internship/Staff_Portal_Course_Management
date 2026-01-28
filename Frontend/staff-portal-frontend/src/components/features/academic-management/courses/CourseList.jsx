@@ -1,26 +1,10 @@
 /* eslint-disable */
-import { useLocation, useNavigate } from "react-router";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { Edit, List, RotateCcw, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Trash2, Edit, List, User, Users, ListRestartIcon } from "lucide-react";
-import {
-	Card,
-	CardBody,
-	Table,
-	TableHead,
-	TableBody,
-	TableRow,
-	TableCell,
-	Button,
-	Modal,
-	ModalHeader,
-	ModalBody,
-	ConfirmDialog,
-	EmptyState,
-	SkeletonTable,
-	TableHeader,
-} from "../../../layout";
-import { CustomSelect, SearchInput } from "../../../layout";
+import { useLocation, useNavigate } from "react-router";
+import { useDebounce, useFilteredMenu } from "../../../../hooks";
+import { useModal } from "../../../../providers/providerHook";
 import {
 	setBreadcrumbs,
 	setHeaderInfo,
@@ -30,13 +14,31 @@ import {
 	useGetBatchCycleQuery,
 	useGetPaginatedCoursesQuery,
 	useGetPremisesQuery,
+	useGetPreservedCommandsQuery,
 	useUpdateCourseMutation,
 } from "../../../../store";
-import { useModal } from "../../../../providers/providerHook";
-import { useDebounce, useFilteredMenu } from "../../../../hooks";
-import { CourseForm } from "./CourseForm";
-import { ErrorFallback } from "../../../layout/errorBoundary";
 import { selectUserRole } from "../../../../store/selectors";
+import { notify } from "../../../../utils/Notify";
+import {
+	Button,
+	Card,
+	CardBody,
+	ConfirmDialog,
+	CustomSelect,
+	EmptyState,
+	Input,
+	SkeletonTable,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../../layout";
+import { ErrorFallback } from "../../../layout/errorBoundary";
+import { ModalForm } from "../../../layout/modals/ModalForm";
+import ResumeModal from "../../../layout/modals/ResumeModal";
+import { CourseForm } from "./CourseForm";
 
 const PAGE_SIZE = 72;
 const PREFETCH_OFFSET = 6;
@@ -46,8 +48,8 @@ const CourseList = () => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	const userRole = useSelector(selectUserRole);
-	const { filteredMenu = [] } = useFilteredMenu();
-	const canAccessCourseList = filteredMenu.includes("/academic-management/courses") && userRole === "ADMIN";
+	const { pathSet } = useFilteredMenu();
+	const canAccessCourseList = pathSet.has("/academic-management/courses") && userRole === "ADMIN";
 
 	// State for filters and pagination
 	const initialCourseType = location.state?.courseType;
@@ -59,6 +61,8 @@ const CourseList = () => {
 		status: "",
 		searchTerm: "",
 	});
+	const resumePending = sessionStorage.getItem("resumePending") === "true";
+	const { data: preservedCommands = [] } = useGetPreservedCommandsQuery(undefined, { skip: !resumePending });
 
 	//----------RTK QUERY HOOKS----------
 	// pre requisites
@@ -66,7 +70,7 @@ const CourseList = () => {
 	const { data: premises, isLoading: isLoadingPremises } = useGetPremisesQuery();
 	const { data: courseTypes, isLoading: isLoadingCourseTypes } = useGetAllCourseTypesQuery();
 
-	const isLoadingPreReqs = !isLoadingBatchCycles && !isLoadingPremises && !isLoadingCourseTypes;
+	const isLoadingPreReqs = isLoadingBatchCycles && isLoadingPremises && isLoadingCourseTypes;
 	const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
 
 	const queryParams = {
@@ -78,15 +82,17 @@ const CourseList = () => {
 		page,
 	};
 	const {
-		data: paginatedCourses,  // -> courseCode, courseName, courseTypeId, courseTypeName, premiseId, premiseName, batchCycleId, batchCycleName, studentCount, courseGroupCount, status 
+		data: paginatedCourses, // -> courseCode, courseName, courseTypeId, courseTypeName, premiseId, premiseName, batchCycleId, batchCycleName, studentCount, courseGroupCount, status
 		isFetching,
 		isLoading,
 		isError,
 		error,
 	} = useGetPaginatedCoursesQuery(queryParams, {
-		skip: !canAccessCourseList || !isLoadingPreReqs,
+		skip: !canAccessCourseList || isLoadingPreReqs,
 		refetchOnMountOrArgChange: true,
 	});
+	console.log("paginatedCourses: ", paginatedCourses);
+
 	const [createCourse, { isSuccess: created, isLoading: creating, isError: createError, error: createErrorDetails }] = useCreateCourseMutation();
 	const [updateCourse, { isLoading: updating, isSuccess: updated, isError: updateError, error: updateErrorDetails }] = useUpdateCourseMutation();
 	const [deleteCourseTrigger, { isLoading: deleting, isSuccess: deleted, isError: deleteError, error: deleteErrorDetails }] =
@@ -94,20 +100,67 @@ const CourseList = () => {
 
 	const courses = paginatedCourses?.content || [];
 	const hasMore = paginatedCourses ? courses.length < paginatedCourses.totalElements : true;
+	console.log("Filters: ", filters);
+	const tableData = useMemo(() => {
+		if (!courses?.length) return [];
+		return courses.filter((course) => {
+			if (filters.status && course.courseStatus !== filters.status) return false;
+			if (filters.batchCycleId && course.batchCycleId !== filters.batchCycleId) return false;
+			if (filters.courseTypeId && course.courseTypeId !== filters.courseTypeId) return false;
+			if (filters.premiseId && course.premiseId !== filters.premiseId) return false;
 
-	const { showModal, setShowModal } = useModal();
-	const [editingCourse, setEditingCourse] = useState(null);
+			return true;
+		});
+	}, [courses, filters]);
+
+	console.log("tableData: ", tableData);
+	const formRef = useRef(null);
+	const { showModal, closeModal, openModal } = useModal();
 	const [deleteModal, setDeleteModal] = useState({
 		open: false,
 		course: null,
 	});
+	const [resumeModal, setResumeModal] = useState({
+		open: false,
+		resumeData: null,
+	});
+	useEffect(() => {
+		if (!resumePending) return;
+		if (!preservedCommands || preservedCommands.length === 0) return;
 
+		setResumeModal({
+			open: true,
+			resumeData: preservedCommands,
+		});
+
+		// clean up flag AFTER consuming
+		sessionStorage.removeItem("resumePending");
+	}, [resumePending, preservedCommands]);
+
+	const handleResumeConfirm = (command) => {
+		// Navigate back to CourseTypeList (already here)
+		// Open modal + hydrate form
+
+		if (command.commandName === "CREATE_COURSE") {
+			openModal();
+		}
+
+		if (command.commandName === "UPDATE_COURSE") {
+			openModal();
+		}
+
+		setResumeModal({ open: false, resumeData: null });
+	};
+
+	const handleResumeDiscard = () => {
+		setResumeModal({ open: false, resumeData: null });
+	};
 	useEffect(() => {
 		dispatch(
 			setHeaderInfo({
 				title: "Courses List",
 				subtitle: "View and manage all academic courses in the system",
-				action: [{ label: "Add Course" }],
+				action: [{ label: "Add Course", entity: "Course", mode: "CREATE" }],
 			})
 		);
 		const selectedCourseType = courseTypes.find((courseType) => courseType.id === filters.courseTypeId);
@@ -216,82 +269,82 @@ const CourseList = () => {
 	}, [created, createError, updated, updateError, deleted, deleteError, createErrorDetails, updateErrorDetails, deleteErrorDetails]);
 
 	// --- CRUD Handlers ---
-	const handleCreateCourse = useCallback(
-		async (formData) => {
-			try {
-				await createCourse({ ...formData, currentFilters: filters }).unwrap();
-				setShowModal(false);
-				setEditingCourse(null);
-			} catch (error) {
-				return;
+	const handleSubmit = async ({ id, payload }) => {
+		console.log("Form Data:", payload);
+		try {
+			if (id) {
+				await updateCourse({ id, payload, currentFilters: filters }).unwrap();
+				notify.success(`Course ${showModal.payload.title} updated successfully!`);
+			} else {
+				await createCourse({ payload, currentFilters: filters }).unwrap();
+				notify.success(`Course ${payload.title} created successfully!`);
 			}
-		},
-		[createCourse]
-	);
-
-	const handleUpdateCourse = useCallback(
-		async (updateCourse) => {
-			try {
-				await updateCourse({ id: updateCourse.id, ...updateCourse, currentFilters: filters }).unwrap();
-				setShowModal(false);
-				setEditingCourse(null);
-			} catch (error) {
-				return;
+		} catch (error) {
+			notify.error(error?.data?.message || "Failed to save course.");
+			if (formRef.current) {
+				formRef.current.reset();
 			}
-		},
-		[updateCourse]
-	);
+		}
+		closeModal();
+	};
 
 	const handleDeleteCourse = useCallback(async () => {
 		const idToDelete = deleteModal.course?.id;
 		if (!idToDelete) return;
 		try {
 			await deleteCourseTrigger({ id: idToDelete, currentFilters: filters }).unwrap();
+			notify.success(`Course ${deleteModal.course.title} deleted successfully!`);
 			setDeleteModal({ open: false, course: null });
 		} catch (error) {}
 	}, [deleteModal.course?.id, deleteCourseTrigger]);
 
 	const handleOpenEditModal = (course) => {
-		setEditingCourse(course);
-		setShowModal(true);
+		openModal("Course", "UPDATE", course);
 	};
 
 	//----TABLE CONFIGURATION-----
 	// Options for Custom Dropdowns
-	const batchCycleOptions = [{ value: "", label: "All Batch Cycles" }, ...batchCycles.map((c) => ({ value: c.id, label: c.title }))];
-	const courseTypeOptions = [{ value: "", label: "All Course Types" }, ...courseTypes.map((c) => ({ value: c.id, label: c.title }))];
-	const premiseOptions = [{ value: "", label: "All Premises" }, ...premises.map((c) => ({ value: c.id, label: c.title }))];
+	const batchCycleOptions = [{ value: "", label: "Select Batch Cycle" }, ...batchCycles?.map((c) => ({ value: c.id, label: c.title }))];
+	const courseTypeOptions = [{ value: "", label: "Select Course Type" }, ...courseTypes?.map((c) => ({ value: c.id, label: c.title }))];
+	const premiseOptions = [{ value: "", label: "Select Premise" }, ...premises?.map((c) => ({ value: c.id, label: c.title }))];
 	const statusOptions = [
-		{ value: "", label: "All Statuses" },
-		{ value: "active", label: "Active" },
-		{ value: "inactive", label: "Inactive" },
+		{ value: "", label: "Select Status" },
+		{ value: "ACTIVE", label: "Active" },
+		{ value: "INACTIVE", label: "Inactive" },
 		{ value: "planned", label: "Planned" },
 		{ value: "completed", label: "Completed" },
 	];
 
 	if (isError) {
-		return <ErrorFallback errorMessage={`Failed to fetch courses: ${error.message}`} />;
+		return <ErrorFallback errorMessage={`Failed to fetch courses: ${error}`} />;
 	}
 
 	const handleCourseClick = (course) => {
-		navigate("/academic-management/modules", { state: { course } });
+		navigate("/academic-management/modules-subjects", { state: { course } });
 	};
 	const handleResetFilters = () => {
 		setFilters({ batchCycleId: "", premiseId: "", courseTypeId: "", status: "" });
 	};
 	return (
 		<>
-			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4'>
+			<div className='mt-2 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6'>
 				{/* Batch Cycle Filter */}
 				<CustomSelect
+					label='Batch Cycle'
 					value={filters.batchCycleId}
 					onChange={(e) => handleFilterChange("batchCycleId", e.target.value)}
 					options={batchCycleOptions}
 				/>
-				<CustomSelect value={filters.premiseId} onChange={(e) => handleFilterChange("premiseId", e.target.value)} options={premiseOptions} />
+				<CustomSelect
+					label='Premise'
+					value={filters.premiseId}
+					onChange={(e) => handleFilterChange("premiseId", e.target.value)}
+					options={premiseOptions}
+				/>
 
 				{/* Course Type Filter */}
 				<CustomSelect
+					label='Course Type'
 					value={filters.courseTypeId}
 					onChange={(e) => handleFilterChange("courseTypeId", e.target.value)}
 					options={courseTypeOptions}
@@ -299,95 +352,89 @@ const CourseList = () => {
 				/>
 
 				{/* Status Filter */}
-				<CustomSelect value={filters.status} onChange={(e) => handleFilterChange("status", e.target.value)} options={statusOptions} />
+				<CustomSelect label='Status' value={filters.status} onChange={(e) => handleFilterChange("status", e.target.value)} options={statusOptions} />
 
 				{/* Search Input */}
-				<SearchInput
-					placeholder='By Title or Code...'
+				<Input
+					placeholder=''
+					icon={Search}
+					label={"Search"}
 					value={filters.searchTerm}
 					onChange={(value) => handleFilterChange("searchTerm", value)}
 				/>
-				<Button onClick={handleResetFilters}>
-					<ListRestartIcon className='w-12 h-12' />
-				</Button>
+				<button
+					title='reset filters'
+					className='flex h-11 w-11 cursor-pointer items-center justify-center transition-all duration-300 ease-in-out active:scale-90'
+					onClick={handleResetFilters}>
+					<RotateCcw className='text-amber-500' size={24} />
+				</button>
 			</div>
-			<Card className={"h-[500px]"}>
+			<Card className={"h-[528px]"}>
 				<CardBody>
-					{isLoading || isLoadingPreReqs ? (
+					{isLoading || isLoadingPreReqs ?
 						<SkeletonTable />
-					) : courses.length === 0 ? (
+					: tableData?.length === 0 ?
 						<EmptyState
-							icon={<List className='w-12 h-12' />}
+							icon={<List className='h-12 w-12' />}
 							title='No Course Found'
 							description='Try adjusting your filters or search terms or Add a new course.'
 						/>
-					) : (
-						<>
+					:	<>
 							<Table>
 								<TableHead>
 									<TableRow>
-										<TableHeader className='w-[80px] rounded-tl-2xl '>S.No</TableHeader>
+										<TableHeader className='w-[80px] rounded-tl-2xl'>S.No</TableHeader>
 										<TableHeader className='w-1/6'>Title</TableHeader>
 										<TableHeader className='w-1/6'>Batch Cycle</TableHeader>
 										<TableHeader className='w-1/6'>Location</TableHeader>
 										<TableHeader className='w-1/6'>Course Type</TableHeader>
-										<TableHeader className='w-1/10'>
-											<User className='w-12 h-12' />
-											Students
-										</TableHeader>
-										<TableHeader className='w-1/10'>
-											<Users className='w-12 h-12' />
-											Groups
-										</TableHeader>
-										<TableHeader className='text-center rounded-tr-2xl w-[120px]'>Actions</TableHeader>
+										<TableHeader className='w-1/10'>Students</TableHeader>
+										<TableHeader className='w-1/10'>Groups</TableHeader>
+										<TableHeader className='w-[120px] rounded-tr-2xl text-center'>Actions</TableHeader>
 									</TableRow>
 								</TableHead>
 							</Table>
-							<div className='h-[430px] rounded-b-2xl overflow-y-auto scrollbar-none'>
+							<div className='scrollbar-none h-[450px] overflow-y-auto rounded-b-2xl'>
 								<Table>
 									<TableBody>
-										{courses.map((course, index) => {
+										{tableData?.map((course, index) => {
 											// Trigger the fetch 6 items before the last item of the full page.
 											const isPrefetchTrigger = index === courses.length - PREFETCH_OFFSET - 1;
 											return (
 												<TableRow key={course.id} ref={hasMore && isPrefetchTrigger ? lastCourseElementRef : null}>
 													<TableCell className='w-[80px]'>{index + 1}</TableCell>
 													<TableCell
-														className=' text-center w-1/6 cursor-pointer hover:scale-105 transition-all duration-200'
+														className='w-1/6 cursor-pointer text-center transition-all duration-200 hover:scale-105'
 														handleClick={() => handleCourseClick(course)}>
-														{course.courseName}
+														{course.title}
 													</TableCell>
-													<TableCell className=' text-center w-1/6'>
-														{course.batchCycleName || course.batchCycleId || "N/A"}
-													</TableCell>
+													<TableCell className='w-1/6 text-center'>{course.batchCycleName || course.batchCycleId || "N/A"}</TableCell>
 													<TableCell className='w-1/6'>{course.premiseName || course.premiseId || "N/A"}</TableCell>
 													<TableCell className='w-1/6'>{course.courseTypeName || course.courseTypeId || "N/A"}</TableCell>
 													<TableCell className='w-1/10'>{course.studentCount || "#"}</TableCell>
-													<TableCell className='w-1/10'>{course.groupCount || "#"}</TableCell>
+													<TableCell className='w-1/10'>{course.courseGroupCount || course.groupCount}</TableCell>
 													<TableCell className='w-[120px]'>
 														<div className='flex items-center justify-center space-x-2'>
 															<Button
-																variant='ghost'
-																className='cursor-pointer dark:hover:text-yellow-400'
+																variant='gradientAmber'
+																icon={Edit}
+																className='h-8 w-8 rounded-lg'
 																size='sm'
 																onClick={() => handleOpenEditModal(course)}
 																aria-label='Edit course'
-																disabled={creating || deleting}>
-																<Edit size={16} />
-															</Button>
+																disabled={creating || deleting}></Button>
 															<Button
-																variant='ghost'
+																variant='gradientRose'
+																icon={Trash2}
 																size='sm'
-																className='text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 cursor-pointer'
+																className='h-8 w-8 rounded-lg'
 																onClick={() =>
 																	setDeleteModal({
 																		open: true,
 																		course,
 																	})
 																}
-																disabled={creating || updating}>
-																<Trash2 size={16} />
-															</Button>
+																disabled={creating || updating}></Button>
 														</div>
 													</TableCell>
 												</TableRow>
@@ -397,41 +444,34 @@ const CourseList = () => {
 								</Table>
 							</div>
 						</>
-					)}
+					}
 				</CardBody>
 			</Card>
 
 			{/* Modal for Create/Edit */}
-			<Modal
-				isOpen={showModal}
-				onClose={() => {
-					setShowModal(false);
-					setEditingCourse(null);
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "Course"}
+				onClose={closeModal}
+				title={showModal.payload ? "Edit Course" : "Create Course"}
+				description={showModal.payload ? "Updating Course Details" : "Add a new course in the institution"}
+				formRef={formRef}
+				loading={creating || updating}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
+						<CourseForm
+							ref={modalFormRef}
+							course={showModal.payload}
+							batchCycles={batchCycles}
+							courseTypes={courseTypes}
+							premises={premises}
+							onSubmit={handleSubmit}
+							isLoading={creating || updating}
+						/>
+					);
 				}}
-				size='lg'>
-				<ModalHeader
-					title={editingCourse ? "Edit Course" : "Create New Course"}
-					subtitle={editingCourse ? "Update course details." : "Add a new course to the system."}
-					onClose={() => {
-						setShowModal(false);
-						setEditingCourse(null);
-					}}
-				/>
-				<ModalBody>
-					<CourseForm
-						course={editingCourse}
-						batchCycles={batchCycleOptions}
-						courseTypes={courseTypeOptions}
-						premises={premiseOptions}
-						onSubmit={editingCourse ? handleUpdateCourse : handleCreateCourse}
-						onCancel={() => {
-							setShowModal(false);
-							setEditingCourse(null);
-						}}
-						isLoading={creating || updating}
-					/>
-				</ModalBody>
-			</Modal>
+			</ModalForm>
+			<ResumeModal isOpen={resumeModal.open} commands={resumeModal.resumeData} onResume={handleResumeConfirm} onDiscard={handleResumeDiscard} />
 
 			{/* Confirmation Dialog */}
 			<ConfirmDialog
@@ -439,12 +479,11 @@ const CourseList = () => {
 				onClose={() => setDeleteModal({ open: false, course: null })}
 				onConfirm={() => handleDeleteCourse()}
 				title='Delete Course'
-				message={`Are you sure you want to delete "${deleteModal.course?.courseName}" course? This action cannot be undone.`}
+				message={`Are you sure you want to delete "${deleteModal.course?.title}" course? This action cannot be undone.`}
 				confirmText='Delete'
 				type='danger'
 			/>
 		</>
 	);
 };
-
 export default CourseList;

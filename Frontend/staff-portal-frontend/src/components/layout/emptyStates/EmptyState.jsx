@@ -1,5 +1,5 @@
 export const EmptyState = ({ title, description, icon, action }) => (
-	<div className=' text-center p-8'>
+	<div className=' text-center p-8 '>
 		<div className='flex justify-center text-gray-400 dark:text-gray-600 mb-4'>
 			{icon}
 		</div>

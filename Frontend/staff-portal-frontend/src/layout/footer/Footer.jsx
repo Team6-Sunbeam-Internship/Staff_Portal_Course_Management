@@ -3,7 +3,7 @@ export const Footer = ({ className = "", ...props }) => {
 
 	return (
 		<footer
-			className={`bg-white dark:bg-neutral-800 ${className}`}
+			className={`bg-white dark:bg-black ${className}`}
 			{...props}
 		>
 			<div className='px-4 sm:px-6 lg:px-8 py-4'>

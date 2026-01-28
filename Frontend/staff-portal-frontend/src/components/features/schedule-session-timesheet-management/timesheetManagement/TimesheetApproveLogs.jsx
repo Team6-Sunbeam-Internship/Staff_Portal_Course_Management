@@ -1,18 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
-import {
-	useApproveTimesheetMutation,
-	useGetTimesheetsQuery,
-} from "../../../../../store/api/schedulingApi";
+
 
 // Changed import name to reflect fetching router IDs (users) instead of modules
-import { useGetModuleRouterIdsQuery } from "../../../../../store/api/academicApi";
-
-import {
-	showNotification,
-	setBreadcrumbs,
-} from "../../../../../store";
 import {
 	Table,
 	TableHead,
@@ -24,12 +15,12 @@ import {
 	Badge,
 	Card,
 	CardBody,
-	CardHeader,
+	// CardHeader,
 	EmptyState,
 	SkeletonTable,
 	ConfirmDialog,
-} from "../../../../common";
-import { setHeaderInfo, useGetAssignCourseQuery } from "../../../../store";
+} from "../../../layout";
+import { setBreadcrumbs, setHeaderInfo, useApproveTimesheetMutation, useGetAssignCourseQuery, useGetModuleRouterIdsQuery, useGetTimeSheetsQuery } from "../../../../store";
 import { selectUserRole } from "../../../../store/selectors/authSelectors";
 
 // Helper function to format the time range
@@ -106,7 +97,7 @@ export const TimesheetApproveLogs = () => {
 		isLoading: timesheetsLoading,
 		isError: timesheetsError,
 		isFetching: timesheetsFetching,
-	} = useGetTimesheetsQuery(timesheetQueryParams, {
+	} = useGetTimeSheetsQuery(timesheetQueryParams, {
 		// Skip fetching if the timesheetQueryParams tell us to skip
 		skip: timesheetQueryParams.skip === true,
 	});
@@ -138,19 +129,19 @@ export const TimesheetApproveLogs = () => {
 			}).unwrap();
 
 			dispatch(
-				showNotification({
-					message: `Timesheet entry successfully ${action}.`,
-					type: "success",
-				})
+				// showNotification({
+				// 	message: `Timesheet entry successfully ${action}.`,
+				// 	type: "success",
+				// })
 			);
 		} catch (error) {
 			dispatch(
-				showNotification({
-					message: `Failed to process timesheet: ${
-						error.data?.message || "Unknown error"
-					}`,
-					type: "error",
-				})
+				// showNotification({
+				// 	message: `Failed to process timesheet: ${
+				// 		error.data?.message || "Unknown error"
+				// 	}`,
+				// 	type: "error",
+				// })
 			);
 		} finally {
 			setConfirmDialog({ open: false, entry: null, action: null });
@@ -205,9 +196,9 @@ export const TimesheetApproveLogs = () => {
 	return (
 		<>
 			<Card className='mt-6'>
-				<CardHeader
+				{/* <CardHeader
 					title={`Pending Timesheet Entries (${displayEntries.length})`}
-				/>
+				/> */}
 				<CardBody>
 					{isLoading && <SkeletonTable rows={5} cols={6} />}
 

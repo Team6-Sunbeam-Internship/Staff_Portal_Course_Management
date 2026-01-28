@@ -1,64 +1,84 @@
+import API_CONFIG from "../../../config/api.config";
 import baseApi from "../baseApi";
 
 export const academicServiceApi = baseApi.injectEndpoints({
 	endpoints: (builder) => ({
-		getCourseCoordinatorAssign: builder.query({
+		getAllCourseCoordinatorAssign: builder.query({
 			query: (params = {}) => ({
-				url: "/academic-service/assign-course",
+				url: API_CONFIG.ENDPOINTS.ACADEMIC.GET_ALL_ASSIGNMENTS,
 				params,
 			}),
 			providesTags: ["AssignCourse"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
 		createCourseCoordinatorAssign: builder.mutation({
-			query: (newCourseCoordinatorAssign) => ({
-				url: "/academic-service/assign-course",
+			query: ({ premiseId: _, ...payload }) => ({
+				url: API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_ASSIGNMENT,
 				method: "POST",
-				body: newCourseCoordinatorAssign,
+				body: payload,
 			}),
 			providesTags: ["AssignCourse"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted(newCourseCoordinatorAssign, { dispatch, queryFulfilled }) {
-				// Pessimitic patching
+			async onQueryStarted({ premiseId, ...payload }, { dispatch, queryFulfilled }) {
+				// Pessimistic patching
 				try {
-					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
-					const completeNewEntry = { ...newCourseCoordinatorAssign, id: newId };
+					const { data: newAssignmentId } = await queryFulfilled;
+
+					// Construct the object to match what 'getAll' returns
+					// IMPORTANT: payload MUST include premiseId for the UI lookup to work
+					const newEntry = {
+						assignmentId: newAssignmentId,
+						staffId: payload.staffId,
+						courseCode: payload.courseCode,
+						// If premiseId is missing in payload, this will be undefined and UI won't update for that row
+						premiseId: premiseId,
+						courseCoordinatorAssignStatus: payload.assignCourseStatus || "ASSIGNED",
+					};
+
 					dispatch(
-						academicServiceApi.util.updateQueryData("getCourseCoordinatorAssign", {}, (draft) => {
-							draft.unshift(completeNewEntry);
+						academicServiceApi.util.updateQueryData("getAllCourseCoordinatorAssign", undefined, (draft) => {
+							draft.push(newEntry);
 						})
 					);
-				} catch (error) {
+				} catch {
 					// do nothing
 				}
 			},
 		}),
 		updateCourseCoordinatorAssign: builder.mutation({
-			query: (updatedData) => ({
-				url: "/academic-service/assign-course",
-				method: "PUT",
-				body: updatedData,
-			}),
+			query: ({ id, payload }) => {
+				const { premiseId: _, ...restPayload } = payload;
+				return {
+					url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_ASSIGNMENT}/${id}`,
+					method: "PUT",
+					body: restPayload,
+				};
+			},
 			providesTags: ["AssignCourse"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted(updatedData, { dispatch, queryFulfilled }) {
+			async onQueryStarted({ id, payload }, { dispatch, queryFulfilled }) {
 				// Optimistic patching
 				const patchResult = dispatch(
-					academicServiceApi.util.updateQueryData("getCourseCoordinatorAssign", {}, (draft) => {
-						const index = draft.findIndex((item) => item.id === updatedData.id);
+					academicServiceApi.util.updateQueryData("getAllCourseCoordinatorAssign", undefined, (draft) => {
+						const index = draft.findIndex((item) => item.assignmentId === id);
 						if (index !== -1) {
-							draft[index] = { ...draft[index], ...updatedData };
+							// Map request keys to response keys
+							draft[index] = {
+								...draft[index],
+								...payload, // Keep original payload properties just in case
+								staffId: payload.staffId,
+								courseCoordinatorAssignStatus: payload.assignCourseStatus,
+							};
 						}
 					})
 				);
 
 				try {
 					await queryFulfilled; // Wait for the network request to succeed
-				} catch (error) {
+				} catch {
 					// If the network request fails, revert the cache change
 					patchResult.undo();
 				}
@@ -66,17 +86,17 @@ export const academicServiceApi = baseApi.injectEndpoints({
 		}),
 		deleteCourseCoordinatorAssign: builder.mutation({
 			query: (id) => ({
-				url: `/academic-service/assign-course/${id}`,
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_ASSIGNMENT}/${id}`,
 				method: "DELETE",
 			}),
 			providesTags: ["AssignCourse"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 			async onQueryStarted(id, { dispatch, queryFulfilled }) {
 				// Optimistic patching
 				const patchResult = dispatch(
-					academicServiceApi.util.updateQueryData("getCourseCoordinatorAssign", {}, (draft) => {
-						const index = draft.findIndex((item) => item.id === id);
+					academicServiceApi.util.updateQueryData("getAllCourseCoordinatorAssign", undefined, (draft) => {
+						const index = draft.findIndex((item) => item.assignmentId === id);
 						if (index !== -1) {
 							draft.splice(index, 1);
 						}
@@ -84,33 +104,42 @@ export const academicServiceApi = baseApi.injectEndpoints({
 				);
 				try {
 					await queryFulfilled; // Wait for the network request to succeed
-				} catch (error) {
+				} catch {
 					// If the network request fails, revert the cache change
 					patchResult.undo();
 				}
 			},
 		}),
-		// Staff id will be extracted from the token
-		getAssignCourse: builder.query({
+		getAssignCourseAndModules: builder.query({
 			query: (params = {}) => ({
-				url: "/academic-service/assign-course",
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.GET_COURSE_COORD_ASSIGN_COURSE_AND_MODULE_LIST}`,
 				params,
 			}),
 			providesTags: ["AssignCourse"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
+			transformErrorResponse: (response) => response,
+		}),
+		// Staff id will be extracted from the token
+		getAssignCourse: builder.query({
+			query: (params = {}) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.GET_ASSIGN_COURSE}`,
+				params,
+			}),
+			providesTags: ["AssignCourse"],
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
 		// get modules belong to the course which is assigned to the coordinator
-		// param = course_code (get from getCourseCoordinatorAssign in userApi.js)
+		// param = course_code (get from getAllCourseCoordinatorAssign in userApi.js)
 		// Response: List<ModuleDTO>: module_id, title, module_router_id, subject list
 		// this will show all the modules and module router if staff assigned to it (otherwise it will be empty)
 		getModulesForCoordinator: builder.query({
 			query: (params = {}) => ({
-				url: "/academic-service/modules",
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.GET_MODULES_FOR_COORDINATOR}`,
 				params,
 			}),
 			providesTags: ["Modules"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
 		// assign module to module router
@@ -118,16 +147,25 @@ export const academicServiceApi = baseApi.injectEndpoints({
 		// response: status 200 OK
 		assignModuleRouter: builder.mutation({
 			query: (body) => ({
-				url: "/academic-service/assign-module",
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.ASSIGN_MODULE}`,
 				method: "POST",
 				body,
 			}),
 			providesTags: ["Modules"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
-		
 	}),
 });
 
-export const { useGetCourseCoordinatorAssignQuery, useCreateCourseCoordinatorAssignMutation, useUpdateCourseCoordinatorAssignMutation, useDeleteCourseCoordinatorAssignMutation, useGetAssignCourseQuery, useGetModulesForCoordinatorQuery, useAssignModuleRouterMutation } = academicServiceApi;
+export const {
+	useGetAllCourseCoordinatorAssignQuery,
+	useCreateCourseCoordinatorAssignMutation,
+	useUpdateCourseCoordinatorAssignMutation,
+	useDeleteCourseCoordinatorAssignMutation,
+	useGetAssignCourseAndModulesQuery,
+	useGetAssignCourseQuery,
+	useGetModulesForCoordinatorQuery,
+	useAssignModuleRouterMutation,
+	useGetModuleRouterIdsQuery,
+} = academicServiceApi;

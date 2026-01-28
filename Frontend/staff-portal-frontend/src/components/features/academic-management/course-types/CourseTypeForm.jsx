@@ -1,151 +1,105 @@
-import { useState, useEffect } from "react";
+import {  useEffect, forwardRef, useImperativeHandle } from "react";
 import {
 	Input,
 	TextArea,
-	Select,
+	CustomSelect,
 	FormField,
 	Button,
 	VStack,
 	HStack,
 } from "../../../layout"
+import { useFormState } from "../../../../hooks/uiHook/useFormState";
+import { Tag } from "lucide-react";
 
-export const CourseTypeForm = ({
+export const CourseTypeForm = forwardRef(({
 	courseType,
 	onSubmit,
-	onCancel,
 	isLoading = false,
-}) => {
-	const [formData, setFormData] = useState({
+}, ref) => {
+	const { values, errors, setField, setAll, submit, reset, isDirty } = useFormState({
+		initialValues: {
 		title: "",
 		description: "",
-		status: "active",
-	});
-	const [errors, setErrors] = useState({});
-
+		status: "",
+		}, 
+		validate: (vals) => {
+			const errs = {};
+			if (!vals.title.trim()) errs.title = "Title is required";
+			if (!vals.description.trim()) errs.description = "Description is required";
+			if (!vals.status) errs.status = "Status is required";
+			return errs;
+		},
+		onSubmit: (vals) => {
+			onSubmit({
+				payload: vals,
+				id: courseType?.id,
+			});
+		},
+	})
+	
 	// Update form data when a courseType prop is passed (for editing)
 	useEffect(() => {
 		if (courseType) {
-			setFormData({
+			setAll({
 				title: courseType.title || "",
 				description: courseType.description || "",
-				status: courseType.status || "ACTIVE",
+				status: courseType.status || "",
 			});
 		}
 	}, [courseType]);
 
 	// Options for the status select field
 	const statusOptions = [
+		{ value: "", label: "Select Status" },
 		{ value: "ACTIVE", label: "Active" },
 		{ value: "INACTIVE", label: "Inactive" },
 	];
 
-	// Validate the form data and return any errors
-	const validateForm = () => {
-		const newErrors = {};
-
-		if (!formData.title.trim()) {
-			newErrors.title = "Title is required";
-		} else if (formData.title.length < 3) {
-			newErrors.title = "Title must be at least 3 characters long";
-		}
-
-		if (!formData.description.trim()) {
-			newErrors.description = "Description is required";
-		} else if (formData.description.length < 10) {
-			newErrors.description =
-				"Description must be at least 10 characters long";
-		}
-
-		if (!formData.status) {
-			newErrors.status = "Status is required";
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
-
-	// Handle form submission
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (validateForm()) {
-			onSubmit(formData);
-		}
-	};
-
-	// Handle form input changes
-	const handleInputChange = (field, value) => {
-		setFormData((prev) => ({
-			...prev,
-			[field]: value,
-		}));
-
-		// Clear the error for the field once the user starts typing
-		if (errors[field]) {
-			setErrors((prev) => ({
-				...prev,
-				[field]: "",
-			}));
-		}
-	};
+	useImperativeHandle(ref, () => ({
+		submit,
+		reset,
+		isDirty,
+	}));
 
 	return (
-		<form onSubmit={handleSubmit}>
+		<div >
 			<VStack spacing='lg'>
-				<FormField label='Title' required error={errors.title}>
 					<Input
-						value={formData.title}
+					value={values.title}
+						type='text'
+						label={"Course Type Title"}
+						icon={Tag}
+						required
 						onChange={(e) =>
-							handleInputChange("title", e.target.value)
+							setField("title", e.target.value)
 						}
-						placeholder='Enter course type title'
+						placeholder=''
 						error={!!errors.title}
 						disabled={isLoading}
 					/>
-				</FormField>
-
-				<FormField
-					label='Description'
-					required
-					error={errors.description}
-				>
-					<TextArea
-						value={formData.description}
+<CustomSelect
+					value={values.status}
+						label={"Status"}
 						onChange={(e) =>
-							handleInputChange("description", e.target.value)
-						}
-						placeholder='Enter course type description'
-						rows={4}
-						error={!!errors.description}
-						disabled={isLoading}
-					/>
-				</FormField>
-
-				<FormField label='Status' required error={errors.status}>
-					<Select
-						value={formData.status}
-						onChange={(e) =>
-							handleInputChange("status", e.target.value)
+							setField("status", e.target.value)
 						}
 						options={statusOptions}
 						error={!!errors.status}
 						disabled={isLoading}
 					/>
-				</FormField>
-
-				<HStack justify='end' spacing='md' className='pt-4'>
-					<Button
-						type='button'
-						variant='cancel'
-						onClick={onCancel}
+					<TextArea
+					value={values.description}
+					label={"Description"}
+						onChange={(e) =>
+							setField("description", e.target.value)
+						}
+						placeholder=''
+						rows={4}
+						error={!!errors.description}
 						disabled={isLoading}
-					>
-						Cancel
-					</Button>
-					<Button type='submit' variant='create' loading={isLoading}>
-						{courseType ? "Save Changes" : "Create Course Type"}
-					</Button>
-				</HStack>
+					/>
+					
 			</VStack>
-		</form>
+		</div>
 	);
-};
+});

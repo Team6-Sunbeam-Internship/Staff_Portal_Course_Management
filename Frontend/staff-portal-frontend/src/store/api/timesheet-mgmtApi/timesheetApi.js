@@ -12,10 +12,20 @@ export const timesheetApi = baseApi.injectEndpoints({
 				},
 			}),
 			providesTags: ["ModuleRouterCourseHierarchy"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
+		submitTimesheet: builder.mutation({}),
+		getTimeSheets: builder.query({}),
+		updateTimeSheet: builder.mutation({}),
+		approveTimesheet: builder.mutation({}),
 	}),
 });
 
-export const { useGetModuleRouterCoursehierarchyQuery } = timesheetApi;
+export const {
+	useGetModuleRouterCoursehierarchyQuery,
+	useSubmitTimesheetMutation,
+	useGetTimeSheetsQuery,
+	useUpdateTimeSheetMutation,
+	useApproveTimesheetMutation,
+} = timesheetApi;

@@ -1,114 +1,138 @@
-import React from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useModal } from "../../../../providers";
+import {
+	Button,
+	Card,
+	CardBody,
+	ConfirmDialog,
+	EmptyState,
+	Modal,
+	ModalBody,
+	ModalHeader,
+	SkeletonTable,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../../layout";
+import { Edit, List, Plus, Trash2 } from "lucide-react";
+import { SubjectForm } from "../module_subject_manager";
 
 export const TopicTable = ({
 	isLoadingCourseHierarchy,
 	fetchTopics,
-	handleOpenEditModal,
-	deleteModal,
-	setDeleteModal,
+	selectedSectionId,
+	selectedSectionTitle,
 	creating,
 	updating,
 	deleting,
-	editingTopic,
-	setEditingTopic,
-	handleCreateTopic,
-	handleUpdateTopic,
+	handleOpenEditModal,
+	setDeleteModal,
+	deleteModal,
 	handleDeleteTopic,
 }) => {
-	const { showModal, setShowModal } = useModal();
+	const { openModal } = useModal();
+
+	// ----------------------------
+	// No module selected
+	// ----------------------------
+	if (!selectedSectionId) {
+		return (
+			<Card className='h-[520px]'>
+				<CardBody className='flex items-center justify-center'>
+					<EmptyState
+						icon={<List className='h-12 w-12' />}
+						title='No Section Selected'
+						description='Select section from the Section table to view topic list.'
+					/>
+				</CardBody>
+			</Card>
+		);
+	}
+
 	return (
 		<>
 			<Card className='h-[520px]'>
-				<CardBody>
-					{isLoadingCourseHierarchy ? (
-						<SkeletonTable />
-					) : fetchTopics.length === 0 ? (
-						<EmptyState
-							icon={<List className='w-12 h-12' />}
-							title={`No Topics found`}
-							description='There are no topics found in the system for the selected section. Get started by adding a new one or importing from a file or select the module.'
-						/>
-					) : (
-						<>
-							<Table>
-								<TableHead>
-									<TableRow>
-										<TableHeader className='w-1/12 rounded-tl-2xl'>S.No</TableHeader>
-										<TableHeader className='w-1/2'>Title</TableHeader>
-										<TableHeader className='text-center rounded-tr-lg w-[120px]'>Actions</TableHeader>
-									</TableRow>
-								</TableHead>
-							</Table>
-							<div className='rounded-b-2xl overflow-y-auto scrollbar-none'>
-								<Table>
-									<TableBody>
-										{fetchTopics.map((topic, index) => (
-											<TableRow key={topic.id}>
-												<TableCell className='w-1/12 rounded-tl-2xl'>{index + 1}</TableCell>
-												<TableCell className='w-1/2'>{topic.topicName}</TableCell>
-												<TableCell className='w-[120px]'>
-													<div className='flex items-center justify-center space-x-2'>
-														<Button
-															variant='ghost'
-															className='cursor-pointer dark:hover:text-yellow-400'
-															size='sm'
-															onClick={() => handleOpenEditModal(topic)}
-															disabled={creating || deleting}>
-															<Edit size={16} />
-														</Button>
-														<Button
-															variant='ghost'
-															size='sm'
-															className='text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 cursor-pointer'
-															onClick={() =>
-																setDeleteModal({
-																	open: true,
-																	topic,
-																})
-															}
-															disabled={creating || updating}>
-															<Trash2 size={16} />
-														</Button>
-													</div>
-												</TableCell>
+				<CardBody className='flex h-full flex-col'>
+					{/* ---------- Header ---------- */}
+					<div className='mb-3 flex items-center justify-end'>
+						<Button icon={Plus} variant='gradientCyan' size='sm' onClick={() => openModal("Topic", "CREATE")} disabled={creating || updating}>
+							Add Topic
+						</Button>
+					</div>
+					<AnimatePresence mode='wait'>
+						<motion.div
+							key={selectedSectionId}
+							initial={{ opacity: 0, y: 12 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -12 }}
+							transition={{
+								duration: 0.28,
+								ease: [0.4, 0, 0.2, 1],
+							}}
+							className='flex-1'>
+							{isLoadingCourseHierarchy ?
+								<SkeletonTable />
+							: fetchTopics.length === 0 ?
+								<EmptyState
+									icon={<List className='h-12 w-12' />}
+									title={`No Topics found`}
+									description={`There are no topics for section: ${selectedSectionTitle}. Start by adding one.`}
+								/>
+							:	<>
+									<Table>
+										<TableHead>
+											<TableRow>
+												<TableHeader className='w-1/12 rounded-tl-2xl'>S.No</TableHeader>
+												<TableHeader className='w-1/2'>Title</TableHeader>
+												<TableHeader className='w-[120px] rounded-tr-lg text-center'>Actions</TableHeader>
 											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
-						</>
-					)}
+										</TableHead>
+									</Table>
+									<div className='scrollbar-none overflow-y-auto rounded-b-2xl'>
+										<Table>
+											<TableBody>
+												{fetchTopics.map((topic, index) => (
+													<TableRow key={topic.id}>
+														<TableCell className={`${fetchTopics.length - 1 === index ? "rounded-bl-2xl" : ""} w-1/12`}>{index + 1}</TableCell>
+														<TableCell className='w-1/2'>{topic.title || topic.topicName}</TableCell>
+														<TableCell className={`${fetchTopics.length - 1 === index ? "rounded-br-2xl" : ""} w-[120px]`}>
+															<div className='flex items-center justify-center space-x-2'>
+																<Button
+																	variant='gradientAmber'
+																	icon={Edit}
+																	className='h-6 w-6 rounded-lg'
+																	size='sm'
+																	onClick={() => handleOpenEditModal("",topic)}
+																	disabled={creating || deleting}
+																/>
+																<Button
+																	variant='gradientRose'
+																	icon={Trash2}
+																	className='h-6 w-6 rounded-lg'
+																	onClick={() =>
+																		setDeleteModal({
+																			open: true,
+																			topic,
+																		})
+																	}
+																	disabled={creating || updating}
+																/>
+															</div>
+														</TableCell>
+													</TableRow>
+												))}
+											</TableBody>
+										</Table>
+									</div>
+								</>
+							}
+						</motion.div>
+					</AnimatePresence>
 				</CardBody>
 			</Card>
-			<Modal
-				isOpen={showModal}
-				onClose={() => {
-					setShowModal(false);
-					setEditingTopic(null);
-				}}
-				size='lg'>
-				<ModalHeader
-					title={editingTopic ? "Edit Subject" : "Create New Subject"}
-					subtitle={editingTopic ? "Update topic details." : "Add a new topic to the module."}
-					onClose={() => {
-						setShowModal(false);
-						setEditingTopic(null);
-					}}
-				/>
-				<ModalBody>
-					<SubjectForm
-						topic={editingTopic}
-						onSubmit={editingTopic ? handleUpdateTopic : handleCreateTopic}
-						onCancel={() => {
-							setShowModal(false);
-							setEditingTopic(null);
-						}}
-						isLoading={creating || updating}
-					/>
-				</ModalBody>
-			</Modal>
-
 			{/* Confirmation Dialog */}
 			<ConfirmDialog
 				isOpen={deleteModal.open}

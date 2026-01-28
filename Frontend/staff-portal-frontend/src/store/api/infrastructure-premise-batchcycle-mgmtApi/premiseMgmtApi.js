@@ -9,7 +9,7 @@ export const premiseMgmtApi = baseApi.injectEndpoints({
 				url: API_CONFIG.ENDPOINTS.INFRASTRUCTURE.GET_ALL_PREMISES,
 			}),
 			providesTags: ["Premises"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
 		createPremise: builder.mutation({
@@ -17,17 +17,21 @@ export const premiseMgmtApi = baseApi.injectEndpoints({
 				url: API_CONFIG.ENDPOINTS.INFRASTRUCTURE.CREATE_PREMISE,
 				method: "POST",
 				body: newPremise,
+				headers: {
+					"Content-Type": "application/json",
+					"X-COMMAND-TYPE": "CREATE_PREMISE",
+				},
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 			async onQueryStarted(newPremise, { dispatch, queryFulfilled }) {
 				// Pessimitic patching
 				try {
 					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
+					const newId = serverResponse;
 					const completeNewEntry = { ...newPremise, id: newId };
 					dispatch(
-						premiseMgmtApi.util.updateQueryData("getPremises", {}, (draft) => {
+						premiseMgmtApi.util.updateQueryData("getPremises", undefined, (draft) => {
 							draft.unshift(completeNewEntry);
 						})
 					);
@@ -37,20 +41,30 @@ export const premiseMgmtApi = baseApi.injectEndpoints({
 			},
 		}),
 		updatePremise: builder.mutation({
-			query: (id, udpatedPremise) => ({
-				url: `${API_CONFIG.ENDPOINTS.INFRASTRUCTURE.UPDATE_PREMISE}${id}`,
-				method: "PUT",
-				body: udpatedPremise,
-			}),
-			transformResponse: (response) => response.data || response,
+			query: (updatePremiseData) => {
+				const { id, payload } = updatePremiseData;
+				console.log("updatePremiseData:", updatePremiseData);
+				return {
+					url: `${API_CONFIG.ENDPOINTS.INFRASTRUCTURE.UPDATE_PREMISE}/${id}`,
+					method: "PUT",
+					body: payload,
+					headers: {
+						"Content-Type": "application/json",
+						"X-COMMAND-TYPE": "UPDATE_PREMISE",
+					},
+				};
+			},
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted(updatedPremise, { dispatch, queryFulfilled }) {
+			async onQueryStarted(updatedPremiseData, { dispatch, queryFulfilled }) {
+				const { id, payload } = updatedPremiseData;
 				// Optimistic patching
 				const patchResult = dispatch(
-					premiseMgmtApi.util.updateQueryData("getPremises", {}, (draft) => {
-						const index = draft.findIndex((premise) => premise.id === updatedPremise.id);
+					premiseMgmtApi.util.updateQueryData("getPremises", undefined, (draft) => {
+						const index = draft.findIndex((premise) => premise.id === id);
+						console.log("Premise Update Index:", index);
 						if (index !== -1) {
-							draft[index] = updatedPremise;
+							draft[index] = payload;
 						}
 					})
 				);
@@ -65,15 +79,15 @@ export const premiseMgmtApi = baseApi.injectEndpoints({
 		}),
 		deletePremise: builder.mutation({
 			query: (id) => ({
-				url: `/${API_CONFIG.ENDPOINTS.INFRASTRUCTURE.DELETE_PREMISE}/${id}`,
+				url: `${API_CONFIG.ENDPOINTS.INFRASTRUCTURE.DELETE_PREMISE}/${id}`,
 				method: "DELETE",
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 			async onQueryStarted(id, { dispatch, queryFulfilled }) {
 				// Optimistic patching
 				const patchResult = dispatch(
-					premiseMgmtApi.util.updateQueryData("getPremises", {}, (draft) => {
+					premiseMgmtApi.util.updateQueryData("getPremises", undefined, (draft) => {
 						const index = draft.findIndex((premise) => premise.id === id);
 						if (index !== -1) {
 							draft.splice(index, 1);

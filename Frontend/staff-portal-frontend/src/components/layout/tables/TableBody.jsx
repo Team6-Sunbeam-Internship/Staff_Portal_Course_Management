@@ -1,5 +1,5 @@
 export const TableBody = ({ children }) => (
-	<tbody className='bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-800'>
+	<tbody className='bg-white dark:bg-zinc-950/90 divide-y divide-gray-200 dark:divide-gray-900'>
 		{children}
 	</tbody>
 );

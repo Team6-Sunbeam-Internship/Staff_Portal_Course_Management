@@ -14,7 +14,7 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 				},
 			}),
 			providesTags: (result, error, courseCode) => [{ type: "CourseHierarchy", id: courseCode }],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
 
@@ -31,7 +31,7 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 					// }
 				};
 			},
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 			providesTags: (result, error, courseCode) => {
 				return [{ type: "CourseHierarchy", id: courseCode }];
@@ -48,19 +48,20 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 		}),
 		//--------------------Module Api--------------------
 		createModule: builder.mutation({
-			query: ({ courseCode, newModule }) => ({
+			query: ({ courseCode, payload }) => ({
 				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_MODULE}/${courseCode}`,
 				method: "POST",
-				body: newModule,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, newModule }, { dispatch, queryFulfilled }) {
+			async onQueryStarted({ courseCode, payload }, { dispatch, queryFulfilled }) {
 				// Pessimistic patching
 				try {
-					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
-					const completeNewEntry = { id: newId, ...newModule };
+					const { data: newId } = await queryFulfilled;
+					const completeNewEntry = { id: newId, ...payload };
+					console.log("New ID: ", newId);
+					console.log("New Entry: ", completeNewEntry);
 					dispatch(
 						academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
 							if (draft.modules) {
@@ -74,20 +75,21 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		updateModule: builder.mutation({
-			query: ({ courseCode, moduleId, updateModule }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_MODULE}/${courseCode}/${moduleId}`,
+			query: ({ id, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_MODULE}/${id}`,
 				method: "PUT",
-				body: updateModule,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, moduleId, updateModule }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				const { courseCode, id, payload } = arg;
 				// Optimistic Patching
 				const patchResult = dispatch(
 					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
-						const index = draft.modules?.findIndex((item) => item.id === moduleId);
-						if (index !== -1) {
-							draft.modules[index] = updateModule;
+						const module = draft.modules?.find((m) => m.id === id);
+						if (module) {
+							Object.assign(module, payload);
 						}
 					})
 				);
@@ -100,20 +102,38 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		deleteModule: builder.mutation({
-			query: ({ courseCode, moduleId }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_MODULE}/${courseCode}/${moduleId}`,
+			query: ({ id }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_MODULE}/${id}`,
 				method: "DELETE",
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, moduleId }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				const { courseCode, id } = arg;
+				console.log("Deleting module from cache:", { courseCode, id });
+
 				// Optimistic Patching
 				const patchResult = dispatch(
 					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
-						const index = draft.modules.findIndex((item) => item.moduleId === moduleId);
-						if (index !== -1) {
-							draft.modules.splice(index, 1);
-						}
+						if (!draft) return;
+
+						// Find subject IDs under this module
+						const subjectIds = draft.subjects.filter((s) => s.moduleId === id).map((s) => s.id);
+
+						// Find section IDs under those subjects
+						const sectionIds = draft.sections.filter((sec) => subjectIds.includes(sec.subjectId)).map((sec) => sec.id);
+
+						// Delete topics under those sections
+						draft.topics = draft.topics.filter((t) => !sectionIds.includes(t.sectionId));
+
+						// Delete sections
+						draft.sections = draft.sections.filter((sec) => !subjectIds.includes(sec.subjectId));
+
+						// Delete subjects
+						draft.subjects = draft.subjects.filter((s) => s.moduleId !== id);
+
+						// Delete module
+						draft.modules = draft.modules.filter((m) => m.id !== id);
 					})
 				);
 				try {
@@ -126,21 +146,20 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 		}),
 		//--------------------Subject Api--------------------
 		createSubject: builder.mutation({
-			query: ({ courseCode, moduleId, newSubject }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_SUBJECT}/${courseCode}/${moduleId}`,
+			query: ({ moduleId, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_SUBJECT}/${moduleId}`,
 				method: "POST",
-				body: newSubject,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, newSubject }, { dispatch, queryFulfilled }) {
+			async onQueryStarted({ courseCode, moduleId, payload }, { dispatch, queryFulfilled }) {
 				// Pessimistic patching
 				try {
-					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
-					const completeNewEntry = { ...newSubject, id: newId };
+					const { data: newId } = await queryFulfilled;
+					const completeNewEntry = { ...payload, id: newId, moduleId };
 					dispatch(
-						academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
+						academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
 							if (draft.subjects) {
 								draft.subjects.unshift(completeNewEntry);
 							}
@@ -152,20 +171,20 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		updateSubject: builder.mutation({
-			query: ({ courseCode, moduleId, subjectId, updatedSubject }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_SUBJECT}/${courseCode}/${moduleId}/${subjectId}`,
+			query: ({ id, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_SUBJECT}/${id}`,
 				method: "PUT",
-				body: updatedSubject,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, subjectId, updatedSubject }, { dispatch, queryFulfilled }) {
+			async onQueryStarted({ courseCode, id, payload }, { dispatch, queryFulfilled }) {
 				// Optimistic Patching
 				const patchResult = dispatch(
-					academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
-						const index = draft.subjects?.findIndex((s) => s.subjectId === subjectId);
-						if (index !== -1) {
-							draft.subjects[index] = updatedSubject;
+					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
+						const subject = draft.subjects?.find((s) => s.id === id);
+						if (subject) {
+							Object.assign(subject, payload);
 						}
 					})
 				);
@@ -178,20 +197,26 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		deleteSubject: builder.mutation({
-			query: ({ subjectId }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_SUBJECT}/${subjectId}`,
+			query: ({ id }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_SUBJECT}/${id}`,
 				method: "DELETE",
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, subjectId }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				const { courseCode, id } = arg;
+				console.log("Deleting subject from cache:", { courseCode, id });
 				// Optimistic Patching
 				const patchResult = dispatch(
-					academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
-						const index = draft.subjects.findIndex((item) => item.subjectId === subjectId);
-						if (index !== -1) {
-							draft.subjects.splice(index, 1);
-						}
+					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
+						if (!draft) return;
+						const sectionIds = draft.sections.filter((sec) => sec.subjectId === id).map((sec) => sec.id);
+						// delete topics
+						draft.topics = draft.topics.filter((t) => !sectionIds.includes(t.sectionId));
+						// delete sections
+						draft.sections = draft.sections?.filter((s) => s.subjectId !== id);
+						// delete subject
+						draft.subjects = draft.subjects.filter((s) => s.id !== id);
 					})
 				);
 				try {
@@ -204,21 +229,22 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 		}),
 		//--------------------Section Api--------------------
 		createSection: builder.mutation({
-			query: ({ courseCode, subjectId, newSection }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_SECTION}/${courseCode}/${subjectId}`,
+			query: ({ subjectId, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_SECTION}/${subjectId}`,
 				method: "POST",
-				body: newSection,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, newSection }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(args, { dispatch, queryFulfilled }) {
+				const { courseCode, subjectId, payload } = args;
 				// Pessimistic patching
 				try {
 					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
-					const completeNewEntry = { id: newId, ...newSection };
+					const newId = serverResponse;
+					const completeNewEntry = { id: newId, ...payload, subjectId };
 					dispatch(
-						academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
+						academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
 							if (draft.sections) {
 								draft.sections.unshift(completeNewEntry);
 							}
@@ -230,20 +256,21 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		updateSection: builder.mutation({
-			query: ({ courseCode, subjectId, sectionId, updatedSection }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_SECTION}/${courseCode}/${subjectId}/${sectionId}`,
+			query: ({ id, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_SECTION}/${id}`,
 				method: "PUT",
-				body: updatedSection,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, sectionId, updatedSection }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(args, { dispatch, queryFulfilled }) {
+				const { courseCode, id, payload } = args;
 				// Optimistic Patching
 				const patchResult = dispatch(
-					academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
-						const index = draft.sections?.findIndex((s) => s.sectionId === sectionId);
-						if (index !== -1) {
-							draft.sections[index] = updatedSection;
+					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
+						const section = draft.sections?.find((s) => s.id === id);
+						if (section) {
+							section.title = payload.sectionName;
 						}
 					})
 				);
@@ -256,20 +283,22 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		deleteSection: builder.mutation({
-			query: ({ courseCode, subjectId, sectionId }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_SECTION}/${courseCode}/${subjectId}/${sectionId}`,
+			query: ({ id }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_SECTION}/${id}`,
 				method: "DELETE",
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, sectionId }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(args, { dispatch, queryFulfilled }) {
+				const { courseCode, id } = args;
 				// Optimistic Patching
 				const patchResult = dispatch(
-					academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
-						const index = draft.sections.findIndex((item) => item.sectionId === sectionId);
-						if (index !== -1) {
-							draft.sections.splice(index, 1);
-						}
+					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
+						if (!draft) return;
+						// delete topics
+						draft.topics = draft.topics.filter((t) => t.sectionId !== id);
+						// delete section
+						draft.sections = draft.sections.filter((s) => s.id !== id);
 					})
 				);
 				try {
@@ -282,21 +311,22 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 		}),
 		//--------------------Topic Api--------------------
 		createTopic: builder.mutation({
-			query: ({ courseCode, subjectId, sectionId, newTopic }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_TOPIC}/${courseCode}/${subjectId}/${sectionId}`,
+			query: ({ sectionId, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_TOPIC}/${sectionId}`,
 				method: "POST",
-				body: newTopic,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, newTopic }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(args, { dispatch, queryFulfilled }) {
+				const { courseCode, payload, sectionId } = args
 				// Pessimistic patching
 				try {
 					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
-					const completeNewEntry = { id: newId, ...newTopic };
+					const newId = serverResponse;
+					const completeNewEntry = { id: newId, ...payload, sectionId };
 					dispatch(
-						academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
+						academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
 							if (draft.topics) {
 								draft.topics.unshift(completeNewEntry);
 							}
@@ -308,20 +338,21 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		updateTopic: builder.mutation({
-			query: ({ courseCode, subjectId, sectionId, topicId, updatedTopic }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_TOPIC}/${courseCode}/${subjectId}/${sectionId}/${topicId}`,
+			query: ({ id, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_TOPIC}/${id}`,
 				method: "PUT",
-				body: updatedTopic,
+				body: payload,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, topicId, updatedTopic }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(args, { dispatch, queryFulfilled }) {
+				const { courseCode, id, payload } = args;
 				// Optimistic Patching
 				const patchResult = dispatch(
-					academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
-						const index = draft.topics?.findIndex((t) => t.topicId === topicId);
-						if (index !== -1) {
-							draft.topics[index] = updatedTopic;
+					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
+						const topic = draft.topics?.find((t) => t.topicId === id);
+						if (topic) {
+							Object.assign(topic, payload);
 						}
 					})
 				);
@@ -334,20 +365,19 @@ export const academicServiceCourseHierarchyApi = baseApi.injectEndpoints({
 			},
 		}),
 		deleteTopic: builder.mutation({
-			query: ({ courseCode, subjectId, sectionId, topicId }) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_TOPIC}/${courseCode}/${subjectId}/${sectionId}/${topicId}`,
+			query: ({ id }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_TOPIC}/${id}`,
 				method: "DELETE",
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted({ courseCode, topicId }, { dispatch, queryFulfilled }) {
+			async onQueryStarted(args, { dispatch, queryFulfilled }) {
+				const { courseCode, id } = args;
 				// Optimistic Patching
 				const patchResult = dispatch(
-					academicServiceCourseHierarchyApi.util.updateQueryData("getAcademicServiceCourseHierarchy", courseCode, (draft) => {
-						const index = draft.topics.findIndex((item) => item.topicId === topicId);
-						if (index !== -1) {
-							draft.topics.splice(index, 1);
-						}
+					academicServiceCourseHierarchyApi.util.updateQueryData("getCourseHierarchy", courseCode, (draft) => {
+						if (!draft) return;
+						draft.topics = draft.topics.filter((t) => t.topicId !== id);
 					})
 				);
 				try {

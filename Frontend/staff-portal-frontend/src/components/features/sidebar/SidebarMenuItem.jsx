@@ -71,7 +71,7 @@ export const SidebarMenuItem = ({
 				{/* Custom tooltip for collapsed state */}
 				<div className='absolute left-full -mt-10 ml-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[1000]'>
 					<div className='bg-blue-800 dark:bg-gray-800  border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 px-3 min-w-48'>
-						<span className='text-sm font-medium text-gray-50 dark:text-gray-100'>
+						<span className=' text-gray-50 dark:text-gray-100'>
 							{item.label}
 						</span>
 					</div>
@@ -88,7 +88,7 @@ export const SidebarMenuItem = ({
 			style={leftMargin}
 		>
 			<span className='flex-shrink-0'>{getIcon(item.icon)}</span>
-			<span className='ml-3 truncate font-extrabold text-lg'>
+			<span className='ml-3 truncate'>
 				{item.label}
 			</span>
 		</Link>

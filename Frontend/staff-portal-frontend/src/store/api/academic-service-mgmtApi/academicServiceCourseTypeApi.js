@@ -2,7 +2,7 @@
 import API_CONFIG from "../../../config/api.config";
 import baseApi from "../baseApi";
 
-const academicServiceCourseTypeApi = baseApi.injectEndpoints({
+export const academicServiceCourseTypeApi = baseApi.injectEndpoints({
 	endpoints: (builder) => ({
 		getAllCourseTypes: builder.query({
 			query: (params = {}) => ({
@@ -10,26 +10,29 @@ const academicServiceCourseTypeApi = baseApi.injectEndpoints({
 				params,
 			}),
 			providesTags: ["CourseType"],
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
 		}),
 		createCourseType: builder.mutation({
-			query: (body) => ({
-				url: API_CONFIG.ENDPOINTS.ACADEMIC_SERVICE.CREATE_COURSE_TYPE,
+			query: (payload) => ({
+				url: API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_COURSE_TYPES,
 				method: "POST",
-				body,
+				body: payload,
+				headers: {
+					"Content-Type": "application/json",
+					"X-COMMAND-TYPE": "CREATE_COURSE_TYPE",
+				},
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			async onQueryStarted(newCourseType, { dispatch, queryFulfilled }) {
+			async onQueryStarted(payload, { dispatch, queryFulfilled }) {
 				// Pessimitic patching
 				try {
-					const { data: serverResponse } = await queryFulfilled;
-					const newId = serverResponse.id;
-					const completeNewEntry = { ...newCourseType, id: newId };
+					const { data: newId } = await queryFulfilled;
+					const completeNewEntry = { ...payload, id: newId };
 					dispatch(
-						academicServiceCourseTypeApi.util.updateQueryData("getAllCourseTypes", {}, (draft) => {
-							draft.unshift(completeNewEntry);
+						academicServiceCourseTypeApi.util.updateQueryData("getAllCourseTypes", undefined, (draft) => {
+							draft.push(completeNewEntry);
 						})
 					);
 				} catch (error) {
@@ -38,63 +41,64 @@ const academicServiceCourseTypeApi = baseApi.injectEndpoints({
 			},
 		}),
 		updateCourseType: builder.mutation({
-			query: (body) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_COURSE_TYPES}/${body.id}`,
+			query: ({ id, payload }) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.UPDATE_COURSE_TYPES}/${id}`,
 				method: "PUT",
-				body,
+				body: payload,
+				headers: {
+					"Content-Type": "application/json",
+					"X-COMMAND-TYPE": "UPDATE_COURSE_TYPE",
+				},
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response.apiResponse,
 			transformErrorResponse: (response) => response,
-			onQueryStarted: async (body, { dispatch, queryFulfilled }) => {
+			onQueryStarted: async ({ id, payload }, { dispatch, queryFulfilled }) => {
 				// Optimistic patching
 				const patchResult = dispatch(
-					academicServiceCourseTypeApi.util.updateQueryData("getAllCourseTypes", {}, (draft) => {
-						const index = draft.findIndex((item) => item.id === body.id);
+					academicServiceCourseTypeApi.util.updateQueryData("getAllCourseTypes", undefined, (draft) => {
+						const index = draft.findIndex((item) => item.id === id);
 						if (index !== -1) {
-							draft[index] = body;
+							draft[index] = payload;
 						}
 					})
-				)
+				);
 				try {
 					await queryFulfilled; // Wait for the network request to succeed
 				} catch (error) {
 					// If the network request fails, revert the cache change
 					patchResult.undo();
 				}
-			}
+			},
 		}),
 		deleteCourseType: builder.mutation({
-			query: (body) => ({
-				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_COURSE_TYPES}/${body.id}`,
+			query: (id) => ({
+				url: `${API_CONFIG.ENDPOINTS.ACADEMIC.DELETE_COURSE_TYPES}/${id}`,
 				method: "DELETE",
-				body,
 			}),
-			transformResponse: (response) => response.data || response,
+			transformResponse: (response) => response,
 			transformErrorResponse: (response) => response,
-			onQueryStarted: async (body, { dispatch, queryFulfilled }) => {
+			onQueryStarted: async (id, { dispatch, queryFulfilled }) => {
+				
 				// Optimistic patching
 				const patchResult = dispatch(
-					academicServiceCourseTypeApi.util.updateQueryData("getAllCourseTypes", {}, (draft) => {
-						const index = draft.findIndex((item) => item.id === body.id);
+					academicServiceCourseTypeApi.util.updateQueryData("getAllCourseTypes", undefined, (draft) => {
+						const index = draft.findIndex((item) => item.id === id);
+						
 						if (index !== -1) {
 							draft.splice(index, 1);
 						}
 					})
-				)
+				);
 				try {
 					await queryFulfilled; // Wait for the network request to succeed
 				} catch (error) {
 					// If the network request fails, revert the cache change
 					patchResult.undo();
 				}
-			}
-		})
-	})
-})
+			},
+		}),
+	}),
+});
 
-export const {
-	useGetAllCourseTypesQuery,
-	useCreateCourseTypeMutation,
-	useUpdateCourseTypeMutation,
-	useDeleteCourseTypeMutation
-} = academicServiceCourseTypeApi;
+export const { useGetAllCourseTypesQuery, useCreateCourseTypeMutation, useUpdateCourseTypeMutation, useDeleteCourseTypeMutation } =
+	academicServiceCourseTypeApi;

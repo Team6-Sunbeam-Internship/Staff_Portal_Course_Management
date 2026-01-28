@@ -1,5 +1,5 @@
 export const Table = ({ children }) => (
-	<table className='w-full text-center   border-collapse dark:border-gray-700  table-fixed'>
+	<table className='w-full text-center  border-collapse  table-fixed'>
 		{children}
 	</table>
 );

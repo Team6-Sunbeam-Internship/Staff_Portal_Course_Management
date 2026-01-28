@@ -15,7 +15,7 @@ const MainContent = ({
 		breadcrumbItems.length = 0;
 	}
 	const baseClasses = [
-		"flex flex-col flex-1 min-h-0 bg-gray-100 dark:bg-neutral-900 text-gray-900 dark:text-gray-100 p-4 sm:p-6 lg:p-8  gap-4",
+		"flex flex-col flex-1 min-h-0 bg-gray-100 dark:bg-zinc-950 text-gray-900 dark:text-gray-100 p-4 sm:p-6 lg:p-8 gap-2",
 		className,
 	]
 		.filter(Boolean)
@@ -25,14 +25,14 @@ const MainContent = ({
 		<main className={baseClasses} {...props}>
 			{/* Breadcrumb navigation */}
 			{breadcrumbItems && breadcrumbItems.length > 0 && (
-				<div className='bg-white dark:bg-neutral-800 rounded-lg px-4 sm:px-6 lg:px-8 py-3'>
+				<div className='bg-white dark:bg-black rounded-lg px-4 sm:px-6 lg:px-8 py-3'>
 					<Breadcrumb />
 				</div>
 			)}
 			{/* content header */}
 			<MainContentHeader />
 			{/* Main content area */}
-			<div className='flex-1 overflow-y-auto scrollbar-none mt-3'>
+			<div className='flex-1 overflow-y-auto scrollbar-none mt-1 relative'>
 				<div>{children}</div>
 			</div>
 		</main>

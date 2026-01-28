@@ -128,7 +128,7 @@ export const SidebarDropdown = ({
 				currentPath === child.path ||
 				currentPath.startsWith(`${child.path}/`);
 			const childClasses = [
-				"flex items-center w-[70%] px-3 py-4 text-sm rounded-md transition-colors",
+				"flex items-center w-[70%] px-3 py-4 rounded-md transition-colors",
 				isActive
 					? "bg-slate-300/50 text-gray-900 hover:bg-slate-500/20 dark:bg-violet-500/20 dark:text-gray-50"
 					: "text-gray-600 dark:text-gray-300 hover:bg-gray-500/20 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white",
@@ -141,7 +141,7 @@ export const SidebarDropdown = ({
 						className={childClasses}
 						style={childLeftMargin}
 					>
-						<span className='truncate text-lg font-bold'>
+						<span className='truncate'>
 							{child.label}
 						</span>
 					</Link>
@@ -164,7 +164,7 @@ export const SidebarDropdown = ({
 					{/* Tooltip with children */}
 					<div className='absolute left-full top-auto ml-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all ease-in-out duration-200 z-[9999]'>
 						<div className=' dark:bg-gray-800  border-gray-200 dark:border-gray-700 rounded-lg shadow-lg  min-w-48'>
-							<div className='bg-blue-800 rounded-t-md px-3 py-2 text-sm font-medium text-gray-50 dark:text-gray-100  border-gray-200 dark:border-gray-700'>
+							<div className='bg-blue-800 rounded-t-md px-3 py-2  text-gray-50 dark:text-gray-100  border-gray-200 dark:border-gray-700'>
 								{item.label}
 							</div>
 							<div className='bg-blue-300 rounded-b-md'>
@@ -178,7 +178,7 @@ export const SidebarDropdown = ({
 										<Link
 											key={child.key}
 											to={child.path}
-											className={`block px-3 py-2 text-sm transition-colors dark:hover:rounded-b-md ${
+											className={`block px-3 py-2 transition-colors dark:hover:rounded-b-md ${
 												isChildActive
 													? " text-blue-700 dark:bg-blue-800 dark:rounded-b-md dark:text-gray-50"
 													: "text-gray-700 dark:text-gray-800 hover:bg-gray-100 dark:hover:bg-blue-500"
@@ -214,7 +214,7 @@ export const SidebarDropdown = ({
 				style={leftMargin}
 			>
 				<span className='flex-shrink-0'>{getIcon(item.icon)}</span>
-				<span className='ml-3 flex-1 truncate text-lg font-extrabold'>
+				<span className='ml-3 flex-1 truncate'>
 					{item.label}
 				</span>
 				<span className='flex-shrink-0 ml-2'>

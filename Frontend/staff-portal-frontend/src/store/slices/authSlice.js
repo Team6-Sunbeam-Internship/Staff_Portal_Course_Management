@@ -1,20 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-	authUser: [
-		{
-			firstName: "",
-			lastName: "",
-			email: "",
-			phoneNumber: "",
-			role: "",
-			staffType: "",
-			staffId: "",
-			courseCode: "",
-			courseName: "",
-			address: "",
-		},
-	],
+	authUser: {
+		name: "",
+		email: "",
+		emailVerified: !1,
+		phoneNumber: "",
+		phoneNumberVerified: !1,
+		role: "",
+		staffId: "",
+		staffType: "",
+		specialization: "",
+		gender: "",
+		address: "",
+	},
 	isAuthenticated: !1, //
 	isInitializing: !0,
 	lastActivity: null,
@@ -25,53 +24,53 @@ export const authSlice = createSlice({
 	initialState,
 	reducers: {
 		setAuthUser: (state, action) => {
-			const {
-				firstName,
-				lastName,
-				email,
-				role,
-				staffType,
-				staffId,
-				courseCode,
-				courseName,
-				address,
-				isAuthenticated,
-				lastActivity,
-			} = action.payload;
+			const { name, email, emailVerified, phoneNumber, phoneNumberVerified, role, staffId, staffType, specialization, gender, address } =
+				action.payload;
 			if (!state.authUser) {
-				state.authUser = [
-					{
-						firstName: "",
-						lastName: "",
-						email: "",
-						phoneNumber: "",
-						role: "",
-						staffType: "",
-						staffId: "",
-						courseCode: "",
-						courseName: "",
-						address: "",
-					},
-				];
-				state.isAuthenticated = !1;
+				((state.authUser = {
+					name: "",
+					email: "",
+					emailVerified: !1,
+					phoneNumber: "",
+					phoneNumberVerified: !1,
+					role: "",
+					staffId: "",
+					staffType: "",
+					specialization: "",
+					gender: "",
+					address: "",
+				}),
+					(state.isAuthenticated = !1));
+				state.isInitializing = !0;
+				state.lastActivity = null;
 			}
 
 			state.authUser = {
-				firstName,
-				lastName,
+				name,
 				email,
+				emailVerified,
+				phoneNumberVerified,
+				phoneNumber,
 				role,
-				staffType,
 				staffId,
-				courseCode,
-				courseName,
+				staffType,
+				specialization,
+				gender,
 				address,
 			};
-			state.isAuthenticated = isAuthenticated;
-			state.lastActivity = lastActivity;
+			state.isAuthenticated = !0;
+			state.isInitializing = !1;
+			state.lastActivity = new Date().getDate() + "-" + new Date().getHours() + ":" + new Date().getMinutes();
+		},
+
+		updateAuthUser: (state, action) => {
+			state.authUser = {
+				...state.authUser,
+				...action.payload,
+			};
 		},
 	},
 });
 
-export const { setAuthUser } = authSlice.actions;
+export const { setAuthUser, updateAuthUser } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,5 +1,5 @@
 export const TableHead = ({ children }) => (
-	<thead className=' bg-blue-50  dark:bg-blue-900/60 text-center'>{children}</thead>
+	<thead className=' bg-blue-50  dark:bg-zinc-800/80 text-center'>{children}</thead>
 );
 
 import { TableHeader } from "./TableHeader";

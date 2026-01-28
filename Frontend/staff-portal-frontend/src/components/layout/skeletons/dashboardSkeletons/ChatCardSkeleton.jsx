@@ -1,8 +1,8 @@
 import { Skeleton } from "../dashboardSkeletons";
 
 export const ChartCardSkeleton = () => (
-	<div className='bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-md col-span-1 lg:col-span-2 w-full'>
-		<Skeleton className='h-6 w-1/3 mb-4' />
+	<div className='col-span-1 w-full rounded-lg bg-white p-6 shadow-md lg:col-span-2 dark:bg-zinc-800'>
+		<Skeleton className='mb-4 h-6 w-1/3' />
 		<Skeleton className='h-64 w-full' />
 	</div>
 );

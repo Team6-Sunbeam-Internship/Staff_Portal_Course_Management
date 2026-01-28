@@ -1,57 +1,40 @@
-import React from "react";
-import { Skeleton } from "../Skeleton";
+import { motion } from "motion/react";
+import HorizonDividerSkeleton from "./HorizonDividerSkeleton";
+import SidebarBodySkeleton from "./SidebarBodySkeleton";
+import SidebarFooterSkeleton from "./SidebarFooterSkeleton";
+import SidebarHeaderSkeleton from "./SidebarHeaderSkeleton";
 
-export const SidebarSkeleton = () => {
+// Simple divider skeleton
+// const HorizonDividerSkeleton = ({ isDark }) => <div className={`my-1 h-px w-full ${isDark ? "bg-neutral-800" : "bg-slate-100"}`} />;
+
+const SidebarSkeleton = ({ isCollapsed }) => {
 	return (
-		<aside className='absolute flex flex-col w-80 h-screen bg-white dark:bg-black/90 border-r border-gray-200 dark:border-gray-700 animate-pulse'>
-			{/* Header section skeleton */}
-			<div className='flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700'>
-				<div className='flex items-center space-x-3'>
-					<Skeleton variant='circular' width={32} height={32} />
-					<Skeleton variant='title' width={120} />
+		<motion.aside
+			initial={false}
+			animate={{ width: isCollapsed ? 88 : 280 }}
+			className={`fixed z-50 flex h-full flex-col bg-white px-3 shadow-lg shadow-slate-200 lg:relative dark:bg-zinc-950 dark:shadow-zinc-900/20`}>
+			{/* 1. Header Section */}
+			<SidebarHeaderSkeleton isCollapsed={isCollapsed} />
+
+			<div className='px-0.5'>
+				<HorizonDividerSkeleton />
+			</div>
+
+			{/* 2. Body Section (Parent Items Only) */}
+			<div className='flex-1 overflow-hidden py-2'>
+				<div className='space-y-1'>
+					<SidebarBodySkeleton isCollapsed={isCollapsed} count={7} />
 				</div>
 			</div>
 
-			{/* Menu items section skeleton */}
-			<nav className='flex-1 overflow-y-auto py-4'>
-				<div className='px-3 space-y-2'>
-					{/* Skeleton for single menu items like Dashboard and Profile */}
-					<div className='flex items-center space-x-3 p-3'>
-						<Skeleton variant='avatar' width={20} height={20} />
-						<Skeleton variant='text' width={100} />
-					</div>
-					{/* Skeleton for dropdown menu items */}
-					<div className='space-y-2'>
-						{Array.from({ length: 4 }).map((_, index) => (
-							<div key={index} className='p-3'>
-								<div className='flex items-center space-x-3'>
-									<Skeleton
-										variant='avatar'
-										width={20}
-										height={20}
-									/>
-									<Skeleton variant='text' width={150} />
-								</div>
-								<div className='ml-4 mt-2 space-y-1'>
-									<Skeleton variant='text' width={120} />
-									<Skeleton variant='text' width={140} />
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</nav>
-
-			{/* User role section skeleton */}
-			<div className='p-4 border-t border-gray-200 dark:border-neutral-700'>
-				<div className='flex items-center space-x-3'>
-					<Skeleton variant='avatar' width={32} height={32} />
-					<div className='flex-1 space-y-1'>
-						<Skeleton variant='text' width={100} />
-						<Skeleton variant='text' width={50} />
-					</div>
-				</div>
+			<div className='px-0.5'>
+				<HorizonDividerSkeleton />
 			</div>
-		</aside>
+
+			{/* 3. Footer Section */}
+			<SidebarFooterSkeleton isCollapsed={isCollapsed} />
+		</motion.aside>
 	);
 };
+
+export default SidebarSkeleton;

@@ -1,5 +1,5 @@
 /* eslint-disable*/
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -9,6 +9,7 @@ import {
 	useCreateTopicMutation,
 	useDeleteSectionMutation,
 	useDeleteTopicMutation,
+	useGetAllCourseTypesQuery,
 	useGetBatchCycleQuery,
 	useGetCourseHierarchyQuery,
 	useGetCoursesQuery,
@@ -23,86 +24,157 @@ import { useFilteredMenu } from "../../../../hooks";
 import { ErrorFallback } from "../../../layout/errorBoundary";
 import { SectionTable } from "./SectionTable";
 import { TopicTable } from "./TopicTable";
+import { RotateCcw, ShieldX } from "lucide-react";
+import { ModalForm } from "../../../layout/modals/ModalForm";
+import { SectionForm } from "./SectionForm";
+import { TopicForm } from "./TopicForm";
+import { notify } from "../../../../utils/Notify";
 
 const SectionTopicManager = () => {
 	const dispatch = useDispatch();
 	const location = useLocation();
-	const initialCourse = location.state?.course;
+	const initialSubject = location.state?.subject;
 	const userRole = useSelector(selectUserRole);
-	const { filteredMenu = [] } = useFilteredMenu();
-	const canAccessModuleSubjectManager = filteredMenu.includes("/academic-management/section-topic-manager") && userRole === "ADMIN";
+	const { pathSet } = useFilteredMenu();
+	const canAccessModuleSubjectManager = pathSet.has("/academic-management/sections-topics") && userRole === "ADMIN";
 
 	// filters
 	const [filters, setFilters] = useState({
+		courseTypeId: "",
 		batchCycleId: "",
-		courseCode: initialCourse?.courseCode || "",
-		moduleCode: "",
-		subjectCode: "",
+		courseCode: "",
+		moduleId: "",
+		subjectId: initialSubject?.subjectId || "",
 	});
 	const handleFilterChange = (name, value) => {
 		setFilters((prev) => ({ ...prev, [name]: value }));
 	};
 
+	const DEFAULT_BATCH_CYCLE_OPTION = {
+		value: "", // Value should be empty string for the selector's default/unselected state
+		label: "Select batch cycle",
+	};
 	const selectBatchCycleOptions = (result) => {
+		console.log("Batch Cycles:", result.data);
 		if (result.data) {
-			return result.data.map((batchCycle) => ({
-				label: batchCycle.name,
+			// Map the API data
+			const mappedOptions = result?.data.map((batchCycle) => ({
+				label: batchCycle.title,
 				value: batchCycle.id,
 			}));
-		}
-		return [];
-	};
-	const batchCycleOptions = useGetBatchCycleQuery(undefined, {
-		selectFromResult: ({ data }) => selectBatchCycleOptions({ data }),
-	});
-	const { data: courses, isLoading: isLoadingCourses } = useGetCoursesQuery();
-	const courseOptions = useMemo(() => {
-		if (!filters.batchCycleId || courses.length === 0) return [];
-		// courses is the nested object return from the backend
-		// format: [{batchCycle: {courseCode, courseName}}]
-		// return [{lable:"", value:"Select the Course"}, {label: courseCode, value: courseName}]
-		const courseOptions = [{ value: "", label: "Select the Course" }];
-		return courseOptions.push(
-			Object.values(courses[filters.batchCycleId]).map((course) => ({ label: course.courseCode, value: course.courseName }))
-		);
-	}, [courses, filters.batchCycleId]);
 
-	//--------------------RTK QUERY HOOKS--------------------
+			// Prepend the default option to the mapped array
+			return [DEFAULT_BATCH_CYCLE_OPTION, ...mappedOptions];
+		}
+
+		// If no data is returned (e.g., initial load), still return the default option
+		return [DEFAULT_BATCH_CYCLE_OPTION];
+	};
+	const { data: batchCycleOptions } = useGetBatchCycleQuery(undefined, {
+		selectFromResult: (result) => ({
+			...result,
+			data: selectBatchCycleOptions(result),
+		}),
+	});
+	const { data: courseTypes, isLoading: isLoadingCourseTypes } = useGetAllCourseTypesQuery();
+	const courseTypeOptions = useMemo(() => {
+		// Return default if data is not available
+		if (!courseTypes || courseTypes?.length === 0) {
+			return [{ value: "", label: "Select the Course Type" }];
+		}
+
+		const mappedTypes = courseTypes?.map((courseType) => ({
+			label: courseType.title,
+			value: courseType.id,
+		}));
+
+		// FIX: Use the spread operator
+		return [{ value: "", label: "Select the Course Type" }, ...mappedTypes];
+	}, [courseTypes]);
+
+	const { data: courses, isLoading: isLoadingCourses } = useGetCoursesQuery();
+	console.log("Courses:", courses);
+	const courseListForSelection = useMemo(() => {
+		if (!filters.batchCycleId || !filters.courseTypeId || !courses) return null;
+		return courses[filters.courseTypeId]?.[filters.batchCycleId] || [];
+	}, [filters.batchCycleId, filters.courseTypeId, courses]);
+	console.log("CourseListSelection:", courseListForSelection);
+	const courseOptions = useMemo(() => {
+		if (!courseListForSelection) {
+			return [{ value: "", label: "Select the Course" }];
+		}
+		if (courseListForSelection.length === 0) {
+			return [{ value: "", label: "No course available" }];
+		}
+		return [
+			{ value: "", label: "Select the Course" },
+			...courseListForSelection.map((course) => ({
+				label: course.courseCode,
+				value: course.courseCode,
+			})),
+		];
+	}, [courseListForSelection]);
+
 	//--------------------Course Hierarchy--------------------
 	const {
-		data: courseHierarchy,
+		data: courseHierarchy = {
+			modules: [],
+			subjects: [],
+			sections: [],
+			topics: [],
+		},
 		isLoading: isLoadingCourseHierarchy,
 		isError: isErrorCourseHierarchy,
 		error: errorCourseHierarchy,
-	} = useGetCourseHierarchyQuery(
-		{
-			courseCode: filters.courseCode,
-		},
-		{
-			skip: !filters.batchCycleId || !filters.courseCode,
-		}
-	);
+	} = useGetCourseHierarchyQuery(filters.courseCode, {
+		skip: !filters.batchCycleId || !filters.courseCode,
+	});
+	console.log("Course Hierarchy: ", courseHierarchy);
 	const moduleOptions = useMemo(() => {
-		if (!filters.batchCycleId && !filters.courseCode) return [];
-		const moduleOptions = [{ value: "", label: "Select the Module" }];
-		return moduleOptions.push(Object.values(courseHierarchy.modules).map((module) => ({ label: module.moduleCode, value: module.moduleName })));
-	});
+		if (isLoadingCourseHierarchy) return [];
+		if (!filters.batchCycleId || !filters.courseCode) {
+			return [{ value: "", label: "Select the Module" }];
+		}
+
+		return [
+			{ value: "", label: "Select the Module" },
+			...courseHierarchy?.modules.map((module) => ({
+				label: module.title,
+				value: module.id,
+			})),
+		];
+	}, [isLoadingCourseHierarchy, filters.batchCycleId, filters.courseCode, courseHierarchy.modules]);
+
 	const subjectOptions = useMemo(() => {
-		if (!filters.batchCycleId && !filters.courseCode && !filters.moduleCode) return [];
-		const subjectOptions = [{ value: "", label: "Select the Subject" }];
-		return subjectOptions.push(
-			Object.values(courseHierarchy.subjects).map((subject) => ({ label: subject.subjectCode, value: subject.subjectName }))
-		);
-	});
+		if (isLoadingCourseHierarchy) return [];
+		if (!filters.moduleId) {
+			return [{ value: "", label: "Select the Subject" }];
+		}
+
+		return [
+			{ value: "", label: "Select the Subject" },
+			...courseHierarchy.subjects
+				.filter((s) => s.moduleId === filters.moduleId)
+				.map((subject) => ({
+					label: subject.title,
+					value: subject.id,
+				})),
+		];
+	}, [isLoadingCourseHierarchy, filters.moduleId, courseHierarchy.subjects]);
+
+	const selectedSections = useMemo(() => {
+		if (!filters.subjectId || !courseHierarchy?.sections) return [];
+
+		return courseHierarchy.sections.filter((section) => section.subjectId === filters.subjectId);
+	}, [filters.subjectId, courseHierarchy.sections]);
+
 	//--------------------Sections Api--------------------
 	const [createSection, { isSuccess: createdSection, isLoading: creatingSection, isError: isErrorCreateSection, error: errorCreateSection }] =
 		useCreateSectionMutation();
 	const [updateSection, { isSuccess: updatedSection, isLoading: updatingSection, isError: isErrorUpdateSection, error: errorUpdateSection }] =
 		useUpdateSectionMutation();
-	const [
-		deleteSectionTrigger,
-		{ isSuccess: deletedSection, isLoading: deletingSection, isError: isErrorDeleteSection, error: errorDeleteSection },
-	] = useDeleteSectionMutation();
+	const [deleteSectionTrigger, { isSuccess: deletedSection, isLoading: deletingSection, isError: isErrorDeleteSection, error: errorDeleteSection }] =
+		useDeleteSectionMutation();
 	//--------------------Topics Api--------------------
 	const [createTopic, { isSuccess: createdTopic, isLoading: creatingTopic, isError: isErrorCreateTopic, error: errorCreateTopic }] =
 		useCreateTopicMutation();
@@ -111,12 +183,17 @@ const SectionTopicManager = () => {
 	const [deleteTopicTrigger, { isSuccess: deletedTopic, isLoading: deletingTopic, isError: isErrorDeleteTopic, error: errorDeleteTopic }] =
 		useDeleteTopicMutation();
 
-	const { showModal, setShowModal } = useModal();
+	const formRef = useRef(null);
+	const { openModal, closeModal, showModal } = useModal();
 	const [editingSection, setEditingSection] = useState(null);
 	const [editingTopic, setEditingTopic] = useState(null);
-	const [deleteModal, setDeleteModal] = useState({
+	const [deleteSectionModal, setDeleteSectionModal] = useState({
 		open: false,
-		Premise: null,
+		section: null,
+	});
+	const [deleteTopicModal, setDeleteTopicModal] = useState({
+		open: false,
+		topic: null,
 	});
 
 	useEffect(() => {
@@ -192,14 +269,18 @@ const SectionTopicManager = () => {
 	useEffect(() => {
 		dispatch(
 			setHeaderInfo({
-				title: "Module Subject Manager",
-				subtitle: "List of all module and its subjects in the institution",
+				title: "Section Topic Manager",
+				subtitle: "List of all sections and its topics in the institution",
 				action: [
 					{
 						label: "import",
+						entity: "Section",
+						mode: "IMPORT",
 					},
 					{
-						label: "Add Module",
+						label: "Add Section",
+						entity: "Section",
+						mode: "CREATE",
 					},
 				],
 			})
@@ -226,15 +307,28 @@ const SectionTopicManager = () => {
 					icon: "book-open",
 				},
 				{
-					title: "Modules-Subjects",
-					path: "/academic-management/modules",
+					title: "Sections & Topics",
+					path: "/academic-management/sections-topics",
 					icon: "book-open",
 				},
 			])
 		);
 	}, [dispatch]);
 
+	useEffect(() => {
+		if (!showModal.open) return;
+
+		if (showModal.entity === "Module") {
+			setEditingSection(showModal.mode === "EDIT" ? showModal.payload : null);
+		}
+
+		if (showModal.entity === "Subject") {
+			setEditingTopic(showModal.mode === "EDIT" ? showModal.payload : null);
+		}
+	}, [showModal]);
+
 	const [selectedSectionId, setSelectedSectionId] = useState(null);
+	const [selectedSectionTitle, setSelectedSectionTitle] = useState("");
 	const fetchTopics = useMemo(() => {
 		const allTopics = courseHierarchy?.topics || [];
 		if (!selectedSectionId) return [];
@@ -246,118 +340,207 @@ const SectionTopicManager = () => {
 	}
 
 	//--------------------Section CRUD--------------------
-	const handleCreateSection = async (formData) => {
+
+	const handleSubmitSection = async (data) => {
+		const { id, payload, courseCode, subjectId } = data;
 		try {
-			await createSection(formData).unwrap();
-			setShowModal(false);
-			setEditingSection(null);
+			if (id) {
+				await updateSection({ id, payload, courseCode }).unwrap();
+				notify.success(`Section ${payload.sectionName} updated successfully!`);
+			} else {
+				await createSection({ payload, courseCode, subjectId }).unwrap();
+				notify.success(`Section ${payload.sectionName} created successfully!`);
+			}
 		} catch (error) {
-			return;
+			notify.error(error?.data?.message || "Failed to save section.");
+			if (formRef.current) {
+				formRef.current.reset();
+			}
 		}
+		closeModal();
+		setEditingSection(null);
 	};
-	const handleUpdateSection = async (updatedSection) => {
-		try {
-			await updateSection({ id: updatedSection.id, ...updatedSection }).unwrap();
-			setShowModal(false);
-			setEditingSection(null);
-		} catch (error) {}
-	};
+
 	const handleDeleteSection = async () => {
 		const idToDelete = deleteModal.module.moduleId;
 		if (!idToDelete) return;
 		try {
 			await deleteSectionTrigger(idToDelete).unwrap();
-			setDeleteModal({ open: false, module: null });
+			setDeleteSectionModal({ open: false, module: null });
 		} catch (error) {}
 	};
 
 	//--------------------Topic CRUD--------------------
-	const handleCreateTopic = async (formData) => {
+	const handleSubmitTopic = async (data) => {
+		const { id, payload, courseCode, sectionId } = data;
 		try {
-			await createTopic(formData).unwrap();
-			setShowModal(false);
-			setEditingTopic(null);
+			if (id) {
+				await updateTopic({ id, payload, courseCode }).unwrap();
+				notify.success(`Topic ${editingTopic.title} updated successfully!`);
+			} else {
+				await createTopic({ payload, courseCode, sectionId }).unwrap();
+				notify.success(`Topic ${payload.topicCode} created successfully!`);
+			}
 		} catch (error) {
-			return;
+			notify.error(error?.data?.message || "Failed to save topic.");
+			if (formRef.current) {
+				formRef.current.reset();
+			}
 		}
-	};
-	const handleUpdateTopic = async (updatedTopic) => {
-		try {
-			await updateTopic({ id: updatedTopic.id, ...updatedTopic }).unwrap();
-			setShowModal(false);
-			setEditingTopic(null);
-		} catch (error) {}
+		closeModal();
+		setEditingTopic(null);
 	};
 	const handleDeleteTopic = async () => {
 		const idToDelete = deleteModal.subject.subjectId;
 		if (!idToDelete) return;
 		try {
 			await deleteTopicTrigger(idToDelete).unwrap();
-			setDeleteModal({ open: false, subject: null });
+			setDeleteTopicModal({ open: false, subject: null });
 		} catch (error) {}
 	};
-	const handleOpenEditModal = (module, subject) => {
-		module && setEditingSection(module);
-		subject && setEditingTopic(subject);
-		setShowModal(true);
+	const handleOpenEditModal = (section, topic) => {
+		if (section) openModal("Section", "EDIT", section);
+		if (topic) openModal("Topic", "EDIT", topic);
 	};
 
 	if (isErrorCourseHierarchy) {
 		return <ErrorFallback errorMessage={`Failed to fetch course hierarchy = ${errorCourseHierarchy.message}`} />;
 	}
 
+	const handleResetFilters = () => {
+		setFilters({ batchCycleId: "", courseTypeId: "", courseCode: "", moduleId: "", subjectId: "" });
+	};
+
 	return (
 		<>
-			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4'>
+			<div className='mt-2 mb-2 grid grid-cols-1 gap-4 sm:grid-cols-5 lg:grid-cols-6'>
 				<CustomSelect
+					label={"Course Type"}
+					value={filters.courseTypeId}
+					onChange={(e) => handleFilterChange("courseTypeId", e.target.value)}
+					options={courseTypeOptions}
+				/>
+				<CustomSelect
+					label={"Batch Cycle"}
 					value={filters.batchCycleId}
 					onChange={(e) => handleFilterChange("batchCycleId", e.target.value)}
 					options={batchCycleOptions}
+					disabled={!filters.courseTypeId}
 				/>
-				<CustomSelect value={filters.courseCode} onChange={(e) => handleFilterChange("courseCode", e.target.value)} options={courseOptions} />
-				<CustomSelect value={filters.moduleCode} onChange={(e) => handleFilterChange("moduleCode", e.target.value)} options={moduleOptions} />
 				<CustomSelect
-					value={filters.subjectCode}
-					onChange={(e) => handleFilterChange("subjectCode", e.target.value)}
-					options={subjectOptions}
+					label={"Course"}
+					value={filters.courseCode}
+					onChange={(e) => handleFilterChange("courseCode", e.target.value)}
+					options={courseOptions}
+					disabled={!filters.courseTypeId || !filters.batchCycleId}
 				/>
+				<CustomSelect
+					label={"Module"}
+					value={filters.moduleId}
+					onChange={(e) => handleFilterChange("moduleId", e.target.value)}
+					options={moduleOptions}
+					disabled={!filters.courseTypeId || !filters.batchCycleId || !filters.courseCode}
+				/>
+				<CustomSelect
+					label={"Subject"}
+					value={filters.subjectId}
+					onChange={(e) => handleFilterChange("subjectId", e.target.value)}
+					options={subjectOptions}
+					disabled={!filters.courseTypeId || !filters.batchCycleId || !filters.courseCode || !filters.moduleId}
+				/>
+				<button
+					title='reset filters'
+					className='flex h-11 w-11 cursor-pointer items-center justify-center transition-all duration-300 ease-in-out active:scale-90'
+					onClick={handleResetFilters}>
+					<RotateCcw className='text-amber-500' size={24} />
+				</button>
 			</div>
-			<div className='grid grid-cols-2 gap-4'>
+			<div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
 				<SectionTable
 					isLoadingCourseHierarchy={isLoadingCourseHierarchy}
-					courseHierarchy={courseHierarchy}
+					selectedSections={selectedSections}
 					filters={filters}
 					handleOpenEditModal={handleOpenEditModal}
-					deleteModal={deleteModal}
-					setDeleteModal={setDeleteModal}
+					deleteModal={deleteSectionModal}
+					setDeleteModal={setDeleteSectionModal}
 					creating={creatingSection}
 					updating={updatingSection}
 					deleting={deletingSection}
 					setSelectedSectionId={setSelectedSectionId}
+					setSelectedSectionTitle={setSelectedSectionTitle}
 					editingSection={editingSection}
 					setEditingSection={setEditingSection}
-					handleCreateSection={handleCreateSection}
-					handleUpdateSection={handleUpdateSection}
+					handleSubmitSection={handleSubmitSection}
 					handleDeleteSection={handleDeleteSection}
 				/>
 
 				<TopicTable
 					isLoadingCourseHierarchy={isLoadingCourseHierarchy}
-					filters={filters}
 					fetchTopics={fetchTopics}
 					handleOpenEditModal={handleOpenEditModal}
-					deleteModal={deleteModal}
-					setDeleteModal={setDeleteModal}
 					creating={creatingTopic}
 					updating={updatingTopic}
 					deleting={deletingTopic}
+					deleteModal={deleteTopicModal}
+					setDeleteModal={setDeleteTopicModal}
 					editingTopic={editingTopic}
 					setEditingTopic={setEditingTopic}
-					handleCreateTopic={handleCreateTopic}
-					handleUpdateTopic={handleUpdateTopic}
+					handleSubmitTopic={handleSubmitTopic}
 					handleDeleteTopic={handleDeleteTopic}
+					filters={filters}
+					selectedSectionId={selectedSectionId}
+					selectedSectionTitle={selectedSectionTitle}
 				/>
 			</div>
+			{/* Section Modal Form */}
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "Section"}
+				onClose={closeModal}
+				title={showModal.mode === "EDIT" ? "Edit Section" : "Create Section"}
+				description={showModal.mode === "EDIT" ? "Update the existing section details" : "Add a new section to the system"}
+				isLoading={creatingSection || updatingSection}
+				formRef={formRef}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
+						<SectionForm
+							ref={modalFormRef}
+							section={editingSection}
+							module={filters.moduleId}
+							subject={filters.subjectId}
+							onSubmit={handleSubmitSection}
+							isLoading={creatingSection || updatingSection}
+							batchCycleId={filters.batchCycleId}
+							courseCode={filters.courseCode}
+						/>
+					);
+				}}
+			</ModalForm>
+			{/* Topic Modal Form */}
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "Topic"}
+				onClose={closeModal}
+				title={showModal.mode === "EDIT" ? "Edit Topic" : "Create Topic"}
+				description={showModal.mode === "EDIT" ? "Update the existing topic details" : "Add a new topic to the system"}
+				isLoading={creatingTopic || updatingTopic}
+				formRef={formRef}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
+						<TopicForm
+							ref={modalFormRef}
+							topic={editingTopic}
+							onSubmit={handleSubmitTopic}
+							section={selectedSectionId}
+							module={filters.moduleId}
+							subject={filters.subjectId}
+							isLoading={creatingTopic || updatingTopic}
+							batchCycleId={filters.batchCycleId}
+							courseCode={filters.courseCode}
+						/>
+					);
+				}}
+			</ModalForm>
 		</>
 	);
 };

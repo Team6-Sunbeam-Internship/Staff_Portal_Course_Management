@@ -10,7 +10,7 @@ export const Badge = ({ children, className = "", status = ""}) => {
 				return "bg-yellow-100 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-400 dark:text-sky-700 dark:ring-cyan-800/20";
 			case "completed":
 				return "bg-blue-100 text-blue-700 ring-blue-600/20 dark:bg-sky-900 dark:text-sky-400 dark:ring-sky-800/20";
-			case "inactive":
+			case "inactive":return "bg-gray-100 text-gray-700 ring-gray-600/20 dark:bg-rose-600 dark:text-white dark:ring-rose-800/20";
 			default:
 				return className;
 		}

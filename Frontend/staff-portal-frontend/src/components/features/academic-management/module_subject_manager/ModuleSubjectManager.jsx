@@ -1,5 +1,5 @@
 /* eslint-disable*/
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -17,39 +17,26 @@ import {
 	useUpdateSubjectMutation,
 } from "../../../../store";
 
-import {
-	Button,
-	Card,
-	CardBody,
-	ConfirmDialog,
-	CustomSelect,
-	EmptyState,
-	Modal,
-	ModalBody,
-	ModalHeader,
-	SkeletonTable,
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "../../../layout";
+import { CustomSelect, EmptyState } from "../../../layout";
 import { useModal } from "../../../../providers/providerHook";
-import { Edit, List, Trash2 } from "lucide-react";
+import { ShieldX } from "lucide-react";
 import { selectUserRole } from "../../../../store/selectors";
 import { useFilteredMenu } from "../../../../hooks";
 import { ErrorFallback } from "../../../layout/errorBoundary";
 import ModuleForm from "./ModuleForm";
 import SubjectForm from "./SubjectForm";
+import ModuleTable from "./ModuleTable";
+import SubjectTable from "./SubjectTable";
+import { notify } from "../../../../utils/Notify";
+import { ModalForm } from "../../../layout/modals/ModalForm";
 
 const ModuleSubjectManager = () => {
 	const dispatch = useDispatch();
 	const location = useLocation();
 	const initialCourse = location.state?.course;
 	const userRole = useSelector(selectUserRole);
-	const { filteredMenu = [] } = useFilteredMenu();
-	const canAccessModuleSubjectManager = filteredMenu.includes("/academic-management/module-subject-manager") && userRole === "ADMIN";
+	const { pathSet } = useFilteredMenu();
+	const canAccessModuleSubjectManager = pathSet.has("/academic-management/modules-subjects") && userRole === "ADMIN";
 
 	// filters
 	const [filters, setFilters] = useState({
@@ -68,9 +55,10 @@ const ModuleSubjectManager = () => {
 		label: "Select batch cycle",
 	};
 	const selectBatchCycleOptions = (result) => {
+		console.log("Batch Cycles:", result.data);
 		if (result.data) {
 			// Map the API data
-			const mappedOptions = result.data.map((batchCycle) => ({
+			const mappedOptions = result?.data.map((batchCycle) => ({
 				label: batchCycle.title,
 				value: batchCycle.id,
 			}));
@@ -82,18 +70,21 @@ const ModuleSubjectManager = () => {
 		// If no data is returned (e.g., initial load), still return the default option
 		return [DEFAULT_BATCH_CYCLE_OPTION];
 	};
-	const batchCycleOptions = useGetBatchCycleQuery(undefined, {
-		selectFromResult: ({ data }) => selectBatchCycleOptions({ data }),
+	const { data: batchCycleOptions } = useGetBatchCycleQuery(undefined, {
+		selectFromResult: (result) => ({
+			...result,
+			data: selectBatchCycleOptions(result),
+		}),
 	});
 
 	const { data: courseTypes, isLoading: isLoadingCourseTypes } = useGetAllCourseTypesQuery();
 	const courseTypeOptions = useMemo(() => {
 		// Return default if data is not available
-		if (!courseTypes || courseTypes.length === 0) {
+		if (!courseTypes || courseTypes?.length === 0) {
 			return [{ value: "", label: "Select the Course Type" }];
 		}
 
-		const mappedTypes = courseTypes.map((courseType) => ({
+		const mappedTypes = courseTypes?.map((courseType) => ({
 			label: courseType.title,
 			value: courseType.id,
 		}));
@@ -103,6 +94,7 @@ const ModuleSubjectManager = () => {
 	}, [courseTypes]);
 
 	const { data: courses, isLoading: isLoadingCourses } = useGetCoursesQuery();
+	console.log("Courses:", courses);
 	const courseListForSelection = useMemo(() => {
 		if (!filters.batchCycleId || !filters.courseTypeId || !courses) return null;
 		return courses[filters.courseTypeId]?.[filters.batchCycleId] || [];
@@ -117,22 +109,26 @@ const ModuleSubjectManager = () => {
 		}
 		return [
 			{ value: "", label: "Select the Course" },
-			...courseListForSelection.map((course) => ({
+			...courseListForSelection?.map((course) => ({
 				label: course.courseCode,
-				value: course.id,
+				value: course.courseCode,
 			})),
 		];
 	}, [courseListForSelection]);
 
 	// Course Hierarchy
 	const {
-		data: courseHierarchy,
+		data: courseHierarchy = {
+			modules: [],
+			subjects: [],
+		},
 		isLoading: isLoadingCourseHierarchy,
 		isError: isErrorCourseHierarchy,
 		error: errorCourseHierarchy,
 	} = useGetCourseHierarchyQuery(filters.courseCode, {
 		skip: !filters.batchCycleId || !filters.courseCode,
 	});
+	console.log("Course Hierarchy:", courseHierarchy);
 	// Modules
 	const [createModule, { isSuccess: createdModule, isLoading: creatingModule, isError: isErrorCreateModule, error: errorCreateModule }] =
 		useCreateModuleMutation();
@@ -145,17 +141,20 @@ const ModuleSubjectManager = () => {
 		useCreateSubjectMutation();
 	const [updateSubject, { isSuccess: updatedSubject, isLoading: updatingSubject, isError: isErrorUpdateSubject, error: errorUpdateSubject }] =
 		useUpdateSubjectMutation();
-	const [
-		deleteSubjectTrigger,
-		{ isSuccess: deletedSubject, isLoading: deletingSubject, isError: isErrorDeleteSubject, error: errorDeleteSubject },
-	] = useDeleteSubjectMutation();
+	const [deleteSubjectTrigger, { isSuccess: deletedSubject, isLoading: deletingSubject, isError: isErrorDeleteSubject, error: errorDeleteSubject }] =
+		useDeleteSubjectMutation();
 
-	const { showModal, setShowModal } = useModal();
+	const formRef = useRef(null);
+	const { openModal, closeModal, showModal } = useModal();
 	const [editingModule, setEditingModule] = useState(null);
 	const [editingSubject, setEditingSubject] = useState(null);
-	const [deleteModal, setDeleteModal] = useState({
+	const [deleteModuleModal, setDeleteModuleModal] = useState({
 		open: false,
-		Premise: null,
+		module: null,
+	});
+	const [deleteSubjectModal, setDeleteSubjectModal] = useState({
+		open: false,
+		subject: null,
 	});
 
 	useEffect(() => {
@@ -236,9 +235,13 @@ const ModuleSubjectManager = () => {
 				action: [
 					{
 						label: "import",
+						entity: "Module",
+						mode: "IMPORT",
 					},
 					{
 						label: "Add Module",
+						entity: "Module",
+						mode: "CREATE",
 					},
 				],
 			})
@@ -273,7 +276,20 @@ const ModuleSubjectManager = () => {
 		);
 	}, [dispatch]);
 
+	useEffect(() => {
+		if (!showModal.open) return;
+
+		if (showModal.entity === "Module") {
+			setEditingModule(showModal.mode === "EDIT" ? showModal.payload : null);
+		}
+
+		if (showModal.entity === "Subject") {
+			setEditingSubject(showModal.mode === "EDIT" ? showModal.payload : null);
+		}
+	}, [showModal]);
+
 	const [selectedModuleId, setSelectedModuleId] = useState(null);
+	const [selectedModuleTitle, setSelectedModuleTitle] = useState("");
 	const fetchSubjects = useMemo(() => {
 		const allSubjects = courseHierarchy?.subjects || [];
 		if (!selectedModuleId) return [];
@@ -284,86 +300,77 @@ const ModuleSubjectManager = () => {
 		return <EmptyState icon={<ShieldX size={50} />} title='Access Denied' description='You do not have permission to access this page.' />;
 	}
 
-	const statusOptions = [
-		{ value: "", label: "All Statuses" },
-		{ value: "active", label: "Active" },
-		{ value: "inactive", label: "Inactive" },
-		{ value: "planned", label: "Planned" },
-		{ value: "completed", label: "Completed" },
-	];
-
 	//--------------------Module CRUD--------------------
-	const handleCreateModule = async (formData) => {
+	const handleSubmitModule = async (data) => {
+		const { id, payload, courseCode } = data;
 		try {
-			await createModule({
-				courseCode: formData.courseCode,
-				newModule: {
-					moduleCode: formData.moduleCode,
-					moduleName: formData.moduleName,
-					theoryHours: formData.theoryHours,
-					practicalHours: formData.practicalHours,
-				},
-			}).unwrap();
-			setShowModal(false);
-			setEditingModule(null);
+			if (id) {
+				await updateModule({ id, payload, courseCode }).unwrap();
+				notify.success(`Module ${editingModule.title} updated successfully!`);
+			} else {
+				await createModule({ payload, courseCode }).unwrap();
+				notify.success(`Module ${payload.moduleCode} created successfully!`);
+			}
 		} catch (error) {
-			return;
+			notify.error(error?.data?.message || "Failed to save module.");
+			if (formRef.current) {
+				formRef.current.reset();
+			}
 		}
-	};
-	const handleUpdateModule = async (updatedModule) => {
-		try {
-			await updateModule({
-				courseCode: updateModule.courseCode,
-				moduleId: updatedModule.id,
-				updateModule: {
-					moduleCode: updatedModule.moduleCode,
-					moduleName: updatedModule.moduleName,
-					theoryHours: updatedModule.theoryHours,
-					practicalHours: updatedModule.practicalHours,
-				},
-			}).unwrap();
-			setShowModal(false);
-			setEditingModule(null);
-		} catch (error) {}
+		closeModal();
+		setEditingModule(null);
 	};
 	const handleDeleteModule = async () => {
-		const idToDelete = deleteModal.module.id;
+		const idToDelete = deleteModuleModal.module.id;
+		console.log("Module Id to delete:", idToDelete);
 		if (!idToDelete) return;
 		try {
-			await deleteModuleTrigger({ courseCode: filters.courseCode, moduleId: idToDelete }).unwrap();
-			setDeleteModal({ open: false, module: null });
+			await deleteModuleTrigger({ courseCode: filters.courseCode, id: idToDelete }).unwrap();
+			setDeleteModuleModal({ open: false, module: null });
+			notify.success(`Module ${deleteModuleModal.module.title || deleteModuleModal.module.moduleName} deleted successfully!`);
 		} catch (error) {}
+		closeModal();
 	};
 
 	//--------------------Subject CRUD--------------------
-	const handleCreateSubject = async (formData) => {
+	const handleSubmitSubject = async (data) => {
+		const { id, payload, moduleId, courseCode } = data;
+		console.log("Form Data:", data);
 		try {
-			await createSubject(formData).unwrap();
-			setShowModal(false);
-			setEditingSubject(null);
+			if (id) {
+				await updateSubject({ id, payload, moduleId, courseCode }).unwrap();
+				notify.success(`Subject ${editingSubject.title} updated successfully!`);
+			} else {
+				await createSubject({ payload, moduleId, courseCode }).unwrap();
+				notify.success(`Subject ${payload.subjectCode} created successfully!`);
+			}
 		} catch (error) {
-			return;
+			console.log(error);
+			notify.error(error?.data?.message || "Failed to save subject.");
+			if (formRef.current) {
+				formRef.current.reset();
+			}
 		}
-	};
-	const handleUpdateSubject = async (updatedSubject) => {
-		try {
-			await updateSubject({ id: updatedSubject.id, ...updatedSubject }).unwrap();
-			setShowModal(false);
-			setEditingSubject(null);
-		} catch (error) {}
+		closeModal();
+		setEditingSubject(null);
 	};
 	const handleDeleteSubject = async () => {
-		const idToDelete = deleteModal.subject.subjectId;
+		const idToDelete = deleteSubjectModal.subject.id;
+		console.log("Subject Id to delete:", idToDelete);
 		if (!idToDelete) return;
 		try {
-			await deleteSubjectTrigger({ courseCode: filters.courseCode, moduleId: idToDelete }).unwrap();
-			setDeleteModal({ open: false, subject: null });
-		} catch (error) {}
+			await deleteSubjectTrigger({ courseCode: filters.courseCode, id: idToDelete }).unwrap();
+			notify.success(`Subject ${deleteSubjectModal.subject.title} deleted successfully!`);
+			setDeleteSubjectModal({ open: false, subject: null });
+		} catch (error) {
+			notify.error(error?.data?.message || "Failed to delete subject.");
+		}
 	};
-	const handleOpenEditModal = (module, subject) => {
-		module && setEditingModule(module);
-		subject && setEditingSubject(subject);
-		setShowModal(true);
+	const handleOpenEditModule = (module) => {
+		openModal("Module", "EDIT", module);
+	};
+	const handleOpenEditSubject = (subject) => {
+		openModal("Subject", "EDIT", subject);
 	};
 
 	if (isErrorCourseHierarchy) {
@@ -371,249 +378,110 @@ const ModuleSubjectManager = () => {
 	}
 	return (
 		<>
-			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4'>
+			<div className='mt-2 mb-2 grid grid-cols-4 gap-4 sm:grid-cols-3 lg:grid-cols-4'>
 				<CustomSelect
 					value={filters.courseTypeId}
+					label='Course Type'
 					options={courseTypeOptions}
 					onChange={(e) => handleFilterChange("courseTypeId", e.target.value)}
-					isLoading={isLoadingCourseTypes}
+					// isLoading={isLoadingCourseTypes}
 				/>
 				<CustomSelect
 					value={filters.batchCycleId}
+					label='Batch Cycle'
 					options={batchCycleOptions}
 					onChange={(e) => handleFilterChange("batchCycleId", e.target.value)}
-					isLoading={isLoadingBatchCycles}
+					// isLoading={isLoadingBatchCycles}
 					disabled={!filters.courseTypeId}
 				/>
 				<CustomSelect
 					value={filters.courseCode}
+					label='Course'
 					options={courseOptions}
 					onChange={(e) => handleFilterChange("courseCode", e.target.value)}
-					isLoading={isLoadingCourses}
+					// isLoading={isLoadingCourses}
 					disabled={!filters.courseTypeId && !filters.batchCycleId}
 				/>
-				<CustomSelect value={filters.status} onChange={(e) => handleFilterChange("status", e.target.value)} options={statusOptions} />
 			</div>
-			<div className='grid grid-cols-2 gap-4'>
-				<Card className='h-[520px]'>
-					<CardBody>
-						{isLoadingCourseHierarchy ? (
-							<SkeletonTable />
-						) : courseHierarchy.length === 0 ? (
-							<EmptyState
-								icon={<List className='w-12 h-12' />}
-								title={`No Modules found`}
-								description='Please select the batch cycle and course to view the modules.'
-							/>
-						) : (
-							<>
-								<Table>
-									<TableHead>
-										<TableRow>
-											<TableHeader className='w-1/12 rounded-tl-2xl'>S.No</TableHeader>
-											<TableHeader className='w-1/3'>Title</TableHeader>
-											<TableHeader className='w-1/8'>Theory Hours</TableHeader>
-											<TableHeader className='w-1/8'>Practical Hours</TableHeader>
-											<TableHeader className='text-center w-[120px]'>Actions</TableHeader>
-											<TableHeader className='text-center rounded-tr-lg w-[150px]'>View Subject(s)</TableHeader>
-										</TableRow>
-									</TableHead>
-								</Table>
-								<div className='rounded-b-2xl overflow-y-auto scrollbar-none'>
-									<Table>
-										<TableBody>
-											{courseHierarchy.modules.map((module, index) => (
-												<TableRow key={module.id}>
-													<TableCell className='w-1/12 rounded-tl-2xl'>{index + 1}</TableCell>
-													<TableCell className='w-1/3'>{module.title}</TableCell>
-													<TableCell className='w-1/8'>{module.theoryHours}</TableCell>
-													<TableCell className='w-1/8'>{module.practicalHours}</TableCell>
-													<TableCell className='w-[120px]'>
-														<div className='flex items-center justify-center space-x-2'>
-															<Button
-																variant='ghost'
-																className='cursor-pointer dark:hover:text-yellow-400'
-																size='sm'
-																onClick={() => handleOpenEditModal(module)}
-																disabled={creatingModule || deletingModule}>
-																<Edit size={16} />
-															</Button>
-															<Button
-																variant='ghost'
-																size='sm'
-																className='text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 cursor-pointer'
-																onClick={() =>
-																	setDeleteModal({
-																		open: true,
-																		module,
-																	})
-																}
-																disabled={creatingModule || updatingModule}>
-																<Trash2 size={16} />
-															</Button>
-														</div>
-													</TableCell>
-													<TableCell className='w-[150px]' handleModuleClick={() => setSelectedModuleId(module.id)}>
-														[View Subject(s)]
-													</TableCell>
-												</TableRow>
-											))}
-										</TableBody>
-									</Table>
-								</div>
-							</>
-						)}
-					</CardBody>
-				</Card>
-				<Modal
-					isOpen={showModal}
-					onClose={() => {
-						setShowModal(false);
-						setEditingModule(null);
-					}}
-					size='lg'>
-					<ModalHeader
-						title={editingModule ? "Edit Module" : "Create New Module"}
-						subtitle={editingModule ? "Update Module details." : "Add a new module to the course."}
-						onClose={() => {
-							setShowModal(false);
-							setEditingModule(null);
-						}}
-					/>
-					<ModalBody>
-						<ModuleForm
-							module={editingModule}
-							batchCycleId={filters.batchCycleId}
-							courseCode={filters.courseCode}
-							onSubmit={editingModule ? handleUpdateModule : handleCreateModule}
-							onCancel={() => {
-								setShowModal(false);
-								setEditingModule(null);
-							}}
-							isLoading={creatingModule || updatingModule}
-						/>
-					</ModalBody>
-				</Modal>
-
-				{/* Confirmation Dialog */}
-				<ConfirmDialog
-					isOpen={deleteModal.open}
-					onClose={() => setDeleteModal({ open: false, module: null })}
-					onConfirm={() => handleDeleteModule()}
-					title='Delete Module'
-					message={`Are you sure you want to delete "${deleteModal.module?.title}"? This action cannot be undone.`}
-					confirmText='Delete'
-					type='danger'
+			<div className='grid grid-cols-2 gap-2'>
+				<ModuleTable
+					isLoadingCourseHierarchy={isLoadingCourseHierarchy}
+					courseHierarchy={courseHierarchy}
+					handleOpenEditModal={handleOpenEditModule}
+					creatingModule={creatingModule}
+					updatingModule={updatingModule}
+					deletingModule={deletingModule}
+					setSelectedModuleId={setSelectedModuleId}
+					setSelectedModuleTitle={setSelectedModuleTitle}
+					editingModule={editingModule}
+					setEditingModule={setEditingModule}
+					filters={filters}
+					handleSubmitModule={handleSubmitModule}
+					deleteModal={deleteModuleModal}
+					setDeleteModal={setDeleteModuleModal}
+					handleDeleteModule={handleDeleteModule}
 				/>
 
-				<Card className='h-[520px]'>
-					<CardBody>
-						{isLoadingCourseHierarchy ? (
-							<SkeletonTable />
-						) : fetchSubjects.length === 0 ? (
-							<EmptyState
-								icon={<List className='w-12 h-12' />}
-								title={`No Subjects found`}
-								description='There are no subject in the system. Get started by adding a new one or importing from a file or select the module.'
-							/>
-						) : (
-							<>
-								<Table>
-									<TableHead>
-										<TableRow>
-											<TableHeader className='w-1/12 rounded-tl-2xl'>S.No</TableHeader>
-											<TableHeader className='w-1/2'>Title</TableHeader>
-											<TableHeader className='w-1/8'>Theory Hours</TableHeader>
-											<TableHeader className='w-1/8'>Practical Hours</TableHeader>
-											<TableHeader className='text-center rounded-tr-lg w-[120px]'>Actions</TableHeader>
-										</TableRow>
-									</TableHead>
-								</Table>
-								<div className='rounded-b-2xl overflow-y-auto scrollbar-none'>
-									<Table>
-										<TableBody>
-											{fetchSubjects.map((subject, index) => (
-												<TableRow key={subject.id}>
-													<TableCell className='w-1/12 rounded-tl-2xl'>{index + 1}</TableCell>
-													<TableCell className='w-1/2'>{subject.title}</TableCell>
-													<TableCell className='w-1/8'>{subject.theoryHours}</TableCell>
-													<TableCell className='w-1/8'>{subject.practicalHours}</TableCell>
-													<TableCell className='w-[120px]'>
-														<div className='flex items-center justify-center space-x-2'>
-															<Button
-																variant='ghost'
-																className='cursor-pointer dark:hover:text-yellow-400'
-																size='sm'
-																onClick={() => handleOpenEditModal(subject)}
-																disabled={creatingSubject || deletingSubject}>
-																<Edit size={16} />
-															</Button>
-															<Button
-																variant='ghost'
-																size='sm'
-																className='text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 cursor-pointer'
-																onClick={() =>
-																	setDeleteModal({
-																		open: true,
-																		subject,
-																	})
-																}
-																disabled={creatingSubject || updatingSubject}>
-																<Trash2 size={16} />
-															</Button>
-														</div>
-													</TableCell>
-												</TableRow>
-											))}
-										</TableBody>
-									</Table>
-								</div>
-							</>
-						)}
-					</CardBody>
-				</Card>
-				<Modal
-					isOpen={showModal}
-					onClose={() => {
-						setShowModal(false);
-						setEditingSubject(null);
-					}}
-					size='lg'>
-					<ModalHeader
-						title={editingSubject ? "Edit Subject" : "Create New Subject"}
-						subtitle={editingSubject ? "Update subject details." : "Add a new subject to the module."}
-						onClose={() => {
-							setShowModal(false);
-							setEditingSubject(null);
-						}}
-					/>
-					<ModalBody>
+				<SubjectTable
+					isLoadingCourseHierarchy={isLoadingCourseHierarchy}
+					fetchSubjects={fetchSubjects}
+					handleOpenEditModal={handleOpenEditSubject}
+					creatingSubject={creatingSubject}
+					updatingSubject={updatingSubject}
+					deletingSubject={deletingSubject}
+					deleteModal={deleteSubjectModal}
+					setDeleteModal={setDeleteSubjectModal}
+					setEditingSubject={setEditingSubject}
+					editingSubject={editingSubject}
+					handleSubmitSubject={handleSubmitSubject}
+					handleDeleteSubject={handleDeleteSubject}
+					filters={filters}
+					selectedModuleId={selectedModuleId}
+					selectedModuleTitle={selectedModuleTitle}
+				/>
+			</div>
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "Module"}
+				onClose={closeModal}
+				title={showModal.mode === "EDIT" ? "Edit Module" : "Create Module"}
+				description={showModal.mode === "EDIT" ? "Updating the existing module details" : "Add a new module"}
+				formRef={formRef}
+				loading={creatingModule || updatingModule}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
+						<ModuleForm
+							ref={modalFormRef}
+							module={editingModule}
+							onSubmit={handleSubmitModule}
+							isLoading={creatingModule || updatingModule}
+							batchCycleId={filters.batchCycleId}
+							courseCode={filters.courseCode}
+						/>
+					);
+				}}
+			</ModalForm>
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "Subject"}
+				onClose={closeModal}
+				title={showModal.mode === "EDIT" ? "Edit Subject" : "Create Subject"}
+				description={showModal.mode === "EDIT" ? "Updating the existing subject details" : "Add a new subject for the module"}
+				formRef={formRef}
+				loading={creatingSubject || updatingSubject}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
 						<SubjectForm
+							ref={modalFormRef}
 							subject={editingSubject}
 							batchCycleId={filters.batchCycleId}
 							courseCode={filters.courseCode}
 							moduleId={selectedModuleId}
-							onSubmit={editingSubject ? handleUpdateSubject : handleCreateSubject}
-							onCancel={() => {
-								setShowModal(false);
-								setEditingSubject(null);
-							}}
-							isLoading={creatingSubject || updatingSubject}
+							onSubmit={handleSubmitSubject}
 						/>
-					</ModalBody>
-				</Modal>
-
-				{/* Confirmation Dialog */}
-				<ConfirmDialog
-					isOpen={deleteModal.open}
-					onClose={() => setDeleteModal({ open: false, Subject: null })}
-					onConfirm={() => handleDeleteSubject()}
-					title='Delete Subject'
-					message={`Are you sure you want to delete "${deleteModal.subject?.title}"? This action cannot be undone.`}
-					confirmText='Delete'
-					type='danger'
-				/>
-			</div>
+					);
+				}}
+			</ModalForm>
 		</>
 	);
 };

@@ -1,6 +1,6 @@
 const API_CONFIG = {
 	// BFF Configuration
-	BFF_BASE_URL: import.meta.env.VITE_BFF_BASE_URL || "http://localhost:8003",
+	BFF_BASE_URL: import.meta.env.VITE_BFF_BASE_URL || "http://localhost:8001",
 
 	// API Endpoints
 	ENDPOINTS: {
@@ -11,6 +11,7 @@ const API_CONFIG = {
 			PROFILE: "/bff/auth/profile",
 			REFRESH: "/bff/auth/refresh",
 			SESSION: "/bff/session",
+			PRESERVED_COMMANDS: "/bff/session/preserved-commands",
 		},
 
 		// Academic Management endpoints
@@ -20,7 +21,7 @@ const API_CONFIG = {
 			CREATE_COURSE_TYPES: "/bff/apig/academic/course-types/create",
 			UPDATE_COURSE_TYPES: "/bff/apig/academic/course-types/update",
 			DELETE_COURSE_TYPES: "/bff/apig/academic/course-types/delete",
-			
+
 			// CourseGroups
 			GET_ALL_COURSE_GROUPS: "/bff/apig/academic/course-groups/getAll",
 			CREATE_COURSE_GROUP: "/bff/apig/academic/course-groups/create",
@@ -28,26 +29,42 @@ const API_CONFIG = {
 			DELETE_COURSE_GROUP: "/bff/apig/academic/course-groups/delete",
 			// Courses
 			GET_ALL_COURSES: "/bff/apig/academic/course/getAll",
+			GET_UNIQUE_COURSE_NAMES: "/bff/apig/academic/course/getUniqueCourseNames",
 			GET_PAGINATED_COURSES: "/bff/apig/academic/course/getPaginated",
 			GET_COURSE_HIERARCHY: "/bff/apig/academic/course/getHierarchy",
 			IMPORT_COURSE_HIERARCHY: "/bff/apig/academic/course/import",
 			CREATE_COURSE: "/bff/apig/academic/course/create",
-			UPDATE_COURSE:"/bff/apig/academic/course/update",
+			UPDATE_COURSE: "/bff/apig/academic/course/update",
 			DELETE_COURSE: "/bff/apig/academic/course/delete",
-			
+
 			// Modules
 			CREATE_MODULE: "/bff/apig/academic/module/create",
 			UPDATE_MODULE: "/bff/apig/academic/module/update",
 			DELETE_MODULE: "/bff/apig/academic/module/delete",
-			
+
 			// Subjects
-			CREATE_SUBJECT: "/bff/apig/academic/subjects/create",
-			UPDATE_SUBJECT: "/bff/apig/academic/subjects/update",
-			DELETE_SUBJECT: "/bff/apig/academic/subjects/delete",
-			
-			//
-			SECTIONS: "/bff/apig/academic/sections",
-			TOPICS: "/bff/apig/academic/topics",
+			CREATE_SUBJECT: "/bff/apig/academic/subject/create",
+			UPDATE_SUBJECT: "/bff/apig/academic/subject/update",
+			DELETE_SUBJECT: "/bff/apig/academic/subject/delete",
+
+			// Sections
+			CREATE_SECTION: "/bff/apig/academic/section/create",
+			UPDATE_SECTION: "/bff/apig/academic/section/update",
+			DELETE_SECTION: "/bff/apig/academic/section/delete",
+			// Topics
+			CREATE_TOPIC: "/bff/apig/academic/topic/create",
+			UPDATE_TOPIC: "/bff/apig/academic/topic/update",
+			DELETE_TOPIC: "/bff/apig/academic/topic/delete",
+
+			// Assignments
+			GET_ALL_ASSIGNMENTS: "bff/apig/academic/assign-course/getAll",
+			GET_ASSIGN_COURSE: "bff/apig/academic/assign-course/courseCoordinator/getAssignCourse",
+			CREATE_ASSIGNMENT: "/bff/apig/academic/assign-course/create",
+			UPDATE_ASSIGNMENT: "/bff/apig/academic/assign-course/update",
+			DELETE_ASSIGNMENT: "/bff/apig/academic/assign-course/delete",
+
+			// Module Router
+			GET_COURSE_COORD_ASSIGN_COURSE_AND_MODULE_LIST: "/bff/apig/academic/course-coordinator-assign/getAssignCourse",
 		},
 
 		// Infrastructure-Premise-BatchCycle Management endpoints
@@ -74,13 +91,36 @@ const API_CONFIG = {
 		// Staff Management endpoints
 		STAFF: {
 			STAFF: "/bff/auth/staff",
-			ALL_STAFF: "/api/staff/getAll",
-			MENU_ITEMS: "/api/menu-items",
-			ALL_ROLE_BASED_MENU: "/api/role-menu-access/getAll",
-			ROLE_BASED_MENU: "/api/role-menu-access/role",
-			ALL_STAFF_MENU_ACCESS: "/api/staff-menu-access/getAll",
-			STAFF_MENU_ACCESS: "/api/staff-menu-access/getAll",
+			ALL_STAFF: "/bff/apig/user/staff/getAll",
+			ELIGIBLE_STAFF: "/bff/apig/user/staff/eligibleStaff", // For Module Router
+			CREATE_STAFF: "/bff/auth/admin/createStaff",
+			UPDATE_STAFF: "/bff/auth/admin/updateStaff",
+			DELETE_STAFF: "/bff/auth/admin/deleteStaff",
 			COURSE_ASSIGNMENTS: "/bff/apig/user/course-assignments",
+
+			// Staff Menu Access
+			GET_ALL_STAFF_MENU_ACCESS_EXCEPTION: "/bff/apig/user/staff-menu-access/getAll",
+			CREATE_UPDATE_STAFF_MENU_ACCESS_EXCEPTION: "/bff/apig/user/staff-menu-access/create_update_exceptions",
+			DELETE_STAFF_MENU_ACCESS_EXCEPTION: "/bff/apig/user/staff-menu-access/delete",
+		},
+
+		SYSTEM_ADMINISTRATION: {
+			GET_SIDEBAR_MENU_ITEMS: "/bff/apig/user/menu-items/getSidebarMenuItems",
+
+			GET_ALL_MENU_ITEMS: "/bff/apig/user/menu-items/getAll",
+			CREATE_MENU_ITEM: "/bff/apig/user/menu-items/create",
+			UPDATE_MENU_ITEM: "/bff/apig/user/menu-items/update",
+			DELETE_MENU_ITEM: "/bff/apig/user/menu-items/delete",
+
+			GET_ALL_ROLE_MENU_ACCESS_ITEMS: "bff/apig/user/role-menu-access/getAll",
+			CREATE_ROLE_MENU_ACCESS_ITEM: "bff/apig/user/role-menu-access/create",
+			UPDATE_ROLE_MENU_ACCESS_ITEM: "bff/apig/user/role-menu-access/updateStatus",
+			DELETE_ROLE_MENU_ACCESS_ITEM: "bff/apig/user/role-menu-access/delete",
+
+			GET_ALL_STAFF_MENU_ACCESS: "bff/apig/user/staff-menu-access/getAll",
+			CREATE_STAFF_MENU_ACCESS: "bff/apig/user/staff-menu-access/create",
+			UPDATE_STAFF_MENU_ACCESS: "bff/apig/user/staff-menu-access/update",
+			DELETE_STAFF_MENU_ACCESS: "bff/apig/user/staff-menu-access/delete",
 		},
 
 		// Student Operations endpoints
@@ -93,7 +133,12 @@ const API_CONFIG = {
 
 		// Scheduling endpoints
 		SCHEDULING: {
-			SCHEDULES: "/bff/apig/scheduling/schedules",
+			// Scheduling
+			GET_SCHEDULES: "/bff/apig/scheduling/schedule/getAll",
+			CREATE_SCHEDULE: "/bff/apig/scheduling/schedule/create",
+			UPDATE_SCHEDULE: "/bff/apig/scheduling/schedule/update",
+			DELETE_SCHEDULE: "/bff/apig/scheduling/schedule/delete",
+
 			SESSIONS: "/bff/apig/scheduling/sessions",
 			TIMESHEETS: "/bff/apig/scheduling/timesheets",
 			RECORDED_VIDEOS: "/bff/apig/scheduling/recorded-videos",

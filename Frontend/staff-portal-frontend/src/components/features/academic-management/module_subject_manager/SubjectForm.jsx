@@ -1,18 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { FormField } from "../../../layout";
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { Button, FormField, Input } from "../../../layout";
+import { useFormState } from "../../../../hooks/uiHook/useFormState";
 
-export const SubjectForm = ({ subject, batchCycleId, courseCode, moduleId, onSubmit, isLoading = false, onCancel }) => {
-	const [formData, setFormData] = useState({
-		subjectCode: "",
-		subjectName: "",
-		theoryHours: "",
-		practicalHours: "",
+export const SubjectForm = forwardRef(({ subject, batchCycleId, courseCode, moduleId, onSubmit, isLoading = false, }, ref) => {
+	console.log("Editing Subject: ", subject);
+	const { values, errors, setField, setAll, submit, reset, isDirty } = useFormState({
+		initialValues: {
+			subjectCode: "",
+			subjectName: "",
+			theoryHours: "",
+			practicalHours: "",
+		},
+		validate: (vals) => {
+			const errs = {};
+			if (!vals.subjectCode.trim()) errs.subjectCode = "Subject code is required";
+			if (!vals.subjectName.trim()) errs.subjectName = "Subject name is required";
+			if (!vals.theoryHours || isNaN(vals.theoryHours) || parseInt(vals.theoryHours) <= 0)
+				errs.theoryHours = "Theory hours must be a valid positive number";
+			if (!vals.practicalHours || isNaN(vals.practicalHours) || parseInt(vals.practicalHours) <= 0)
+				errs.practicalHours = "Practical hours must be a valid positive number";
+			return errs;
+		},
+		onSubmit: (vals) => {
+			onSubmit({
+				payload: vals,
+				moduleId: moduleId,
+				id: subject?.id,
+				courseCode: courseCode,
+			});
+		},
 	});
 	useEffect(() => {
 		if (subject) {
-			setFormData({
+			setAll({
 				subjectCode: courseCode + "-" + subject.subjectCode,
-				subjectName: subject.subjectName,
+				subjectName: subject.title,
 				theoryHours: subject.theoryHours,
 				practicalHours: subject.practicalHours,
 			});
@@ -34,109 +56,58 @@ export const SubjectForm = ({ subject, batchCycleId, courseCode, moduleId, onSub
 	};
 
 	useEffect(() => {
-		const { subjectName } = formData;
-		if (subjectName) {
-			setFormData({
-				...formData,
-				subjectCode: generateSubjectCode(courseCode, subjectName),
-			});
-		}
-	}, [formData, courseCode]);
+		if (!courseCode) return;
+		if (subject?.id) return;
+		const subjectCode = generateSubjectCode(courseCode, values.subjectName);
+		if (values.subjectCode !== subjectCode) setField("subjectCode", subjectCode);
+	}, [courseCode, subject?.id, values.subjectName, values.subjectCode]);
 
-	const [error, setErrors] = useState({});
-	const validateForm = () => {
-		const newErrors = {};
-
-		if (!formData.subjectCode.trim()) {
-			newErrors.subjectCode = "Subject code is required";
-		}
-		if (!formData.subjectName.trim()) {
-			newErrors.subjectName = "Subject name is required";
-		}
-		if (!formData.theoryHours || isNaN(formData.theoryHours) || parseInt(formData.theoryHours) <= 0) {
-			newErrors.theoryHours = "Theory hours must be a valid positive number";
-		}
-		if (!formData.practicalHours || isNaN(formData.practicalHours) || parseInt(formData.practicalHours) <= 0) {
-			newErrors.practicalHours = "Practical hours must be a valid positive number";
-		}
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
-
-	const handleInputChange = (field, value) => {
-		setFormData({
-			...formData,
-			[field]: value,
-		});
-	};
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (validateForm()) {
-			onSubmit({
-				...formData,
-				courseCode: courseCode,
-			});
-		}
-	};
+	useImperativeHandle(ref, () => ({
+		submit,
+		reset,
+		isDirty,
+	}));
+	
 	return (
-		<form onSubmit={handleSubmit} className='space-y-6'>
+		<div className='space-y-6'>
 			{/**Read only value for batchCycleId and courseCode */}
-			<div className='grid grid-cols-3 gap-6'>
+			<div className='grid grid-cols-2 gap-6'>
 				<Input readOnly label='Batch Cycle' value={batchCycleId} />
 				<Input readOnly label='Course' value={courseCode} />
 				<Input readOnly label='Module' value={moduleId} />
+				<Input readOnly label='Subject Code' value={values.subjectCode} />
 			</div>
+			<Input
+				type='text'
+				required
+				label={"Subject Title"}
+				value={values.subjectName}
+				onChange={(e) => setField("subjectName", e.target.value)}
+				disabled={isLoading}
+				error={!!errors.subjectName}
+			/>
 
-			<FormField label={"Subject Code"} error={error.subjectCode} required>
-				<Input
-					type='text'
-					value={formData.subjectCode}
-					onChange={(e) => handleInputChange("subjectCode", e.target.value)}
-					placeHolder='SCJ-001 or SSDM-005'
-					disabled={isLoading}
-				/>
-			</FormField>
+			<Input
+				type='number'
+				label={"Theory Hours"}
+				required
+				value={values.theoryHours}
+				onChange={(e) => setField("theoryHours", e.target.value)}
+				disabled={isLoading}
+				error={!!errors.theoryHours}
+			/>
 
-			<FormField label={"Subject Name"} error={error.subjectName} required>
-				<Input
-					type='text'
-					value={formData.subjectName}
-					onChange={(e) => handleInputChange("subjectName", e.target.value)}
-					placeHolder='Subject Name'
-					disabled={isLoading}
-				/>
-			</FormField>
-
-			<FormField label={"Theory Hours"} error={error.theoryHours} required>
-				<Input
-					type='number'
-					value={formData.theoryHours}
-					onChange={(e) => handleInputChange("theoryHours", e.target.value)}
-					placeHolder='Theory Hours'
-					disabled={isLoading}
-				/>
-			</FormField>
-
-			<FormField label={"Practical Hours"} error={error.practicalHours} required>
-				<Input
-					type='number'
-					value={formData.practicalHours}
-					onChange={(e) => handleInputChange("practicalHours", e.target.value)}
-					placeHolder='Practical Hours'
-					disabled={isLoading}
-				/>
-			</FormField>
-
-			<div className='flex items-center justify-end space-x-3 pt-4'>
-				<Button type='button' variant='danger' onClick={onCancel} disabled={isLoading}>
-					Cancel
-				</Button>
-				<Button variant='secondary' type='submit' disabled={isLoading}>
-					{isLoading ? "Save" : "Save"}
-				</Button>
-			</div>
-		</form>
+			<Input
+				type='number'
+				label={"Practical Hours"}
+				required
+				value={values.practicalHours}
+				onChange={(e) => setField("practicalHours", e.target.value)}
+				disabled={isLoading}
+				error={!!errors.practicalHours}
+			/>
+		</div>
 	);
-};
+});
 
 export default SubjectForm;

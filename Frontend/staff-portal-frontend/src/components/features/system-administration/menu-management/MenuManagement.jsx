@@ -1,63 +1,105 @@
-import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit, List } from "lucide-react";
-
-// --- COMMON COMPONENTS ---
+import { Edit, List, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
+	Button,
 	Card,
 	CardBody,
-	Table,
-	TableHead,
-	TableHeader,
-	TableBody,
-	TableRow,
-	TableCell,
-	Button,
-	Modal,
-	ModalHeader,
-	ModalBody,
 	ConfirmDialog,
 	EmptyState,
 	SkeletonTable,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
 } from "../../../layout";
-import { useDispatch } from "react-redux";
 
+import { useFilteredMenu } from "../../../../hooks/index.js";
+import { useModal } from "../../../../providers/providerHook/useModal";
 import {
 	setBreadcrumbs,
 	setHeaderInfo,
-	useGetMenuItemsQuery,
+	useCreateMenuItemMutation,
+	useDeleteMenuItemMutation,
+	useGetAllMenuItemsQuery,
+	useUpdateMenuItemMutation,
 } from "../../../../store";
-import { useModal } from "../../../../providers/providerHook/useModal";
+import { selectUserRole } from "../../../../store/selectors/index.js";
+import { notify } from "../../../../utils/Notify";
 import { ErrorFallback } from "../../../layout/errorBoundary";
-import { PremiseForm } from "../../infrastructure-management";
+import { ModalForm } from "../../../layout/modals/ModalForm";
+import { MenuForm } from "./MenuForm.jsx";
 
 const MenuManagement = () => {
-	const [creating, setCreating] = useState(false);
-	const [updating, setUpdating] = useState(false);
-	const [deleting, setDeleting] = useState(false);
-	const { showModal, setShowModal } = useModal();
-	const [editingMenuItems, setEditingMenuItems] = useState(null);
+	const dispatch = useDispatch();
+	const userRole = useSelector(selectUserRole);
+	const { pathSet } = useFilteredMenu();
+	const canAccessMenuManagement = pathSet.has("/system-administration/menus") && userRole === "ADMIN";
+	//------------------------------RTK QUERY HOOKS------------------------------
+	const { data: menuItems = [], isLoading: isLoadingMenuItems, isError: isErrorMenuItems, error: menuItemsError } = useGetAllMenuItemsQuery();
+
+	const [create, { isLoading: creating, isError: isCreatingError, error: creatingError }] = useCreateMenuItemMutation();
+	const [update, { isLoading: updating, isError: isUpdatingError, error: updatingError }] = useUpdateMenuItemMutation();
+	const [deleteMenuItemTrigger, { isLoading: deleting, isError: isDeletingError, error: deletingError }] = useDeleteMenuItemMutation();
+	console.log("Menu Items: ", menuItems);
+	const parentKeyOptions = useMemo(
+		() => [
+			{
+				value: "",
+				label: "Root/Top Level Menu Item (No Parent)",
+			},
+			...menuItems.map((menuItem) => ({
+				value: menuItem.fullPathKey,
+				label: `${menuItem.title} (${menuItem.fullPathKey})`,
+			})),
+		],
+		[menuItems]
+	);
+
+	const formRef = useRef(null);
+	const { showModal, openModal, closeModal } = useModal();
 	const [deleteModal, setDeleteModal] = useState({
 		open: false,
-		menu: null,
+		menuItem: null,
 	});
-	const {
-		data: menuItems,
-		isLoading: isLoadingMenuItems,
-		isError: isErrorMenuItems,
-		error: menuItemsError,
-	} = useGetMenuItemsQuery();
-	const dispatch = useDispatch();
+
 	useEffect(() => {
-		console.log("MenuItems:", menuItems);
+		if (creating) {
+			console.log("Notification: Menu Item created successfully!");
+		}
+		if (isCreatingError) {
+			console.log("Notification: Failed to create Menu Item.");
+		}
+		if (updating) {
+			console.log("Notification: Menu Item updated successfully!");
+		}
+		if (isUpdatingError) {
+			console.log("Notification: Failed to update Menu Item.");
+		}
+		if (deleting) {
+			console.log("Notification: Menu Item deleted successfully!");
+		}
+		if (isDeletingError) {
+			console.log("Notification: Failed to delete Menu Item.");
+		}
+		if (creatingError) {
+			console.log("Notification: Failed to create Menu Item.");
+		}
+		if (updatingError) {
+			console.log("Notification: Failed to update Menu Item.");
+		}
+		if (deletingError) {
+			console.log("Notification: Failed to delete Menu Item.");
+		}
+	}, [creating, isCreatingError, updating, isUpdatingError, deleting, isDeletingError, creatingError, updatingError, deletingError]);
+
+	useEffect(() => {
 		dispatch(
 			setHeaderInfo({
 				title: "Menu Items",
 				subtitle: "List of menu items in the application",
-				action: [
-					{
-						label: "Add Menu Item",
-					},
-				],
 			})
 		);
 		dispatch(
@@ -80,111 +122,97 @@ const MenuManagement = () => {
 		);
 	}, [dispatch]);
 
-	if (isErrorMenuItems) {
-		return <ErrorFallback errorMessage={menuItemsError.message} />;
+	if (!canAccessMenuManagement) {
+		return <ErrorFallback errorMessage='You are not allowed to view this component.' />;
 	}
-	const handleCreateMenuItem = async (newMenuItem) => {
-		setCreating(true);
-	};
-
-	const handleUpdateMenuItem = async (updatedMenuItem) => {
-		setUpdating(true);
+	if (isErrorMenuItems) {
+		return <EmptyState icon={<ShieldX size={50} />} title='Access Denied' description='You do not have permission to access this page.' />;
+	}
+	const handleSubmit = async (data) => {
+		const { id, payload } = data;
+		try {
+			if (showModal.mode === "EDIT") {
+				await update({ id, ...payload }).unwrap();
+				notify.success(`Menu Item "${payload.title}" updated successfully!`);
+			} else {
+				await create(payload).unwrap();
+				notify.success(`Menu Item "${payload.title}" created successfully!`);
+			}
+			closeModal();
+		} catch (error) {
+			notify.error(error?.data?.message || "Failed to save menu item.");
+		}
 	};
 
 	const handleDeleteMenuItem = async () => {
-		setDeleting(true);
+		const idToDelete = deleteModal.menuItem.id;
+		if (!idToDelete) return;
+		try {
+			await deleteMenuItemTrigger(idToDelete).unwrap();
+			setDeleteModal({ open: false, menuItem: null });
+			notify.success(`Menu Item "${deleteModal.menuItem.title}" deleted successfully!`);
+		} catch (err) {
+			notify.error(err?.data?.message || "Failed to delete menu item.");
+		}
 	};
 
-	const handleOpenEditModal = (Premise) => {
-		setEditingMenuItems(Premise);
-		setShowModal(true);
+	const handleOpenEditModal = (menuItem) => {
+		openModal("MENU_ITEM", "EDIT", menuItem);
 	};
 
 	return (
 		<>
 			<Card className={"h-[574px]"}>
 				<CardBody>
-					{isLoadingMenuItems ? (
+					{isLoadingMenuItems ?
 						<SkeletonTable />
-					) : menuItems.length === 0 ? (
+					: menuItems?.length === 0 ?
 						<EmptyState
-							icon={<List className='w-12 h-12' />}
+							icon={<List className='h-12 w-12' />}
 							title='No Menu Items Found'
 							description='There are no menu item in the system. Get started by adding a new one.'
-							action={
-								<Button onClick={() => setShowModal(true)}>
-									<Plus className='h-4 w-4 mr-2' />
-									Create Menu Item
-								</Button>
-							}
 						/>
-					) : (
-						<>
+					:	<>
 							<Table>
 								<TableHead>
 									<TableRow>
-										<TableHeader className='w-[100px] rounded-tl-2xl'>
-											S.No
-										</TableHeader>
-										<TableHeader className='w-1/6'>
-											Title
-										</TableHeader>
-										<TableHeader className='w-1/4'>
-											Description
-										</TableHeader>
-										<TableHeader className='w-1/3'>
-											Path
-										</TableHeader>
-										<TableHeader className='text-center rounded-tr-lg w-[120px]'>
-											Actions
-										</TableHeader>
+										<TableHeader className='w-[100px] rounded-tl-2xl'>S.No</TableHeader>
+										<TableHeader className='w-1/6'>Title</TableHeader>
+										<TableHeader className='w-1/4'>Description</TableHeader>
+										<TableHeader className='w-1/3'>Path</TableHeader>
+										<TableHeader className='w-[120px] rounded-tr-lg text-center'>Actions</TableHeader>
 									</TableRow>
 								</TableHead>
 							</Table>
-							<div className='h-[500px] rounded-b-2xl overflow-y-auto scrollbar-none'>
+							<div className='scrollbar-none h-[500px] overflow-y-auto rounded-b-2xl'>
 								<Table>
 									<TableBody>
-										{menuItems.map((menuItem, index) => (
+										{menuItems?.map((menuItem, index) => (
 											<TableRow key={menuItem.id}>
-												<TableCell className='font-medium w-[100px]'>
-													{index + 1}
-												</TableCell>
-												<TableCell className='font-medium text-center w-1/6'>
-													{menuItem.title}
-												</TableCell>
-												<TableCell className='font-medium text-center w-1/4'>
-													{menuItem.description}
-												</TableCell>
-												<TableCell className='w-1/3'>
-													{menuItem.path || "#"}
-												</TableCell>
+												<TableCell className='w-[100px] font-medium'>{index + 1}</TableCell>
+												<TableCell className='w-1/6 text-center font-medium'>{menuItem.title}</TableCell>
+												<TableCell className='w-1/4 text-center font-medium'>{menuItem.description}</TableCell>
+												<TableCell className='w-1/3'>{menuItem.path || "#"}</TableCell>
 												<TableCell className='w-[120px]'>
 													<div className='flex items-center justify-center space-x-2'>
 														<Button
-															variant='ghost'
-															className='cursor-pointer dark:hover:text-yellow-400'
+															variant='gradientAmber'
+															icon={Edit}
+															className='h-6 w-6 rounded-lg'
 															size='sm'
-															onClick={() =>
-																handleOpenEditModal(
-																	menuItem
-																)
-															}
-														>
-															<Edit size={16} />
-														</Button>
+															onClick={() => handleOpenEditModal(menuItem)}
+														/>
 														<Button
-															variant='ghost'
+															variant='gradientRose'
+															icon={Trash2}
 															size='sm'
-															className='text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 cursor-pointer'
+															className='h-6 w-6 rounded-lg'
 															onClick={() =>
 																setDeleteModal({
 																	open: true,
 																	menuItem,
 																})
-															}
-														>
-															<Trash2 size={16} />
-														</Button>
+															}></Button>
 													</div>
 												</TableCell>
 											</TableRow>
@@ -193,56 +221,35 @@ const MenuManagement = () => {
 								</Table>
 							</div>
 						</>
-					)}
+					}
 				</CardBody>
 			</Card>
 
 			{/* Modal for Create/Edit */}
-			<Modal
-				isOpen={showModal}
-				onClose={() => {
-					setShowModal(false);
-					setEditingMenuItems(null);
+			<ModalForm
+				isOpen={showModal.open && showModal.entity === "MENU_ITEM"}
+				onClose={closeModal}
+				title={showModal.mode === "EDIT" ? "Edit Menu Item" : "Create Menu Item"}
+				description={showModal.mode === "EDIT" ? "Update menu item details" : "Add a new menu item to the system"}
+				loading={creating || updating}>
+				{(modalFormRef) => {
+					formRef.current = modalFormRef.current;
+					return (
+						<MenuForm
+							ref={modalFormRef}
+							menuItem={showModal.payload}
+							availableParentKeys={parentKeyOptions}
+							onSubmit={handleSubmit}
+							isLoading={creating || updating}
+						/>
+					);
 				}}
-				size='lg'
-			>
-				<ModalHeader
-					title={
-						editingMenuItems
-							? "Edit Batch Cycle"
-							: "Create Batch Cycle"
-					}
-					subtitle={
-						editingMenuItems
-							? "Update batch cycle details."
-							: "Add a new batch cycle to the system."
-					}
-					onClose={() => {
-						setShowModal(false);
-						setEditingMenuItems(null);
-					}}
-				/>
-				<ModalBody>
-					<PremiseForm
-						premise={editingMenuItems}
-						onSubmit={
-							editingMenuItems
-								? handleUpdateMenuItem
-								: handleCreateMenuItem
-						}
-						onCancel={() => {
-							setShowModal(false);
-							setEditingMenuItems(null);
-						}}
-						isLoading={creating || updating}
-					/>
-				</ModalBody>
-			</Modal>
+			</ModalForm>
 
 			{/* Confirmation Dialog */}
 			<ConfirmDialog
 				isOpen={deleteModal.open}
-				onClose={() => setDeleteModal({ open: false, Premise: null })}
+				onClose={() => setDeleteModal({ open: false, menuItem: null })}
 				onConfirm={() => handleDeleteMenuItem()}
 				title='Delete Menu Item'
 				message={`Are you sure you want to delete "${deleteModal.menuItem?.title}"? This action cannot be undone.`}

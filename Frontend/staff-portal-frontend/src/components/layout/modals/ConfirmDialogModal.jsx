@@ -1,53 +1,96 @@
 import { AlertTriangle, ClipboardCheck } from "lucide-react";
-import { Modal } from "./Modal";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "../buttons";
 
 export const ConfirmDialog = ({
-	isOpen,
-	onClose,
-	onConfirm,
-	title,
-	message,
-	confirmText,
-	type = "danger",
+  isOpen,
+  onClose,
+  onConfirm,
+  title = "Confirm Action",
+  message = "Are you sure you want to proceed?",
+  confirmText = "Confirm",
+  type = "danger",
 }) => {
-	if (!isOpen) return null;
+  const isDanger = type === "danger";
 
-	const isDanger = type === "danger";
+  const theme = isDanger 
+    ? {
+        icon: AlertTriangle,
+        primaryColor: "text-rose-500",
+        secondaryColor: "bg-rose-500/10",
+        btnGradient: "from-rose-500 to-rose-600 shadow-rose-500/25",
+        bgIconColor: "text-rose-500/[0.03] dark:text-rose-500/[0.05]"
+      }
+    : {
+        icon: ClipboardCheck,
+        primaryColor: "text-amber-500",
+        secondaryColor: "bg-amber-500/10",
+        btnGradient: "from-amber-400 to-amber-600 shadow-amber-500/25",
+        bgIconColor: "text-amber-500/[0.03] dark:text-amber-500/[0.05]"
+      };
 
-	return (
-		<Modal isOpen={isOpen} onClose={onClose} size='sm'>
-			<div className='p-8 bg-red-300 rounded-t-2xl'>
-				<div className="flex justify-center items-start space-x-2">
-					{isDanger ? (
-						<div className=' flex h-12 w-12 items-center justify-center rounded-full bg-red-100'>
-							<AlertTriangle className='h-6 w-6 text-red-600' />
-						</div>
-					) : (
-						<div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100'>
-							<ClipboardCheck className='h-6 w-6 text-yellow-600' />
-						</div>
-					)}
-					<h3 className='mt-4 text-lg font-semibold text-gray-900 dark:text-red-500'>
-						{title}
-					</h3>
-				</div>
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[100] bg-zinc-950/60 backdrop-blur-md"
+          />
 
-				<div className='mt-2 text-sm text-gray-500 dark:text-rose-900'>
-					<p>{message}</p>
-				</div>
-			</div>
-			<div className='flex justify-end p-4 bg-gray-50 dark:bg-slate-900 gap-3 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl'>
-				<Button variant='secondary' onClick={onClose}>
-					Cancel
-				</Button>
-				<Button
-					variant={isDanger ? "danger" : "blue"}
-					onClick={onConfirm}
-				>
-					{confirmText}
-				</Button>
-			</div>
-		</Modal>
-	);
+          {/* Modal Container */}
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white shadow-2xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+            >
+              <div className="relative p-8">
+                {/* Decorative Background Icon */}
+                <div className="absolute -top-6 -right-6 pointer-events-none select-none">
+                  <theme.icon size={180} strokeWidth={1} className={theme.bgIconColor} />
+                </div>
+
+                <div className="relative z-10">
+                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl ${theme.secondaryColor} ${theme.primaryColor} mb-6`}>
+                    <theme.icon size={28} strokeWidth={2.5} />
+                  </div>
+
+                  <h3 className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase mb-2">
+                    {title}
+                  </h3>
+                  
+                  <p className="text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">
+                    {message}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 p-6 bg-zinc-50 dark:bg-zinc-950/50 border-t border-zinc-100 dark:border-zinc-800">
+                <Button
+                  onClick={onClose}
+                 variant="gradientEmerald"
+                >
+                  Cancel
+                </Button>
+                <Button
+								  onClick={onConfirm}
+								  variant="gradientRose"
+                 
+                >
+                  {confirmText}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
+  );
 };

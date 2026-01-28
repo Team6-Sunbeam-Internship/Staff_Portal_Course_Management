@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useGetSchedulesQuery } from "../../../../../store/api/schedulingApi";
-import { setBreadcrumbs } from "../../../../../store/slices/breadcrumbSlice";
+
 import {
 	Card,
 	CardBody,
-	CardHeader,
+	// CardHeader,
 	Button,
 	VStack,
 	HStack,
-} from "../../../../common";
+} from "../../../layout";
+import { setBreadcrumbs, useGetSchedulesQuery } from "../../../../store";
 
 export const ScheduleCalendar = () => {
 	const dispatch = useDispatch();
@@ -104,7 +104,7 @@ export const ScheduleCalendar = () => {
 		<VStack spacing='lg'>
 			{/**add filters */}
 			<Card>
-				<CardHeader
+				{/* <CardHeader
 					title={`Week of ${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`}
 					action={
 						<HStack spacing='sm'>
@@ -133,7 +133,7 @@ export const ScheduleCalendar = () => {
 							</Button>
 						</HStack>
 					}
-				/>
+				/> */}
 				<CardBody>
 					{isLoading ? (
 						<div className='grid grid-cols-7 gap-2'>
