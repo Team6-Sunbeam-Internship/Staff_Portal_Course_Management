@@ -13,7 +13,7 @@ export const academicServiceApi = baseApi.injectEndpoints({
 			transformErrorResponse: (response) => response,
 		}),
 		createCourseCoordinatorAssign: builder.mutation({
-			query: ({ premiseId: _, ...payload }) => ({
+			query: ({ premiseId, ...payload }) => ({
 				url: API_CONFIG.ENDPOINTS.ACADEMIC.CREATE_ASSIGNMENT,
 				method: "POST",
 				body: payload,

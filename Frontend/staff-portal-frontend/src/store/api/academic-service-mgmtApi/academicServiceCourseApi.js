@@ -46,7 +46,6 @@ export const academicServiceCourseApi = baseApi.injectEndpoints({
 					[...result.content.map(({ id }) => ({ type: "Course", id })), { type: "Course", id: "LIST" }]
 				:	[{ type: "Course", id: "LIST" }],
 		}),
-
 		createCourse: builder.mutation({
 			query: (courseData) => {
 				const { payload } = courseData;

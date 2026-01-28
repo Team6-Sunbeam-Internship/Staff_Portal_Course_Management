@@ -1,7 +1,8 @@
 import { Route, Routes } from "react-router";
 
 // import { Profile } from "../components/features";
-import AppLayout from "../layout/appLayout/AppLayout";
+
+import { AppLayout } from "../layout/appLayout";
 import {
 	AcademicManagementPage,
 	DashboardPage,
