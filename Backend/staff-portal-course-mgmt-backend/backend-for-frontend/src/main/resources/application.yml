@@ -3,7 +3,7 @@ server:
   servlet:
     session:
       cookie:
-        name: BFF_SESSION
+        name: __Host-bff-session
         secure: true
         same-site: none
         max-age: 3600
@@ -32,9 +32,11 @@ spring:
 
 logging:
   level:
-    org:
-      springframework:
-        web: DEBUG
-        security: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    # This specific line will show "Will not generate CSRF token" or "Invalid CSRF token found"
+    org.springframework.security.web.csrf: DEBUG
+    # This will show you the session details to see if the session is changing
+    org.springframework.security.web.session: DEBUG
     com:
       staff_portal.backend_for_frontend: DEBUG

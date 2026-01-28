@@ -1,0 +1,161 @@
+services:
+  auth-service:
+    build:
+      context: ./Backend/staff-portal-course-mgmt-backend/auth-service
+      dockerfile: Dockerfile
+    image: staff-portal/auth-service:v1.1
+    container_name: auth-service
+    ports:
+      - "8000:8000"
+    networks:
+      - staff-portal-network
+    volumes:
+      - oauth-keys:/app/keys
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    env_file:
+      - ./Backend/staff-portal-course-mgmt-backend/auth-service/auth-service.env
+    restart: unless-stopped
+#
+  backend-for-frontend:
+    build:
+      context: ./Backend/staff-portal-course-mgmt-backend/backend-for-frontend
+      dockerfile: Dockerfile
+    image: staff-portal/backend-for-frontend:v5.6
+    container_name: backend-for-frontend
+    ports:
+      - "8001:8001"
+    networks:
+      - staff-portal-network
+    depends_on:
+#      auth-service:
+#        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./Backend/staff-portal-course-mgmt-backend/backend-for-frontend/bff.env
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ./Backend/staff-portal-course-mgmt-backend/api-gateway
+      dockerfile: Dockerfile
+    image: staff-portal/api-gateway:v1.7
+    container_name: api-gateway
+    ports:
+      - "8002:8002"
+    networks:
+      - staff-portal-network
+#    depends_on:
+#      auth-service:
+#        condition: service_healthy
+#      backend-for-frontend:
+#        condition: service_healthy
+#      user-service:
+#        condition: service_healthy
+#      academic-service:
+#        condition: service_healthy
+#      schedule-session-timesheet-service:
+#        condition: service_healthy
+    env_file:
+      - ./Backend/staff-portal-course-mgmt-backend/api-gateway/apig.env
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./Backend/staff-portal-course-mgmt-backend/user-service
+      dockerfile: Dockerfile
+    image: staff-portal/user-service:v1.1
+    container_name: user-service
+    ports:
+      - "8003:8003"
+    networks:
+      - staff-portal-network
+    depends_on:
+#      auth-service:
+#        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+    env_file:
+      - ./Backend/staff-portal-course-mgmt-backend/user-service/user_service.env
+    restart: unless-stopped
+
+  academic-service:
+    build:
+      context: ./Backend/staff-portal-course-mgmt-backend/academic-service
+      dockerfile: Dockerfile
+    image: staff-portal/academic-service:v1.7
+    container_name: academic-service
+    ports:
+      - "8004:8004"
+    networks:
+      - staff-portal-network
+    depends_on:
+#      auth-service:
+#        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+    env_file:
+      - ./Backend/staff-portal-course-mgmt-backend/academic-service/academic_service.env
+    restart: unless-stopped
+
+  schedule-session-timesheet-service:
+    build:
+      context: ./Backend/staff-portal-course-mgmt-backend/scheduling-service
+      dockerfile: Dockerfile
+    image: staff-portal/schedule-session-timesheet-service:v1.0.7
+    container_name: schedule-session-timesheet-service
+    ports:
+      - "8005:8005"
+    networks:
+      - staff-portal-network
+    depends_on:
+#      auth-service:
+#        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+    env_file:
+      - ./Backend/staff-portal-course-mgmt-backend/scheduling-service/scheduling_service.env
+    restart: unless-stopped
+
+  mysql-db:
+    image: mysql:8.4.7
+    container_name: mysql-db
+    ports:
+      - "3307:3306"
+    networks:
+      - staff-portal-network
+    env_file:
+      - ./database.env
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  redis:
+    image: redis:7.4.2
+    container_name: redis
+    ports:
+      - "6378:6379"
+    networks:
+      - staff-portal-network
+    volumes:
+      - ./redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  
+networks:
+  staff-portal-network:
+    driver: bridge
+
+volumes:
+  oauth-keys:

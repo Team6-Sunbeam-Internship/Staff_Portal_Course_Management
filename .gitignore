@@ -196,7 +196,8 @@ coverage/
 *.sqlite
 *.sqlite3
 *.db-journal
-
+*.sql
+mysql_data/
 # Cache
 .cache/
 .npm/
@@ -218,3 +219,6 @@ consul-config/
 nginx-temp/
 haproxy-temp/
 .metadata/
+
+
+*.rdb

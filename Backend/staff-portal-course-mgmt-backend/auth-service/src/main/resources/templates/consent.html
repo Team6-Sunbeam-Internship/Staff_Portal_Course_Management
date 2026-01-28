@@ -1,104 +1,857 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <meta charset="utf-8" />-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1">-->
+<!--    <title>Custom consent page - Consent required</title>-->
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">-->
+<!--    <script>-->
+<!--        function cancelConsent() {-->
+<!--            document.consent_form.reset();-->
+<!--            document.consent_form.submit();-->
+<!--        }-->
+<!--    </script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="container">-->
+<!--    <div class="row py-5">-->
+<!--        <h1 class="text-center text-primary">App permissions</h1>-->
+<!--    </div>-->
+<!--    <div class="row">-->
+<!--        <div class="col text-center">-->
+<!--            <p>-->
+<!--                The application-->
+<!--                <span class="fw-bold text-primary" th:text="${clientId}"></span>-->
+<!--                wants to access your account-->
+<!--                <span class="fw-bold" th:text="${principalName}"></span>-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div th:if="${userCode}" class="row">-->
+<!--        <div class="col text-center">-->
+<!--            <p class="alert alert-warning">-->
+<!--                You have provided the code-->
+<!--                <span class="fw-bold" th:text="${userCode}"></span>.-->
+<!--                Verify that this code matches what is shown on your device.-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div class="row pb-3">-->
+<!--        <div class="col text-center">-->
+<!--            <p>-->
+<!--                The following permissions are requested by the above app.<br/>-->
+<!--                Please review these and consent if you approve.-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div class="row">-->
+<!--        <div class="col text-center">-->
+<!--            <form name="consent_form" method="post" th:action="${requestURI}">-->
+<!--                <input type="hidden" name="client_id" th:value="${clientId}">-->
+<!--                <input type="hidden" name="state" th:value="${state}">-->
+<!--                <input th:if="${userCode}" type="hidden" name="user_code" th:value="${userCode}">-->
+
+<!--                <div th:each="scope: ${scopes}" class="form-check py-1">-->
+<!--                    <input class="form-check-input"-->
+<!--                           style="float: none"-->
+<!--                           type="checkbox"-->
+<!--                           name="scope"-->
+<!--                           th:value="${scope.scope}"-->
+<!--                           th:id="${scope.scope}">-->
+<!--                    <label class="form-check-label fw-bold px-2" th:for="${scope.scope}" th:text="${scope.scope}"></label>-->
+<!--                    <p class="text-primary" th:text="${scope.description}"></p>-->
+<!--                </div>-->
+
+<!--                <p th:if="${not #lists.isEmpty(previouslyApprovedScopes)}">-->
+<!--                    You have already granted the following permissions to the above app:-->
+<!--                </p>-->
+<!--                <div th:each="scope: ${previouslyApprovedScopes}" class="form-check py-1">-->
+<!--                    <input class="form-check-input"-->
+<!--                           style="float: none"-->
+<!--                           type="checkbox"-->
+<!--                           th:id="${scope.scope}"-->
+<!--                           disabled-->
+<!--                           checked>-->
+<!--                    <label class="form-check-label fw-bold px-2" th:for="${scope.scope}" th:text="${scope.scope}"></label>-->
+<!--                    <p class="text-primary" th:text="${scope.description}"></p>-->
+<!--                </div>-->
+
+<!--                <div class="pt-3">-->
+<!--                    <button class="btn btn-primary btn-lg" type="submit" id="submit-consent">-->
+<!--                        Submit Consent-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--                <div class="pt-3">-->
+<!--                    <button class="btn btn-link regular" type="button" id="cancel-consent" onclick="cancelConsent();">-->
+<!--                        Cancel-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div class="row pt-4">-->
+<!--        <div class="col text-center">-->
+<!--            <p>-->
+<!--                <small>-->
+<!--                    Your consent to provide access is required.<br/>-->
+<!--                    If you do not approve, click Cancel, in which case no information will be shared with the app.-->
+<!--                </small>-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link th:href="@{/output.css}" rel="stylesheet"/>
     <title>Custom consent page - Consent required</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Root Variables for Theme */
+        :root {
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-border: rgba(255, 255, 255, 0.4);
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+        }
+
+        .dark {
+            --card-bg: rgba(17, 24, 39, 0.9);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+        }
+
+        /* Animated Background - Light Mode */
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            animation: gradientShift 15s ease infinite;
+            background-size: 400% 400%;
+            padding: 2rem 1rem;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        /* Dark Mode Background */
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #1a1a2e 100%);
+            animation: gradientShiftDark 15s ease infinite;
+            background-size: 400% 400%;
+        }
+
+        @keyframes gradientShiftDark {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translate(100px, -100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .particle:nth-child(1) { left: 5%; width: 8px; height: 8px; background: rgba(255, 255, 255, 0.6); animation-delay: 0s; animation-duration: 18s; }
+        .particle:nth-child(2) { left: 15%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.4); animation-delay: 2s; animation-duration: 22s; }
+        .particle:nth-child(3) { left: 25%; width: 10px; height: 10px; background: rgba(255, 255, 255, 0.5); animation-delay: 4s; animation-duration: 20s; }
+        .particle:nth-child(4) { left: 35%; width: 7px; height: 7px; background: rgba(255, 255, 255, 0.3); animation-delay: 1s; animation-duration: 19s; }
+        .particle:nth-child(5) { left: 45%; width: 9px; height: 9px; background: rgba(255, 255, 255, 0.6); animation-delay: 3s; animation-duration: 21s; }
+        .particle:nth-child(6) { left: 55%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.4); animation-delay: 5s; animation-duration: 23s; }
+        .particle:nth-child(7) { left: 65%; width: 8px; height: 8px; background: rgba(255, 255, 255, 0.5); animation-delay: 2.5s; animation-duration: 18s; }
+        .particle:nth-child(8) { left: 75%; width: 7px; height: 7px; background: rgba(255, 255, 255, 0.3); animation-delay: 4.5s; animation-duration: 20s; }
+        .particle:nth-child(9) { left: 85%; width: 10px; height: 10px; background: rgba(255, 255, 255, 0.6); animation-delay: 1.5s; animation-duration: 22s; }
+        .particle:nth-child(10) { left: 95%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.4); animation-delay: 3.5s; animation-duration: 19s; }
+
+        .dark .particle { background: rgba(139, 92, 246, 0.6); }
+        .dark .particle:nth-child(even) { background: rgba(236, 72, 153, 0.5); }
+
+        /* Glowing Orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: orbFloat 20s infinite ease-in-out;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.6) 0%, transparent 70%);
+            top: -10%;
+            left: -5%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.6) 0%, transparent 70%);
+            bottom: -15%;
+            right: -10%;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.6) 0%, transparent 70%);
+            top: 40%;
+            right: 10%;
+            animation-delay: 10s;
+        }
+
+        .dark .orb-1 { background: radial-gradient(circle, rgba(79, 70, 229, 0.4) 0%, transparent 70%); }
+        .dark .orb-2 { background: radial-gradient(circle, rgba(219, 39, 119, 0.4) 0%, transparent 70%); }
+        .dark .orb-3 { background: radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, transparent 70%); }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        /* Glass Card */
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            animation: cardEntrance 0.8s ease-out;
+        }
+
+        @keyframes cardEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Header Section */
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(0deg) translate(-50%, -50%); }
+            100% { transform: rotate(360deg) translate(-50%, -50%); }
+        }
+
+        .dark .header-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+        }
+
+        /* Shimmer Effect */
+        .shimmer h1 {
+            background: linear-gradient(90deg,
+                #ffffff 0%,
+                #f0f0f0 25%,
+                #ffffff 50%,
+                #f0f0f0 75%,
+                #ffffff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmerText 3s linear infinite;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes shimmerText {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Form Body */
+        .form-body {
+            background: var(--card-bg);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .dark .form-body {
+            color: var(--text-primary);
+        }
+
+        /* Custom Scrollbar */
+        .form-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .form-body::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .form-body::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .dark .form-body::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+
+        /* Text Styles */
+        .intro-text {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-name {
+            font-weight: 700;
+            color: #8b5cf6;
+            font-size: 1.1rem;
+        }
+
+        .dark .app-name {
+            color: #a78bfa;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            color: #92400e;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .dark .alert {
+            background: linear-gradient(135deg, rgba(120, 53, 15, 0.4), rgba(146, 64, 14, 0.4));
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fcd34d;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-code {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        /* Permission Section */
+        .permissions-title {
+            text-align: center;
+            margin: 1.5rem 0 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .permission-item {
+            background: rgba(139, 92, 246, 0.05);
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .dark .permission-item {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .permission-item:hover {
+            border-color: #8b5cf6;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .permission-item.disabled {
+            background: rgba(156, 163, 175, 0.1);
+            border-color: rgba(156, 163, 175, 0.2);
+            opacity: 0.7;
+        }
+
+        .dark .permission-item.disabled {
+            background: rgba(75, 85, 99, 0.2);
+            border-color: rgba(107, 114, 128, 0.3);
+        }
+
+        /* Checkbox */
+        .form-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid #8b5cf6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            background: white;
+            margin-top: 2px;
+        }
+
+        .dark .form-check-input {
+            background: #1f2937;
+            border-color: #a78bfa;
+        }
+
+        .form-check-input:checked {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+        }
+
+        .dark .form-check-input:checked {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-color: #4f46e5;
+        }
+
+        .form-check-input:checked::after {
+            content: '✓';
+            display: block;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            line-height: 16px;
+            font-weight: bold;
+        }
+
+        .form-check-input:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .permission-content {
+            flex: 1;
+        }
+
+        .permission-label {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .permission-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Previously Approved Section */
+        .approved-title {
+            text-align: center;
+            margin: 2rem 0 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-glow {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            background-size: 200% 200%;
+            color: white;
+            font-weight: 700;
+            font-size: 1.125rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            animation: gradientMove 3s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.7),
+                        0 0 60px rgba(236, 72, 153, 0.5);
+            animation: gradientMove 1.5s ease infinite;
+        }
+
+        .dark .btn-glow {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed, #db2777);
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .btn-cancel {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 1rem;
+            border: 2px solid var(--text-secondary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+            transform: translateY(-2px);
+        }
+
+        .dark .btn-cancel:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #a78bfa;
+            color: #a78bfa;
+        }
+
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .theme-toggle svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-primary);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover svg {
+            transform: rotate(20deg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-card {
+                width: 95%;
+            }
+
+            .header-gradient {
+                padding: 2rem 1rem;
+            }
+
+            .shimmer h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-body {
+                padding: 1.5rem;
+            }
+        }
+    </style>
     <script>
         function cancelConsent() {
             document.consent_form.reset();
             document.consent_form.submit();
         }
+
+        function toggleTheme() {
+            const body = document.body;
+            const sunIcon = document.querySelector('.sun-icon');
+            const moonIcon = document.querySelector('.moon-icon');
+
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const body = document.body;
+            const sunIcon = document.querySelector('.sun-icon');
+            const moonIcon = document.querySelector('.moon-icon');
+
+            if (savedTheme === 'dark') {
+                body.classList.add('dark');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            } else {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            }
+        });
     </script>
 </head>
 <body>
-<div class="container">
-    <div class="row py-5">
-        <h1 class="text-center text-primary">App permissions</h1>
+
+<!-- Floating Orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Floating Particles -->
+<div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+</div>
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <svg class="sun-icon" style="display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+    </svg>
+    <svg class="moon-icon" style="display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+    </svg>
+</button>
+
+<!-- Consent Card -->
+<div class="glass-card">
+
+    <!-- Header Section -->
+    <div class="header-gradient">
+        <div class="shimmer">
+            <h1>App Permissions</h1>
+        </div>
+        <p class="header-subtitle">Consent Required</p>
     </div>
-    <div class="row">
-        <div class="col text-center">
+
+    <!-- Form Body -->
+    <div class="form-body">
+
+        <!-- Introduction Text -->
+        <div class="intro-text">
             <p>
                 The application
-                <span class="fw-bold text-primary" th:text="${clientId}"></span>
+                <span class="app-name" th:text="${clientId}"></span>
                 wants to access your account
-                <span class="fw-bold" th:text="${principalName}"></span>
+                <span class="user-name" th:text="${principalName}">.</span>
             </p>
         </div>
-    </div>
-    <div th:if="${userCode}" class="row">
-        <div class="col text-center">
-            <p class="alert alert-warning">
-                You have provided the code
-                <span class="fw-bold" th:text="${userCode}"></span>.
-                Verify that this code matches what is shown on your device.
-            </p>
+        <!-- Permissions Instructions -->
+        <div class="permissions-title">
+            The following permissions are requested by the above app.<br/>
+            Please review these and consent if you approve.
         </div>
-    </div>
-    <div class="row pb-3">
-        <div class="col text-center">
-            <p>
-                The following permissions are requested by the above app.<br/>
-                Please review these and consent if you approve.
-            </p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col text-center">
-            <form name="consent_form" method="post" th:action="${requestURI}">
-                <input type="hidden" name="client_id" th:value="${clientId}">
-                <input type="hidden" name="state" th:value="${state}">
-                <input th:if="${userCode}" type="hidden" name="user_code" th:value="${userCode}">
 
-                <div th:each="scope: ${scopes}" class="form-check py-1">
+        <!-- Consent Form -->
+        <form name="consent_form" method="post" th:action="${requestURI}">
+            <input type="hidden" name="client_id" th:value="${clientId}">
+            <input type="hidden" name="state" th:value="${state}">
+            <input th:if="${userCode}" type="hidden" name="user_code" th:value="${userCode}">
+
+            <!-- Requested Scopes -->
+            <div th:each="scope: ${scopes}" class="permission-item">
+                <div class="form-check">
                     <input class="form-check-input"
-                           style="float: none"
                            type="checkbox"
                            name="scope"
                            th:value="${scope.scope}"
                            th:id="${scope.scope}">
-                    <label class="form-check-label fw-bold px-2" th:for="${scope.scope}" th:text="${scope.scope}"></label>
-                    <p class="text-primary" th:text="${scope.description}"></p>
+                    <div class="permission-content">
+                        <div class="permission-label" th:text="${scope.scope}">Permission Name</div>
+                        <p class="permission-description" th:text="${scope.description}">Permission description</p>
+                    </div>
                 </div>
+            </div>
 
-                <p th:if="${not #lists.isEmpty(previouslyApprovedScopes)}">
-                    You have already granted the following permissions to the above app:
-                </p>
-                <div th:each="scope: ${previouslyApprovedScopes}" class="form-check py-1">
+            <!-- Previously Approved Scopes -->
+            <p th:if="${not #lists.isEmpty(previouslyApprovedScopes)}" class="approved-title">
+                You have already granted the following permissions to the above app:
+            </p>
+            <div th:each="scope: ${previouslyApprovedScopes}" class="permission-item disabled">
+                <div class="form-check">
                     <input class="form-check-input"
-                           style="float: none"
                            type="checkbox"
                            th:id="${scope.scope}"
                            disabled
                            checked>
-                    <label class="form-check-label fw-bold px-2" th:for="${scope.scope}" th:text="${scope.scope}"></label>
-                    <p class="text-primary" th:text="${scope.description}"></p>
+                    <div class="permission-content">
+                        <div class="permission-label" th:text="${scope.scope}">Permission Name</div>
+                        <p class="permission-description" th:text="${scope.description}">Permission description</p>
+                    </div>
                 </div>
+            </div>
 
-                <div class="pt-3">
-                    <button class="btn btn-primary btn-lg" type="submit" id="submit-consent">
-                        Submit Consent
-                    </button>
-                </div>
-                <div class="pt-3">
-                    <button class="btn btn-link regular" type="button" id="cancel-consent" onclick="cancelConsent();">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="row pt-4">
-        <div class="col text-center">
-            <p>
-                <small>
-                    Your consent to provide access is required.<br/>
-                    If you do not approve, click Cancel, in which case no information will be shared with the app.
-                </small>
-            </p>
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button class="btn-glow" type="submit" id="submit-consent">
+                    <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Submit Consent
+                </button>
+
+                <button class="btn-cancel" type="button" id="cancel-consent" onclick="cancelConsent();">
+                    Cancel
+                </button>
+            </div>
+        </form>
+
+        <!-- Footer Note -->
+        <div class="footer-note">
+            Your consent to provide access is required.<br/>
+            If you do not approve, click Cancel, in which case no information will be shared with the app.
         </div>
     </div>
 </div>
+
 </body>
 </html>

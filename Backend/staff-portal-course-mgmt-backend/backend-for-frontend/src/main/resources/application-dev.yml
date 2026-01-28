@@ -7,12 +7,13 @@ spring:
 
 bff:
   auth-service:
-    issuer:  ${AUTH_SERVER_ISSUER:http://localhost:8001}
-    introspect-uri:  ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/introspect
-    revoke-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/revoke
-    logout-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/connect/v1/logout
+    authorization-uri: ${AUTH_SERVER_AUTHORIZATION_URI}
+    issuer:  ${AUTH_SERVER_ISSUER:http://localhost:8000}:${AUTH_SERVER_PORT}
+    introspect-uri:  ${AUTH_SERVER_ISSUER:http://localhost:8000}:${AUTH_SERVER_PORT}/oauth2/v1/introspect
+    revoke-uri: ${AUTH_SERVER_ISSUER:http://localhost:8000}:${AUTH_SERVER_PORT}/oauth2/v1/revoke
+    logout-uri: ${AUTH_SERVER_ISSUER:http://localhost:8000}:${AUTH_SERVER_PORT}/connect/v1/logout
   api-gateway:
-    base-url: ${API_GATEWAY_URL:http://localhost:8003}
+    base-url: ${API_GATEWAY_URL:http://localhost:8002}
   frontend:
     base-url: ${FRONTEND_URL:http://localhost:5173}
   cookie:
@@ -39,9 +40,9 @@ bff:
 
       provider:
         auth-service:
-          issuer-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}
-          authorization-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/authorize
-          token-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/token
-          user-info-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/connect/v1/userinfo
+          issuer-uri: ${AUTH_SERVER_ISSUER}:${AUTH_SERVER_PORT}
+          authorization-uri: ${AUTH_SERVER_AUTHORIZATION_URI}
+          token-uri: ${AUTH_SERVER_ISSUER}:${AUTH_SERVER_PORT}/oauth2/v1/token
+          user-info-uri: ${AUTH_SERVER_ISSUER}:${AUTH_SERVER_PORT}/connect/v1/userinfo
           user-info-authentication-method: header
-          jwk-set-uri: ${AUTH_SERVER_ISSUER:http://localhost:8001}/oauth2/v1/jwks
+          jwk-set-uri: ${AUTH_SERVER_ISSUER}:${AUTH_SERVER_PORT}/oauth2/v1/jwks

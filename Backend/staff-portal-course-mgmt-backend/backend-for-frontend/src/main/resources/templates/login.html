@@ -1,103 +1,1879 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8" />-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Staff Portal - Login</title>-->
+<!--    <link th:href="@{/output.css}" rel="stylesheet" />-->
+
+<!--</head>-->
+<!--<body class="min-h-screen flex items-center justify-center bg-gray-100">-->
+
+<!--<div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm transform transition duration-500 hover:scale-[1.02]">-->
+
+<!--    <div class="text-center mb-6">-->
+<!--        <h1 class="text-3xl font-extrabold text-indigo-700">Staff Portal</h1>-->
+<!--        <p class="text-gray-500 mt-1">Sign in to access your account</p>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.error}"-->
+<!--         class="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-4"-->
+<!--         role="alert">-->
+<!--        <p class="font-medium text-xl">Login failed. Please check your credentials and try again. 🚨</p>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.logout}"-->
+<!--         class="p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg mb-4"-->
+<!--         role="alert">-->
+<!--        <p class="font-medium text-sm">You have been logged out successfully. ✅</p>-->
+<!--    </div>-->
+
+<!--    <div th:if="${session.sessionExpired}"-->
+<!--         class="p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg mb-4"-->
+<!--         role="alert">-->
+<!--        <p class="font-medium text-sm">-->
+<!--            Your session expired. Please log in again to continue where you left off. ⏳-->
+<!--        </p>-->
+<!--    </div>-->
+
+<!--    <a th:href="${authServerLoginUrl}"-->
+<!--       class="block w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md-->
+<!--              hover:bg-indigo-700 transition duration-300 ease-in-out text-center-->
+<!--              focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">-->
+<!--        Sign in-->
+<!--    </a>-->
+
+<!--    <div class="text-center mt-6 text-xs text-gray-400">-->
+<!--        <p>Secure login powered by OAuth 2.0</p>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--</body>-->
+<!--</html>-->
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8" />-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Staff Portal - Login</title>-->
+<!--    <link th:href="@{/output.css}" rel="stylesheet" />-->
+<!--    <style>-->
+<!--        /* Root Variables for Theme */-->
+<!--        :root {-->
+<!--            &#45;&#45;dot-color: rgba(99, 102, 241, 0.15);-->
+<!--            &#45;&#45;card-bg: rgba(255, 255, 255, 0.9);-->
+<!--            &#45;&#45;card-border: rgba(255, 255, 255, 0.4);-->
+<!--            &#45;&#45;text-primary: #1f2937;-->
+<!--            &#45;&#45;text-secondary: #6b7280;-->
+<!--        }-->
+
+<!--        .dark {-->
+<!--            &#45;&#45;dot-color: rgba(129, 140, 248, 0.25);-->
+<!--            &#45;&#45;card-bg: rgba(17, 24, 39, 0.85);-->
+<!--            &#45;&#45;card-border: rgba(255, 255, 255, 0.1);-->
+<!--            &#45;&#45;text-primary: #f9fafb;-->
+<!--            &#45;&#45;text-secondary: #d1d5db;-->
+<!--        }-->
+
+<!--        /* Dot Pattern Background */-->
+<!--        .dot-pattern {-->
+<!--            background-image: radial-gradient(circle, var(&#45;&#45;dot-color) 1.5px, transparent 1.5px);-->
+<!--            background-size: 30px 30px;-->
+<!--            position: relative;-->
+<!--        }-->
+
+<!--        /* Animated Gradient Background - Light Mode */-->
+<!--        body:not(.dark) .gradient-bg {-->
+<!--            background: linear-gradient(135deg,-->
+<!--            #667eea 0%,-->
+<!--            #764ba2 20%,-->
+<!--            #f093fb 40%,-->
+<!--            #4facfe 60%,-->
+<!--            #00f2fe 80%,-->
+<!--            #667eea 100%);-->
+<!--            background-size: 400% 400%;-->
+<!--            animation: gradientShift 20s ease infinite;-->
+<!--        }-->
+
+<!--        /* Animated Gradient Background - Dark Mode */-->
+<!--        .dark .gradient-bg {-->
+<!--            background: linear-gradient(135deg,-->
+<!--            #0f172a 0%,-->
+<!--            #1e1b4b 20%,-->
+<!--            #312e81 40%,-->
+<!--            #1e3a8a 60%,-->
+<!--            #1e293b 80%,-->
+<!--            #0f172a 100%);-->
+<!--            background-size: 400% 400%;-->
+<!--            animation: gradientShift 20s ease infinite;-->
+<!--        }-->
+
+<!--        @keyframes gradientShift {-->
+<!--            0% { background-position: 0% 50%; }-->
+<!--            50% { background-position: 100% 50%; }-->
+<!--            100% { background-position: 0% 50%; }-->
+<!--        }-->
+
+<!--        /* Floating Orbs - Light Mode */-->
+<!--        .orb {-->
+<!--            position: absolute;-->
+<!--            border-radius: 50%;-->
+<!--            filter: blur(80px);-->
+<!--            opacity: 0.5;-->
+<!--            animation: float 25s ease-in-out infinite;-->
+<!--            pointer-events: none;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-1 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, rgba(99, 102, 241, 0.5), transparent);-->
+<!--            top: -250px;-->
+<!--            left: -200px;-->
+<!--            animation-delay: 0s;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-2 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, rgba(236, 72, 153, 0.4), transparent);-->
+<!--            bottom: -150px;-->
+<!--            right: -100px;-->
+<!--            animation-delay: 8s;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-3 {-->
+<!--            width: 350px;-->
+<!--            height: 350px;-->
+<!--            background: radial-gradient(circle, rgba(59, 130, 246, 0.45), transparent);-->
+<!--            top: 40%;-->
+<!--            right: -150px;-->
+<!--            animation-delay: 4s;-->
+<!--        }-->
+
+<!--        /* Floating Orbs - Dark Mode */-->
+<!--        .dark .orb-1 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, rgba(79, 70, 229, 0.4), transparent);-->
+<!--            top: -250px;-->
+<!--            left: -200px;-->
+<!--            animation-delay: 0s;-->
+<!--        }-->
+
+<!--        .dark .orb-2 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, rgba(139, 92, 246, 0.35), transparent);-->
+<!--            bottom: -150px;-->
+<!--            right: -100px;-->
+<!--            animation-delay: 8s;-->
+<!--        }-->
+
+<!--        .dark .orb-3 {-->
+<!--            width: 350px;-->
+<!--            height: 350px;-->
+<!--            background: radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent);-->
+<!--            top: 40%;-->
+<!--            right: -150px;-->
+<!--            animation-delay: 4s;-->
+<!--        }-->
+
+<!--        @keyframes float {-->
+<!--            0%, 100% { transform: translate(0, 0) scale(1); }-->
+<!--            33% { transform: translate(60px, -60px) scale(1.15); }-->
+<!--            66% { transform: translate(-60px, 60px) scale(0.9); }-->
+<!--        }-->
+
+<!--        /* Glass Card Effect */-->
+<!--        .glass-card {-->
+<!--            background: var(&#45;&#45;card-bg);-->
+<!--            backdrop-filter: blur(30px) saturate(180%);-->
+<!--            -webkit-backdrop-filter: blur(30px) saturate(180%);-->
+<!--            border: 1px solid var(&#45;&#45;card-border);-->
+<!--            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15),-->
+<!--            0 20px 60px 0 rgba(31, 38, 135, 0.1);-->
+<!--        }-->
+
+<!--        .dark .glass-card {-->
+<!--            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4),-->
+<!--            0 20px 60px 0 rgba(0, 0, 0, 0.3);-->
+<!--        }-->
+
+<!--        /* Shimmer Effect */-->
+<!--        .shimmer {-->
+<!--            position: relative;-->
+<!--            overflow: hidden;-->
+<!--        }-->
+
+<!--        .shimmer::after {-->
+<!--            content: '';-->
+<!--            position: absolute;-->
+<!--            top: 0;-->
+<!--            left: -100%;-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            background: linear-gradient(90deg,-->
+<!--            transparent,-->
+<!--            rgba(255, 255, 255, 0.4),-->
+<!--            transparent);-->
+<!--            animation: shimmer 4s infinite;-->
+<!--        }-->
+
+<!--        .dark .shimmer::after {-->
+<!--            background: linear-gradient(90deg,-->
+<!--            transparent,-->
+<!--            rgba(255, 255, 255, 0.2),-->
+<!--            transparent);-->
+<!--        }-->
+
+<!--        @keyframes shimmer {-->
+<!--            0% { left: -100%; }-->
+<!--            100% { left: 100%; }-->
+<!--        }-->
+
+<!--        /* Button Glow - Light Mode */-->
+<!--        .btn-glow {-->
+<!--            position: relative;-->
+<!--            transition: all 0.4s ease;-->
+<!--            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);-->
+<!--            background-size: 200% 200%;-->
+<!--            animation: gradientMove 3s ease infinite;-->
+<!--        }-->
+
+<!--        body:not(.dark) .btn-glow:hover {-->
+<!--            box-shadow: 0 0 30px rgba(99, 102, 241, 0.7),-->
+<!--            0 0 60px rgba(139, 92, 246, 0.5),-->
+<!--            0 0 90px rgba(236, 72, 153, 0.3);-->
+<!--            transform: translateY(-3px);-->
+<!--            animation: gradientMove 1.5s ease infinite;-->
+<!--        }-->
+
+<!--        /* Button Glow - Dark Mode */-->
+<!--        .dark .btn-glow {-->
+<!--            background: linear-gradient(135deg, #4f46e5, #7c3aed, #db2777);-->
+<!--            background-size: 200% 200%;-->
+<!--        }-->
+
+<!--        .dark .btn-glow:hover {-->
+<!--            box-shadow: 0 0 30px rgba(79, 70, 229, 0.8),-->
+<!--            0 0 60px rgba(124, 58, 237, 0.6),-->
+<!--            0 0 90px rgba(219, 39, 119, 0.4);-->
+<!--            transform: translateY(-3px);-->
+<!--            animation: gradientMove 1.5s ease infinite;-->
+<!--        }-->
+
+<!--        @keyframes gradientMove {-->
+<!--            0%, 100% { background-position: 0% 50%; }-->
+<!--            50% { background-position: 100% 50%; }-->
+<!--        }-->
+
+<!--        /* Particle Effect */-->
+<!--        .particle {-->
+<!--            position: absolute;-->
+<!--            width: 4px;-->
+<!--            height: 4px;-->
+<!--            background: rgba(255, 255, 255, 0.6);-->
+<!--            border-radius: 50%;-->
+<!--            animation: particleFloat 15s infinite;-->
+<!--            opacity: 0;-->
+<!--        }-->
+
+<!--        .dark .particle {-->
+<!--            background: rgba(139, 92, 246, 0.7);-->
+<!--        }-->
+
+<!--        @keyframes particleFloat {-->
+<!--            0% {-->
+<!--                transform: translateY(100vh) translateX(0);-->
+<!--                opacity: 0;-->
+<!--            }-->
+<!--            10% {-->
+<!--                opacity: 1;-->
+<!--            }-->
+<!--            90% {-->
+<!--                opacity: 1;-->
+<!--            }-->
+<!--            100% {-->
+<!--                transform: translateY(-100vh) translateX(100px);-->
+<!--                opacity: 0;-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Theme Toggle Button */-->
+<!--        .theme-toggle {-->
+<!--            position: fixed;-->
+<!--            top: 20px;-->
+<!--            right: 20px;-->
+<!--            z-index: 50;-->
+<!--            background: var(&#45;&#45;card-bg);-->
+<!--            backdrop-filter: blur(20px);-->
+<!--            border: 1px solid var(&#45;&#45;card-border);-->
+<!--            border-radius: 50%;-->
+<!--            width: 50px;-->
+<!--            height: 50px;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);-->
+<!--        }-->
+
+<!--        .theme-toggle:hover {-->
+<!--            transform: scale(1.1) rotate(10deg);-->
+<!--            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);-->
+<!--        }-->
+
+<!--        .dark .theme-toggle:hover {-->
+<!--            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);-->
+<!--        }-->
+
+<!--        /* Alert Styles */-->
+<!--        .alert-error {-->
+<!--            background: linear-gradient(135deg, rgba(254, 226, 226, 0.95), rgba(254, 202, 202, 0.95));-->
+<!--            border: 1px solid rgba(248, 113, 113, 0.5);-->
+<!--            color: #991b1b;-->
+<!--        }-->
+
+<!--        .dark .alert-error {-->
+<!--            background: linear-gradient(135deg, rgba(127, 29, 29, 0.4), rgba(153, 27, 27, 0.4));-->
+<!--            border: 1px solid rgba(248, 113, 113, 0.3);-->
+<!--            color: #fca5a5;-->
+<!--        }-->
+
+<!--        .alert-success {-->
+<!--            background: linear-gradient(135deg, rgba(220, 252, 231, 0.95), rgba(187, 247, 208, 0.95));-->
+<!--            border: 1px solid rgba(74, 222, 128, 0.5);-->
+<!--            color: #065f46;-->
+<!--        }-->
+
+<!--        .dark .alert-success {-->
+<!--            background: linear-gradient(135deg, rgba(20, 83, 45, 0.4), rgba(22, 101, 52, 0.4));-->
+<!--            border: 1px solid rgba(74, 222, 128, 0.3);-->
+<!--            color: #86efac;-->
+<!--        }-->
+
+<!--        .alert-warning {-->
+<!--            background: linear-gradient(135deg, rgba(254, 249, 195, 0.95), rgba(254, 240, 138, 0.95));-->
+<!--            border: 1px solid rgba(250, 204, 21, 0.5);-->
+<!--            color: #92400e;-->
+<!--        }-->
+
+<!--        .dark .alert-warning {-->
+<!--            background: linear-gradient(135deg, rgba(120, 53, 15, 0.4), rgba(146, 64, 14, 0.4));-->
+<!--            border: 1px solid rgba(250, 204, 21, 0.3);-->
+<!--            color: #fde047;-->
+<!--        }-->
+
+<!--        /* Pulse Animation for Icons */-->
+<!--        @keyframes pulse {-->
+<!--            0%, 100% { opacity: 1; transform: scale(1); }-->
+<!--            50% { opacity: 0.8; transform: scale(1.05); }-->
+<!--        }-->
+
+<!--        .pulse-icon {-->
+<!--            animation: pulse 2s ease-in-out infinite;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body class="min-h-screen flex items-center justify-center gradient-bg dot-pattern overflow-hidden transition-colors duration-500">-->
+
+<!--&lt;!&ndash; Theme Toggle Button &ndash;&gt;-->
+<!--<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">-->
+<!--    <svg class="w-6 h-6 sun-icon" style="color: var(&#45;&#45;text-primary); display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>-->
+<!--    </svg>-->
+<!--    <svg class="w-6 h-6 moon-icon" style="color: var(&#45;&#45;text-primary); display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>-->
+<!--    </svg>-->
+<!--</button>-->
+
+<!--&lt;!&ndash; Floating Orbs &ndash;&gt;-->
+<!--<div class="orb orb-1"></div>-->
+<!--<div class="orb orb-2"></div>-->
+<!--<div class="orb orb-3"></div>-->
+
+<!--&lt;!&ndash; Floating Particles &ndash;&gt;-->
+<!--<div class="particle" style="left: 10%; animation-delay: 0s;"></div>-->
+<!--<div class="particle" style="left: 20%; animation-delay: 2s;"></div>-->
+<!--<div class="particle" style="left: 30%; animation-delay: 4s;"></div>-->
+<!--<div class="particle" style="left: 40%; animation-delay: 1s;"></div>-->
+<!--<div class="particle" style="left: 50%; animation-delay: 3s;"></div>-->
+<!--<div class="particle" style="left: 60%; animation-delay: 5s;"></div>-->
+<!--<div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>-->
+<!--<div class="particle" style="left: 80%; animation-delay: 4.5s;"></div>-->
+<!--<div class="particle" style="left: 90%; animation-delay: 1.5s;"></div>-->
+
+<!--<div class="glass-card p-10 rounded-3xl w-full max-w-md transform transition-all duration-500 hover:scale-[1.02] relative z-10 m-4">-->
+
+<!--    <div class="text-center mb-10">-->
+<!--        <div class="shimmer inline-block mb-4">-->
+<!--            <h1 class="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">-->
+<!--                Staff Portal-->
+<!--            </h1>-->
+<!--        </div>-->
+<!--        <p style="color: var(&#45;&#45;text-secondary);" class="mt-3 text-base">Sign in to access your account</p>-->
+<!--        <div class="mt-4 flex justify-center">-->
+<!--            <div class="w-20 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-full"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.error}"-->
+<!--         class="alert-error p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">Login failed. Please check your credentials and try again.</p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.logout}"-->
+<!--         class="alert-success p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">You have been logged out successfully.</p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${session.sessionExpired}"-->
+<!--         class="alert-warning p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5 pulse-icon" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">-->
+<!--                Your session expired. Please log in again to continue where you left off.-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <a th:href="${authServerLoginUrl}"-->
+<!--       class="btn-glow block w-full py-4 text-white font-bold rounded-xl shadow-xl-->
+<!--                  transition-all duration-300 ease-in-out text-center text-lg-->
+<!--                  focus:outline-none focus:ring-4 focus:ring-purple-500/50">-->
+<!--            <span class="flex items-center justify-center gap-3">-->
+<!--                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>-->
+<!--                </svg>-->
+<!--                Sign in Securely-->
+<!--            </span>-->
+<!--    </a>-->
+
+<!--    <div class="text-center mt-8" style="color: var(&#45;&#45;text-secondary);">-->
+<!--        <p class="text-xs flex items-center justify-center gap-2">-->
+<!--            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>-->
+<!--            </svg>-->
+<!--            Secure login powered by OAuth 2.0-->
+<!--        </p>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--    // Theme Toggle Function-->
+<!--    function toggleTheme() {-->
+<!--        const html = document.documentElement;-->
+<!--        const body = document.body;-->
+<!--        const sunIcon = document.querySelector('.sun-icon');-->
+<!--        const moonIcon = document.querySelector('.moon-icon');-->
+
+<!--        if (html.classList.contains('dark') || body.classList.contains('dark')) {-->
+<!--            html.classList.remove('dark');-->
+<!--            body.classList.remove('dark');-->
+<!--            sunIcon.style.display = 'block';-->
+<!--            moonIcon.style.display = 'none';-->
+<!--            localStorage.setItem('theme', 'light');-->
+<!--        } else {-->
+<!--            html.classList.add('dark');-->
+<!--            body.classList.add('dark');-->
+<!--            sunIcon.style.display = 'none';-->
+<!--            moonIcon.style.display = 'block';-->
+<!--            localStorage.setItem('theme', 'dark');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Load saved theme on page load-->
+<!--    window.addEventListener('DOMContentLoaded', () => {-->
+<!--        const savedTheme = localStorage.getItem('theme');-->
+<!--        const html = document.documentElement;-->
+<!--        const body = document.body;-->
+<!--        const sunIcon = document.querySelector('.sun-icon');-->
+<!--        const moonIcon = document.querySelector('.moon-icon');-->
+
+<!--        if (savedTheme === 'dark') {-->
+<!--            html.classList.add('dark');-->
+<!--            body.classList.add('dark');-->
+<!--            sunIcon.style.display = 'none';-->
+<!--            moonIcon.style.display = 'block';-->
+<!--        } else {-->
+<!--            sunIcon.style.display = 'block';-->
+<!--            moonIcon.style.display = 'none';-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8"/>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Staff Portal - Login</title>-->
+<!--    <link th:href="@{/output.css}" rel="stylesheet"/>-->
+<!--    <style>-->
+<!--        /* Root Variables for Theme */-->
+<!--        :root {-->
+<!--            &#45;&#45;dot-color: rgba(99, 102, 241, 0.15);-->
+<!--            &#45;&#45;card-bg: rgba(255, 255, 255, 0.9);-->
+<!--            &#45;&#45;card-border: rgba(255, 255, 255, 0.4);-->
+<!--            &#45;&#45;text-primary: #1f2937;-->
+<!--            &#45;&#45;text-secondary: #6b7280;-->
+<!--        }-->
+
+<!--        .dark {-->
+<!--            &#45;&#45;dot-color: rgba(150, 140, 248, 0.25);-->
+<!--            &#45;&#45;card-bg: rgba(17, 24, 39, 0.85);-->
+<!--            &#45;&#45;card-border: rgba(255, 255, 255, 0.1);-->
+<!--            &#45;&#45;text-primary: #f9fafb;-->
+<!--            &#45;&#45;text-secondary: #d1d5db;-->
+<!--        }-->
+
+<!--        /* Dot Pattern Background */-->
+<!--        .dot-pattern {-->
+<!--            background-image: radial-gradient(circle, var(&#45;&#45;dot-color) 1.5px, transparent 1.5px);-->
+<!--            background-size: 30px 30px;-->
+<!--            position: relative;-->
+<!--        }-->
+
+<!--        /* Animated Gradient Background - Light Mode */-->
+<!--        body:not(.dark) .gradient-bg,-->
+<!--        body.gradient-bg:not(.dark) {-->
+<!--            background: linear-gradient(135deg,-->
+<!--            #93c5fd 0%,-->
+<!--            #bae6fd 15%,-->
+<!--            #a7f3d0 30%,-->
+<!--            #fde68a 45%,-->
+<!--            #fbbf24 60%,-->
+<!--            #fb923c 75%,-->
+<!--            #f472b6 90%,-->
+<!--            #93c5fd 100%) !important;-->
+<!--            background-size: 100% 100% !important;-->
+<!--            animation: gradientShift 10s ease infinite !important;-->
+<!--        }-->
+<!--        /* Animated Gradient Background - Dark Mode */-->
+<!--        .dark .gradient-bg,-->
+<!--        body.dark.gradient-bg {-->
+<!--            background: linear-gradient(135deg,-->
+<!--            #0f172a 0%,-->
+<!--            #1e1b4b 15%,-->
+<!--            #312e81 30%,-->
+<!--            #1e3a8a 45%,-->
+<!--            #1e293b 60%,-->
+<!--            #4c1d95 75%,-->
+<!--            #581c87 90%,-->
+<!--            #0f172a 100%) !important;-->
+<!--            background-size: 300% 300% !important;-->
+<!--            animation: gradientShift 10s ease infinite !important;-->
+<!--        }-->
+
+<!--        @keyframes gradientShift {-->
+<!--            0% {-->
+<!--                background-position: 0 50%;-->
+<!--            }-->
+<!--            50% {-->
+<!--                background-position: 100% 50%;-->
+<!--            }-->
+<!--            100% {-->
+<!--                background-position: 0 50%;-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Floating Orbs - Light Mode */-->
+<!--        .orb {-->
+<!--            position: absolute;-->
+<!--            border-radius: 50%;-->
+<!--            filter: blur(80px);-->
+<!--            opacity: 0.5;-->
+<!--            animation: float 25s ease-in-out infinite;-->
+<!--            pointer-events: none;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-1 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent);-->
+<!--            top: -250px;-->
+<!--            left: -200px;-->
+<!--            animation-delay: 0s;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-2 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent);-->
+<!--            bottom: -150px;-->
+<!--            right: -100px;-->
+<!--            animation-delay: 8s;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-3 {-->
+<!--            width: 350px;-->
+<!--            height: 350px;-->
+<!--            background: radial-gradient(circle, rgba(59, 130, 246, 0.35), transparent);-->
+<!--            top: 40%;-->
+<!--            right: -150px;-->
+<!--            animation-delay: 4s;-->
+<!--        }-->
+
+<!--        /* Floating Orbs - Dark Mode */-->
+<!--        .dark .orb-1 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, rgba(79, 70, 229, 0.4), transparent);-->
+<!--            top: -250px;-->
+<!--            left: -200px;-->
+<!--            animation-delay: 0s;-->
+<!--        }-->
+
+<!--        .dark .orb-2 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, rgba(139, 92, 246, 0.35), transparent);-->
+<!--            bottom: -150px;-->
+<!--            right: -100px;-->
+<!--            animation-delay: 8s;-->
+<!--        }-->
+
+<!--        .dark .orb-3 {-->
+<!--            width: 350px;-->
+<!--            height: 350px;-->
+<!--            background: radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent);-->
+<!--            top: 40%;-->
+<!--            right: -150px;-->
+<!--            animation-delay: 4s;-->
+<!--        }-->
+
+<!--        @keyframes float {-->
+<!--            0%, 100% {-->
+<!--                transform: translate(0, 0) scale(1);-->
+<!--            }-->
+<!--            33% {-->
+<!--                transform: translate(60px, -60px) scale(1.15);-->
+<!--            }-->
+<!--            66% {-->
+<!--                transform: translate(-60px, 60px) scale(0.9);-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Glass Card Effect */-->
+<!--        .glass-card {-->
+<!--            background: var(&#45;&#45;card-bg);-->
+<!--            backdrop-filter: blur(30px) saturate(180%);-->
+<!--            -webkit-backdrop-filter: blur(30px) saturate(180%);-->
+<!--            border: 1px solid var(&#45;&#45;card-border);-->
+<!--            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15),-->
+<!--            0 20px 60px 0 rgba(31, 38, 135, 0.1);-->
+<!--        }-->
+
+<!--        .dark .glass-card {-->
+<!--            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4),-->
+<!--            0 20px 60px 0 rgba(0, 0, 0, 0.3);-->
+<!--        }-->
+
+<!--        /* Shimmer Effect - Flows through text only */-->
+<!--        .shimmer {-->
+<!--            position: relative;-->
+<!--            display: inline-block;-->
+<!--        }-->
+
+<!--        .shimmer h1 {-->
+<!--            position: relative;-->
+<!--            background: linear-gradient(90deg,-->
+<!--            #6366f1 0%,-->
+<!--            #8b5cf6 25%,-->
+<!--            #ec4899 50%,-->
+<!--            #8b5cf6 75%,-->
+<!--            #6366f1 100%);-->
+<!--            background-size: 200% auto;-->
+<!--            -webkit-background-clip: text;-->
+<!--            -webkit-text-fill-color: transparent;-->
+<!--            background-clip: text;-->
+<!--            animation: shimmerText 3s linear infinite;-->
+<!--        }-->
+
+<!--        @keyframes shimmerText {-->
+<!--            0% {-->
+<!--                background-position: 200% center;-->
+<!--            }-->
+<!--            100% {-->
+<!--                background-position: -200% center;-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Button Glow - Light Mode */-->
+<!--        .btn-glow {-->
+<!--            position: relative;-->
+<!--            transition: all 0.4s ease;-->
+<!--            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);-->
+<!--            background-size: 200% 200%;-->
+<!--            animation: gradientMove 3s ease infinite;-->
+<!--        }-->
+
+<!--        body:not(.dark) .btn-glow:hover {-->
+<!--            box-shadow: 0 0 30px rgba(99, 102, 241, 0.7),-->
+<!--            0 0 60px rgba(139, 92, 246, 0.5),-->
+<!--            0 0 90px rgba(236, 72, 153, 0.3);-->
+<!--            transform: translateY(-3px);-->
+<!--            animation: gradientMove 1.5s ease infinite;-->
+<!--        }-->
+
+<!--        /* Button Glow - Dark Mode */-->
+<!--        .dark .btn-glow {-->
+<!--            background: linear-gradient(135deg, #4f46e5, #7c3aed, #db2777);-->
+<!--            background-size: 200% 200%;-->
+<!--        }-->
+
+<!--        .dark .btn-glow:hover {-->
+<!--            box-shadow: 0 0 30px rgba(79, 70, 229, 0.8),-->
+<!--            0 0 60px rgba(124, 58, 237, 0.6),-->
+<!--            0 0 90px rgba(219, 39, 119, 0.4);-->
+<!--            transform: translateY(-3px);-->
+<!--            animation: gradientMove 1.5s ease infinite;-->
+<!--        }-->
+
+<!--        @keyframes gradientMove {-->
+<!--            0%, 100% {-->
+<!--                background-position: 0% 50%;-->
+<!--            }-->
+<!--            50% {-->
+<!--                background-position: 100% 50%;-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Particle Effect */-->
+<!--        .particle {-->
+<!--            position: absolute;-->
+<!--            width: 4px;-->
+<!--            height: 4px;-->
+<!--            background: rgba(99, 102, 241, 0.5);-->
+<!--            border-radius: 50%;-->
+<!--            animation: particleFloat 15s infinite;-->
+<!--            opacity: 0;-->
+<!--        }-->
+
+<!--        .dark .particle {-->
+<!--            background: rgba(139, 92, 246, 0.7);-->
+<!--        }-->
+
+<!--        @keyframes particleFloat {-->
+<!--            0% {-->
+<!--                transform: translateY(100vh) translateX(0);-->
+<!--                opacity: 0;-->
+<!--            }-->
+<!--            10% {-->
+<!--                opacity: 1;-->
+<!--            }-->
+<!--            90% {-->
+<!--                opacity: 1;-->
+<!--            }-->
+<!--            100% {-->
+<!--                transform: translateY(-100vh) translateX(100px);-->
+<!--                opacity: 0;-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Theme Toggle Button */-->
+<!--        .theme-toggle {-->
+<!--            position: fixed;-->
+<!--            top: 20px;-->
+<!--            right: 20px;-->
+<!--            z-index: 50;-->
+<!--            background: var(&#45;&#45;card-bg);-->
+<!--            backdrop-filter: blur(20px);-->
+<!--            border: 1px solid var(&#45;&#45;card-border);-->
+<!--            border-radius: 50%;-->
+<!--            width: 50px;-->
+<!--            height: 50px;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);-->
+<!--        }-->
+
+<!--        .theme-toggle:hover {-->
+<!--            transform: scale(1.1) rotate(10deg);-->
+<!--            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);-->
+<!--        }-->
+
+<!--        .dark .theme-toggle:hover {-->
+<!--            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);-->
+<!--        }-->
+
+<!--        /* Alert Styles */-->
+<!--        .alert-error {-->
+<!--            background: linear-gradient(135deg, rgba(254, 226, 226, 0.95), rgba(254, 202, 202, 0.95));-->
+<!--            border: 1px solid rgba(248, 113, 113, 0.5);-->
+<!--            color: #991b1b;-->
+<!--        }-->
+
+<!--        .dark .alert-error {-->
+<!--            background: linear-gradient(135deg, rgba(127, 29, 29, 0.4), rgba(153, 27, 27, 0.4));-->
+<!--            border: 1px solid rgba(248, 113, 113, 0.3);-->
+<!--            color: #fca5a5;-->
+<!--        }-->
+
+<!--        .alert-success {-->
+<!--            background: linear-gradient(135deg, rgba(220, 252, 231, 0.95), rgba(187, 247, 208, 0.95));-->
+<!--            border: 1px solid rgba(74, 222, 128, 0.5);-->
+<!--            color: #065f46;-->
+<!--        }-->
+
+<!--        .dark .alert-success {-->
+<!--            background: linear-gradient(135deg, rgba(20, 83, 45, 0.4), rgba(22, 101, 52, 0.4));-->
+<!--            border: 1px solid rgba(74, 222, 128, 0.3);-->
+<!--            color: #86efac;-->
+<!--        }-->
+
+<!--        .alert-warning {-->
+<!--            background: linear-gradient(135deg, rgba(254, 249, 195, 0.95), rgba(254, 240, 138, 0.95));-->
+<!--            border: 1px solid rgba(250, 204, 21, 0.5);-->
+<!--            color: #92400e;-->
+<!--        }-->
+
+<!--        .dark .alert-warning {-->
+<!--            background: linear-gradient(135deg, rgba(120, 53, 15, 0.4), rgba(146, 64, 14, 0.4));-->
+<!--            border: 1px solid rgba(250, 204, 21, 0.3);-->
+<!--            color: #fde047;-->
+<!--        }-->
+
+<!--        /* Pulse Animation for Icons */-->
+<!--        @keyframes pulse {-->
+<!--            0%, 100% {-->
+<!--                opacity: 1;-->
+<!--                transform: scale(1);-->
+<!--            }-->
+<!--            50% {-->
+<!--                opacity: 0.8;-->
+<!--                transform: scale(1.05);-->
+<!--            }-->
+<!--        }-->
+
+<!--        .pulse-icon {-->
+<!--            animation: pulse 2s ease-in-out infinite;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body class="min-h-screen flex items-center justify-center gradient-bg dot-pattern overflow-hidden transition-colors duration-500">-->
+
+<!--&lt;!&ndash; Theme Toggle Button &ndash;&gt;-->
+<!--<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">-->
+<!--    <svg class="w-6 h-6 sun-icon" style="color: var(&#45;&#45;text-primary); display: block;" fill="none" stroke="currentColor"-->
+<!--         viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
+<!--              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>-->
+<!--    </svg>-->
+<!--    <svg class="w-6 h-6 moon-icon" style="color: var(&#45;&#45;text-primary); display: none;" fill="none" stroke="currentColor"-->
+<!--         viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
+<!--              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>-->
+<!--    </svg>-->
+<!--</button>-->
+
+<!--&lt;!&ndash; Floating Orbs &ndash;&gt;-->
+<!--<div class="orb orb-1"></div>-->
+<!--<div class="orb orb-2"></div>-->
+<!--<div class="orb orb-3"></div>-->
+
+<!--&lt;!&ndash; Floating Particles &ndash;&gt;-->
+<!--<div class="particle" style="left: 10%; animation-delay: 0s;"></div>-->
+<!--<div class="particle" style="left: 20%; animation-delay: 2s;"></div>-->
+<!--<div class="particle" style="left: 30%; animation-delay: 4s;"></div>-->
+<!--<div class="particle" style="left: 40%; animation-delay: 1s;"></div>-->
+<!--<div class="particle" style="left: 50%; animation-delay: 3s;"></div>-->
+<!--<div class="particle" style="left: 60%; animation-delay: 5s;"></div>-->
+<!--<div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>-->
+<!--<div class="particle" style="left: 80%; animation-delay: 4.5s;"></div>-->
+<!--<div class="particle" style="left: 90%; animation-delay: 1.5s;"></div>-->
+
+<!--<div class="glass-card p-10 rounded-3xl w-full max-w-md transform transition-all duration-500 hover:scale-[1.02] relative z-10 m-4">-->
+
+<!--    <div class="text-center mb-10">-->
+<!--        <div class="shimmer inline-block mb-4">-->
+<!--            <h1 class="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">-->
+<!--                Staff Portal-->
+<!--            </h1>-->
+<!--        </div>-->
+<!--        <p style="color: var(&#45;&#45;text-secondary);" class="mt-3 text-base">Sign in to access your account</p>-->
+<!--        <div class="mt-4 flex justify-center">-->
+<!--            <div class="w-20 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-full"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.error}"-->
+<!--         class="alert-error p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd"-->
+<!--                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"-->
+<!--                      clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">Login failed. Please check your credentials and try again.</p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.logout}"-->
+<!--         class="alert-success p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd"-->
+<!--                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"-->
+<!--                      clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">You have been logged out successfully.</p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${session.sessionExpired}"-->
+<!--         class="alert-warning p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5 pulse-icon" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd"-->
+<!--                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"-->
+<!--                      clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">-->
+<!--                Your session expired. Please log in again to continue where you left off.-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <a th:href="${authServerLoginUrl}"-->
+<!--       class="btn-glow block w-full py-4 text-white font-bold rounded-xl shadow-xl-->
+<!--                  transition-all duration-300 ease-in-out text-center text-lg-->
+<!--                  focus:outline-none focus:ring-4 focus:ring-purple-500/50">-->
+<!--            <span class="flex items-center justify-center gap-3">-->
+<!--                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
+<!--                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>-->
+<!--                </svg>-->
+<!--                Sign in Securely-->
+<!--            </span>-->
+<!--    </a>-->
+
+<!--    <div class="text-center mt-8" style="color: var(&#45;&#45;text-secondary);">-->
+<!--        <p class="text-xs flex items-center justify-center gap-2">-->
+<!--            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
+<!--                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>-->
+<!--            </svg>-->
+<!--            Secure login powered by OAuth 2.0-->
+<!--        </p>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--    // Theme Toggle Function-->
+<!--    function toggleTheme() {-->
+<!--        const html = document.documentElement;-->
+<!--        const body = document.body;-->
+<!--        const sunIcon = document.querySelector('.sun-icon');-->
+<!--        const moonIcon = document.querySelector('.moon-icon');-->
+
+<!--        if (html.classList.contains('dark') || body.classList.contains('dark')) {-->
+<!--            html.classList.remove('dark');-->
+<!--            body.classList.remove('dark');-->
+<!--            sunIcon.style.display = 'block';-->
+<!--            moonIcon.style.display = 'none';-->
+<!--            localStorage.setItem('theme', 'light');-->
+<!--        } else {-->
+<!--            html.classList.add('dark');-->
+<!--            body.classList.add('dark');-->
+<!--            sunIcon.style.display = 'none';-->
+<!--            moonIcon.style.display = 'block';-->
+<!--            localStorage.setItem('theme', 'dark');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Load saved theme on page load-->
+<!--    window.addEventListener('DOMContentLoaded', () => {-->
+<!--        const savedTheme = localStorage.getItem('theme');-->
+<!--        const html = document.documentElement;-->
+<!--        const body = document.body;-->
+<!--        const sunIcon = document.querySelector('.sun-icon');-->
+<!--        const moonIcon = document.querySelector('.moon-icon');-->
+
+<!--        if (savedTheme === 'dark') {-->
+<!--            html.classList.add('dark');-->
+<!--            body.classList.add('dark');-->
+<!--            sunIcon.style.display = 'none';-->
+<!--            moonIcon.style.display = 'block';-->
+<!--        } else {-->
+<!--            sunIcon.style.display = 'block';-->
+<!--            moonIcon.style.display = 'none';-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8" />-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Staff Portal - Login</title>-->
+<!--    <link th:href="@{/output.css}" rel="stylesheet" />-->
+<!--    <style>-->
+<!--        /* Root Variables for Theme */-->
+<!--        :root {-->
+<!--            &#45;&#45;dot-color: rgba(99, 102, 241, 0.15);-->
+<!--            &#45;&#45;card-bg: rgba(255, 255, 255, 0.9);-->
+<!--            &#45;&#45;card-border: rgba(255, 255, 255, 0.4);-->
+<!--            &#45;&#45;text-primary: #1f2937;-->
+<!--            &#45;&#45;text-secondary: #6b7280;-->
+<!--        }-->
+
+<!--        .dark {-->
+<!--            &#45;&#45;dot-color: rgba(129, 140, 248, 0.25);-->
+<!--            &#45;&#45;card-bg: rgba(17, 24, 39, 0.85);-->
+<!--            &#45;&#45;card-border: rgba(255, 255, 255, 0.1);-->
+<!--            &#45;&#45;text-primary: #f9fafb;-->
+<!--            &#45;&#45;text-secondary: #d1d5db;-->
+<!--        }-->
+
+<!--        /* Dot Pattern Background */-->
+<!--        .dot-pattern {-->
+<!--            background-image: radial-gradient(circle, var(&#45;&#45;dot-color) 1.5px, transparent 1.5px);-->
+<!--            background-size: 30px 30px;-->
+<!--            position: relative;-->
+<!--        }-->
+
+<!--        /* Animated Gradient Background - Light Mode */-->
+<!--        body:not(.dark) .gradient-bg,-->
+<!--        body.gradient-bg:not(.dark) {-->
+<!--            background: linear-gradient(135deg,-->
+<!--            #93c5fd 0%,-->
+<!--            #bae6fd 15%,-->
+<!--            #a7f3d0 30%,-->
+<!--            #fde68a 45%,-->
+<!--            #fbbf24 60%,-->
+<!--            #fb923c 75%,-->
+<!--            #f472b6 90%,-->
+<!--            #93c5fd 100%) !important;-->
+<!--            background-size: 300% 300% !important;-->
+<!--            animation: gradientWave 10s ease infinite !important;-->
+<!--        }-->
+
+<!--        /* Animated Gradient Background - Dark Mode */-->
+<!--        .dark .gradient-bg,-->
+<!--        body.dark.gradient-bg {-->
+<!--            background: linear-gradient(135deg,-->
+<!--            #0f172a 0%,-->
+<!--            #1e1b4b 15%,-->
+<!--            #312e81 30%,-->
+<!--            #1e3a8a 45%,-->
+<!--            #1e293b 60%,-->
+<!--            #4c1d95 75%,-->
+<!--            #581c87 90%,-->
+<!--            #0f172a 100%) !important;-->
+<!--            background-size: 300% 300% !important;-->
+<!--            animation: gradientWave 10s ease infinite !important;-->
+<!--        }-->
+
+<!--        @keyframes gradientWave {-->
+<!--            0% {-->
+<!--                background-position: 0% 50%;-->
+<!--                background-size: 300% 300%;-->
+<!--            }-->
+<!--            25% {-->
+<!--                background-position: 100% 50%;-->
+<!--                background-size: 350% 350%;-->
+<!--            }-->
+<!--            50% {-->
+<!--                background-position: 100% 100%;-->
+<!--                background-size: 300% 300%;-->
+<!--            }-->
+<!--            75% {-->
+<!--                background-position: 0% 100%;-->
+<!--                background-size: 250% 250%;-->
+<!--            }-->
+<!--            100% {-->
+<!--                background-position: 0% 50%;-->
+<!--                background-size: 300% 300%;-->
+<!--            }-->
+<!--        }-->
+
+<!--        @keyframes float {-->
+<!--            0%, 100% { transform: translate(0, 0) scale(1); }-->
+<!--            33% { transform: translate(60px, -60px) scale(1.15); }-->
+<!--            66% { transform: translate(-60px, 60px) scale(0.9); }-->
+<!--        }-->
+
+<!--        /* Floating Orbs - Light Mode */-->
+<!--        .orb {-->
+<!--            position: absolute;-->
+<!--            border-radius: 50%;-->
+<!--            filter: blur(80px);-->
+<!--            opacity: 0.5;-->
+<!--            animation: float 25s ease-in-out infinite;-->
+<!--            pointer-events: none;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-1 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent);-->
+<!--            top: -250px;-->
+<!--            left: -200px;-->
+<!--            animation-delay: 0s;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-2 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent);-->
+<!--            bottom: -150px;-->
+<!--            right: -100px;-->
+<!--            animation-delay: 8s;-->
+<!--        }-->
+
+<!--        body:not(.dark) .orb-3 {-->
+<!--            width: 350px;-->
+<!--            height: 350px;-->
+<!--            background: radial-gradient(circle, rgba(59, 130, 246, 0.35), transparent);-->
+<!--            top: 40%;-->
+<!--            right: -150px;-->
+<!--            animation-delay: 4s;-->
+<!--        }-->
+
+<!--        /* Floating Orbs - Dark Mode */-->
+<!--        .dark .orb-1 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, rgba(79, 70, 229, 0.4), transparent);-->
+<!--            top: -250px;-->
+<!--            left: -200px;-->
+<!--            animation-delay: 0s;-->
+<!--        }-->
+
+<!--        .dark .orb-2 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, rgba(139, 92, 246, 0.35), transparent);-->
+<!--            bottom: -150px;-->
+<!--            right: -100px;-->
+<!--            animation-delay: 8s;-->
+<!--        }-->
+
+<!--        .dark .orb-3 {-->
+<!--            width: 350px;-->
+<!--            height: 350px;-->
+<!--            background: radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent);-->
+<!--            top: 40%;-->
+<!--            right: -150px;-->
+<!--            animation-delay: 4s;-->
+<!--        }-->
+<!--        .glass-card {-->
+<!--            background: var(&#45;&#45;card-bg);-->
+<!--            backdrop-filter: blur(30px) saturate(180%);-->
+<!--            -webkit-backdrop-filter: blur(30px) saturate(180%);-->
+<!--            border: 1px solid var(&#45;&#45;card-border);-->
+<!--            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15),-->
+<!--            0 20px 60px 0 rgba(31, 38, 135, 0.1);-->
+<!--        }-->
+
+<!--        .dark .glass-card {-->
+<!--            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4),-->
+<!--            0 20px 60px 0 rgba(0, 0, 0, 0.3);-->
+<!--        }-->
+
+<!--        /* Shimmer Effect - Flows through text only */-->
+<!--        .shimmer {-->
+<!--            position: relative;-->
+<!--            display: inline-block;-->
+<!--        }-->
+
+<!--        .shimmer h1 {-->
+<!--            position: relative;-->
+<!--            background: linear-gradient(90deg,-->
+<!--            #6366f1 0%,-->
+<!--            #8b5cf6 25%,-->
+<!--            #ec4899 50%,-->
+<!--            #8b5cf6 75%,-->
+<!--            #6366f1 100%);-->
+<!--            background-size: 200% auto;-->
+<!--            -webkit-background-clip: text;-->
+<!--            -webkit-text-fill-color: transparent;-->
+<!--            background-clip: text;-->
+<!--            animation: shimmerText 3s linear infinite;-->
+<!--        }-->
+
+<!--        @keyframes shimmerText {-->
+<!--            0% { background-position: 200% center; }-->
+<!--            100% { background-position: -200% center; }-->
+<!--        }-->
+
+<!--        /* Button Glow - Light Mode */-->
+<!--        .btn-glow {-->
+<!--            position: relative;-->
+<!--            transition: all 0.4s ease;-->
+<!--            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);-->
+<!--            background-size: 200% 200%;-->
+<!--            animation: gradientMove 3s ease infinite;-->
+<!--        }-->
+
+<!--        body:not(.dark) .btn-glow:hover {-->
+<!--            box-shadow: 0 0 30px rgba(99, 102, 241, 0.7),-->
+<!--            0 0 60px rgba(139, 92, 246, 0.5),-->
+<!--            0 0 90px rgba(236, 72, 153, 0.3);-->
+<!--            transform: translateY(-3px);-->
+<!--            animation: gradientMove 1.5s ease infinite;-->
+<!--        }-->
+
+<!--        /* Button Glow - Dark Mode */-->
+<!--        .dark .btn-glow {-->
+<!--            background: linear-gradient(135deg, #4f46e5, #7c3aed, #db2777);-->
+<!--            background-size: 200% 200%;-->
+<!--        }-->
+
+<!--        .dark .btn-glow:hover {-->
+<!--            box-shadow: 0 0 30px rgba(79, 70, 229, 0.8),-->
+<!--            0 0 60px rgba(124, 58, 237, 0.6),-->
+<!--            0 0 90px rgba(219, 39, 119, 0.4);-->
+<!--            transform: translateY(-3px);-->
+<!--            animation: gradientMove 1.5s ease infinite;-->
+<!--        }-->
+
+<!--        @keyframes gradientMove {-->
+<!--            0%, 100% { background-position: 0% 50%; }-->
+<!--            50% { background-position: 100% 50%; }-->
+<!--        }-->
+
+<!--        /* Particle Effect */-->
+<!--        .particle {-->
+<!--            position: absolute;-->
+<!--            width: 4px;-->
+<!--            height: 4px;-->
+<!--            background: rgba(99, 102, 241, 0.5);-->
+<!--            border-radius: 50%;-->
+<!--            animation: particleFloat 15s infinite;-->
+<!--            opacity: 0;-->
+<!--        }-->
+
+<!--        .dark .particle {-->
+<!--            background: rgba(139, 92, 246, 0.7);-->
+<!--        }-->
+
+<!--        @keyframes particleFloat {-->
+<!--            0% {-->
+<!--                transform: translateY(100vh) translateX(0);-->
+<!--                opacity: 0;-->
+<!--            }-->
+<!--            10% {-->
+<!--                opacity: 1;-->
+<!--            }-->
+<!--            90% {-->
+<!--                opacity: 1;-->
+<!--            }-->
+<!--            100% {-->
+<!--                transform: translateY(-100vh) translateX(100px);-->
+<!--                opacity: 0;-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Theme Toggle Button */-->
+<!--        .theme-toggle {-->
+<!--            position: fixed;-->
+<!--            top: 20px;-->
+<!--            right: 20px;-->
+<!--            z-index: 50;-->
+<!--            background: var(&#45;&#45;card-bg);-->
+<!--            backdrop-filter: blur(20px);-->
+<!--            border: 1px solid var(&#45;&#45;card-border);-->
+<!--            border-radius: 50%;-->
+<!--            width: 50px;-->
+<!--            height: 50px;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);-->
+<!--        }-->
+
+<!--        .theme-toggle:hover {-->
+<!--            transform: scale(1.1) rotate(10deg);-->
+<!--            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);-->
+<!--        }-->
+
+<!--        .dark .theme-toggle:hover {-->
+<!--            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);-->
+<!--        }-->
+
+<!--        /* Alert Styles */-->
+<!--        .alert-error {-->
+<!--            background: linear-gradient(135deg, rgba(254, 226, 226, 0.95), rgba(254, 202, 202, 0.95));-->
+<!--            border: 1px solid rgba(248, 113, 113, 0.5);-->
+<!--            color: #991b1b;-->
+<!--        }-->
+
+<!--        .dark .alert-error {-->
+<!--            background: linear-gradient(135deg, rgba(127, 29, 29, 0.4), rgba(153, 27, 27, 0.4));-->
+<!--            border: 1px solid rgba(248, 113, 113, 0.3);-->
+<!--            color: #fca5a5;-->
+<!--        }-->
+
+<!--        .alert-success {-->
+<!--            background: linear-gradient(135deg, rgba(220, 252, 231, 0.95), rgba(187, 247, 208, 0.95));-->
+<!--            border: 1px solid rgba(74, 222, 128, 0.5);-->
+<!--            color: #065f46;-->
+<!--        }-->
+
+<!--        .dark .alert-success {-->
+<!--            background: linear-gradient(135deg, rgba(20, 83, 45, 0.4), rgba(22, 101, 52, 0.4));-->
+<!--            border: 1px solid rgba(74, 222, 128, 0.3);-->
+<!--            color: #86efac;-->
+<!--        }-->
+
+<!--        .alert-warning {-->
+<!--            background: linear-gradient(135deg, rgba(254, 249, 195, 0.95), rgba(254, 240, 138, 0.95));-->
+<!--            border: 1px solid rgba(250, 204, 21, 0.5);-->
+<!--            color: #92400e;-->
+<!--        }-->
+
+<!--        .dark .alert-warning {-->
+<!--            background: linear-gradient(135deg, rgba(120, 53, 15, 0.4), rgba(146, 64, 14, 0.4));-->
+<!--            border: 1px solid rgba(250, 204, 21, 0.3);-->
+<!--            color: #fde047;-->
+<!--        }-->
+
+<!--        /* Pulse Animation for Icons */-->
+<!--        @keyframes pulse {-->
+<!--            0%, 100% { opacity: 1; transform: scale(1); }-->
+<!--            50% { opacity: 0.8; transform: scale(1.05); }-->
+<!--        }-->
+
+<!--        .pulse-icon {-->
+<!--            animation: pulse 2s ease-in-out infinite;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body class="min-h-screen flex items-center justify-center gradient-bg dot-pattern overflow-hidden transition-colors duration-500">-->
+
+<!--&lt;!&ndash; Theme Toggle Button &ndash;&gt;-->
+<!--<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">-->
+<!--    <svg class="w-6 h-6 sun-icon" style="color: var(&#45;&#45;text-primary); display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>-->
+<!--    </svg>-->
+<!--    <svg class="w-6 h-6 moon-icon" style="color: var(&#45;&#45;text-primary); display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>-->
+<!--    </svg>-->
+<!--</button>-->
+
+<!--&lt;!&ndash; Floating Orbs &ndash;&gt;-->
+<!--<div class="orb orb-1"></div>-->
+<!--<div class="orb orb-2"></div>-->
+<!--<div class="orb orb-3"></div>-->
+
+<!--&lt;!&ndash; Floating Particles &ndash;&gt;-->
+<!--<div class="particle" style="left: 10%; animation-delay: 0s;"></div>-->
+<!--<div class="particle" style="left: 20%; animation-delay: 2s;"></div>-->
+<!--<div class="particle" style="left: 30%; animation-delay: 4s;"></div>-->
+<!--<div class="particle" style="left: 40%; animation-delay: 1s;"></div>-->
+<!--<div class="particle" style="left: 50%; animation-delay: 3s;"></div>-->
+<!--<div class="particle" style="left: 60%; animation-delay: 5s;"></div>-->
+<!--<div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>-->
+<!--<div class="particle" style="left: 80%; animation-delay: 4.5s;"></div>-->
+<!--<div class="particle" style="left: 90%; animation-delay: 1.5s;"></div>-->
+
+<!--<div class="glass-card p-10 rounded-3xl w-full max-w-md transform transition-all duration-500 hover:scale-[1.02] relative z-10 m-4">-->
+
+<!--    <div class="text-center mb-10">-->
+<!--        <div class="shimmer inline-block mb-4">-->
+<!--            <h1 class="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">-->
+<!--                Staff Portal-->
+<!--            </h1>-->
+<!--        </div>-->
+<!--        <p style="color: var(&#45;&#45;text-secondary);" class="mt-3 text-base">Sign in to access your account</p>-->
+<!--        <div class="mt-4 flex justify-center">-->
+<!--            <div class="w-20 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-full"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.error}"-->
+<!--         class="alert-error p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">Login failed. Please check your credentials and try again.</p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${param.logout}"-->
+<!--         class="alert-success p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">You have been logged out successfully.</p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div th:if="${session.sessionExpired}"-->
+<!--         class="alert-warning p-4 rounded-xl mb-6 backdrop-blur-sm"-->
+<!--         role="alert">-->
+<!--        <div class="flex items-start gap-3">-->
+<!--            <svg class="w-5 h-5 flex-shrink-0 mt-0.5 pulse-icon" fill="currentColor" viewBox="0 0 20 20">-->
+<!--                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>-->
+<!--            </svg>-->
+<!--            <p class="font-medium text-sm">-->
+<!--                Your session expired. Please log in again to continue where you left off.-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <a th:href="${authServerLoginUrl}"-->
+<!--       class="btn-glow block w-full py-4 text-white font-bold rounded-xl shadow-xl-->
+<!--                  transition-all duration-300 ease-in-out text-center text-lg-->
+<!--                  focus:outline-none focus:ring-4 focus:ring-purple-500/50">-->
+<!--            <span class="flex items-center justify-center gap-3">-->
+<!--                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>-->
+<!--                </svg>-->
+<!--                Sign in Securely-->
+<!--            </span>-->
+<!--    </a>-->
+
+<!--    <div class="text-center mt-8" style="color: var(&#45;&#45;text-secondary);">-->
+<!--        <p class="text-xs flex items-center justify-center gap-2">-->
+<!--            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>-->
+<!--            </svg>-->
+<!--            Secure login powered by OAuth 2.0-->
+<!--        </p>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--    // Theme Toggle Function-->
+<!--    function toggleTheme() {-->
+<!--        const html = document.documentElement;-->
+<!--        const body = document.body;-->
+<!--        const sunIcon = document.querySelector('.sun-icon');-->
+<!--        const moonIcon = document.querySelector('.moon-icon');-->
+
+<!--        if (html.classList.contains('dark') || body.classList.contains('dark')) {-->
+<!--            html.classList.remove('dark');-->
+<!--            body.classList.remove('dark');-->
+<!--            sunIcon.style.display = 'block';-->
+<!--            moonIcon.style.display = 'none';-->
+<!--            localStorage.setItem('theme', 'light');-->
+<!--        } else {-->
+<!--            html.classList.add('dark');-->
+<!--            body.classList.add('dark');-->
+<!--            sunIcon.style.display = 'none';-->
+<!--            moonIcon.style.display = 'block';-->
+<!--            localStorage.setItem('theme', 'dark');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Load saved theme on page load-->
+<!--    window.addEventListener('DOMContentLoaded', () => {-->
+<!--        const savedTheme = localStorage.getItem('theme');-->
+<!--        const html = document.documentElement;-->
+<!--        const body = document.body;-->
+<!--        const sunIcon = document.querySelector('.sun-icon');-->
+<!--        const moonIcon = document.querySelector('.moon-icon');-->
+
+<!--        if (savedTheme === 'dark') {-->
+<!--            html.classList.add('dark');-->
+<!--            body.classList.add('dark');-->
+<!--            sunIcon.style.display = 'none';-->
+<!--            moonIcon.style.display = 'block';-->
+<!--        } else {-->
+<!--            sunIcon.style.display = 'block';-->
+<!--            moonIcon.style.display = 'none';-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Staff Portal - Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunbeam Portal - SSO Login</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        /* Modern CSS Variables - Consistent with previous component */
+        :root {
+            --bg-body: #ffffff;
+            --zinc-100: #f8fafc;
+            --zinc-200: #f1f5f9;
+            --zinc-300: #e2e8f0;
+            --zinc-800: #1e293b;
+            --zinc-900: #0f172a;
+            --accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
+            --horizon-color: linear-gradient(90deg, #f59e0b, #d946ef);
+            --horizon-glow: rgba(217, 70, 239, 0.4);
+            --card-bg: #ffffff;
+            --card-border: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            /* Light mode: More vibrant and opaque meteor */
+            --meteor-color: rgba(217, 70, 239, 0.9);
+            --meteor-glow: rgba(217, 70, 239, 0.5);
+            --input-bg: #f8fafc;
+            --focus-ring: #d946ef;
+            --toast-success-bg: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+            --toast-error-bg: linear-gradient(135deg, #b91c1c 0%, #ef4444 50%, #f87171 100%);
+            --toast-warning-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%);
+            --toast-text: #ffffff;
+        }
+
+        .dark {
+            --bg-body: #020203;
+            --card-bg: #09090b;
+            --card-border: #18181b;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --accent-gradient: linear-gradient(135deg, #27272a 0%, #000000 100%);
+            --horizon-color: #ffffff;
+            --horizon-glow: rgba(255, 255, 255, 0.6);
+            /* Dark mode: Brilliant white meteor with strong glow */
+            --meteor-color: rgba(255, 255, 255, 1);
+            --meteor-glow: rgba(255, 255, 255, 0.8);
+            --input-bg: #111114;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-sizing: border-box;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.4s ease,
+                        color 0.4s ease,
+                        box-shadow 0.4s ease;
+        }
+
+        body {
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-body);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Toast Notifications --- */
+        #toast-container {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .toast {
+            position: absolute;
+            min-width: 320px;
+            padding: 14px 16px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: auto;
+            color: var(--toast-text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast-success { background: var(--toast-success-bg); }
+        .toast-warning { background: var(--toast-warning-bg); }
+
+        /* --- Meteor Shower --- */
+        .night-sky {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: transparent;
+            transform: rotateZ(45deg);
+        }
+
+        .meteor {
+            position: absolute;
+            top: -200px; /* Reset position further up */
+            width: 2px;
+            height: 90px;
+            background: linear-gradient(to bottom, transparent, var(--meteor-color));
+            border-radius: 999px;
+            animation: shower var(--duration) linear infinite;
+            filter: drop-shadow(0 0 4px var(--meteor-glow));
+            opacity: 0;
+        }
+
+        @keyframes shower {
+            0% { transform: translateY(-100px); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(120vh); opacity: 0; }
+        }
+
+        /* --- Layout --- */
+        .horizon-wrapper { display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; }
+        .horizon-line {
+            width: 400px; height: 4px; background: var(--horizon-color); margin-top: 40px;
+            clip-path: polygon(0% 50%, 50% 0%, 100% 50%, 50% 100%);
+            animation: glowPulse 3s infinite ease-in-out;
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 10px var(--horizon-glow); }
+            50% { box-shadow: 0 0 25px var(--horizon-glow); }
+        }
+
+        .glass-card {
+            width: 420px;
+            max-width: 90vw;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card-header {
+            background: var(--accent-gradient);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: white;
+        }
+        .card-header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
+        .card-header p { opacity: 0.8; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3em; margin-top: 5px; }
+
+        .form-body { padding: 2.5rem 2rem; }
+
+        /* --- SSO Buttons --- */
+        .sso-button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .sso-button:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+            background: var(--card-bg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .sso-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
-        .login-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
+
+        .sso-icon svg { width: 100%; height: 100%; }
+
+        .sunbeam-svg-fill { fill: url(#sunbeam-gradient); }
+        .gemini-svg-fill { fill: url(#gemini-gradient); }
+        .github-svg-fill { fill: url(#github-gradient); }
+
+        .sso-google:hover { border-color: #9b72cb; }
+        .sso-github:hover { border-color: #333; }
+        .sso-sunbeam:hover { border-color: #0ea5e9; }
+
+        /* Theme Toggle */
+        .theme-switch-container { position: fixed; bottom: 30px; right: 30px; z-index: 100; }
+        .theme-switch-btn {
+            width: 50px; height: 50px; border-radius: 15px;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            color: var(--text-main); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
+
+        .divider {
+            display: flex; align-items: center; text-align: center; margin: 24px 0;
+            color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.15em; font-weight: 800;
         }
-        .login-header h1 {
-            color: #333;
-            margin: 0;
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--card-border); }
+        .divider:not(:empty)::before { margin-right: 1em; }
+        .divider:not(:empty)::after { margin-left: 1em; }
+
+        .footer-tag {
+            margin-top: 30px; color: var(--text-muted); font-size: 0.65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.15em; display: flex; align-items: center; gap: 8px; opacity: 0.8;
         }
-        .login-button {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: #4285f4;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 1rem;
-            transition: background 0.3s;
-        }
-        .login-button:hover {
-            background: #357ae8;
-        }
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            border: 1px solid #f5c6cb;
-        }
-        .info-message {
-            background: #d1ecf1;
-            color: #0c5460;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            border: 1px solid #bee5eb;
-        }
-        .session-expired-banner {
-            background: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            border: 1px solid #ffeaa7;
-        }
+        .footer-tag svg { width: 12px; height: 12px; opacity: 0.6; }
     </style>
 </head>
-<body>
-<div class="login-container">
-    <div class="login-header">
-        <h1>Staff Portal Login</h1>
-        <p>Sign in to access your account</p>
-    </div>
-    <div th:if="${param.error}" class="error-message">
-        <span>Login failed. Please check your credentials and try again.</span>
-    </div>
-    <div th:if="${param.logout}" class="info-message">
-        <span>You have been logged out successfully.</span>
-    </div>
-    <div th:if="${session.sessionExpired}" class="session-expired-banner">
-				<span
-                >Your session expired. Please log in again to continue where you left
-					off.</span
-                >
-    </div>
-    <a th:href="${authServerLoginUrl}" class="login-button">
-        Sign in
-    </a>
-    <div
-            style="text-align: center; margin-top: 2rem; color: #666; font-size: 0.9em;"
-    >
-        <p>Secure login powered by OAuth 2.0</p>
-    </div>
+<body class="dark">
+<div id="toast-container"></div>
+<div class="night-sky" id="meteor-container"></div>
+
+<svg style="width:0; height:0; position:absolute;" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="gemini-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4285f4; stop-opacity:1"/>
+            <stop offset="50%" style="stop-color:#9b72cb; stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#d96570; stop-opacity:1"/>
+        </linearGradient>
+        <linearGradient id="sunbeam-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#0ea5e9; stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#2dd4bf; stop-opacity:1"/>
+        </linearGradient>
+        <linearGradient id="github-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#404448; stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#1b1f23; stop-opacity:1"/>
+        </linearGradient>
+    </defs>
+</svg>
+
+<div class="theme-switch-container">
+    <button class="theme-switch-btn" onclick="toggleTheme()" aria-label="Toggle Dark Mode">
+        <span id="theme-icon-slot">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path
+                    d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </span>
+    </button>
 </div>
+
+<div class="horizon-wrapper">
+    <main class="glass-card">
+        <div class="card-header">
+            <h1 class="margin-bottom:10px;">Welcome to Sunbeam</h1>
+            <p>Staff Portal</p>
+        </div>
+
+        <div class="form-body">
+
+            <a class="sso-button sso-sunbeam"
+               th:href="@{${authUrls['auth-service']}}">
+                <div class="sso-icon">
+                    <svg viewBox="0 0 640 640">
+                        <path class="sunbeam-svg-fill"
+                              d="M318.4 80L157.4 560L234.9 560L260.3 478.6L379.8 478.6L405 560L482.5 560L318.4 80zM278.1 421.9L319.3 291.5L320.8 291.5L361.7 421.9L278.1 421.9zM640 469L630 437.6L462.1 422L481.5 478.5L640 469zM177.9 422L10 437.7L0 469L158.5 478.4L177.9 422z"/>
+                    </svg>
+                </div>
+                Login with Sunbeam
+            </a>
+
+            <div class="divider">Social Authentication</div>
+
+            <a class="sso-button sso-google"
+               th:href="@{${authUrls['google']}}">
+                <div class="sso-icon">
+                    <svg viewBox="0 0 640 640">
+                        <path class="gemini-svg-fill"
+                              d="M564 325.8C564 467.3 467.1 568 324 568C186.8 568 76 457.2 76 320C76 182.8 186.8 72 324 72C390.8 72 447 96.5 490.3 136.9L422.8 201.8C334.5 116.6 170.3 180.6 170.3 320C170.3 406.5 239.4 476.6 324 476.6C422.2 476.6 459 406.2 464.8 369.7L324 369.7L324 284.4L560.1 284.4C562.4 297.1 564 309.3 564 325.8z"/>
+                    </svg>
+                </div>
+                Login with Google
+            </a>
+            <a class="sso-button sso-github"
+               th:href="@{${authUrls['github']}}">
+                <div class="sso-icon">
+                    <svg viewBox="0 0 640 640">
+                        <path class="github-svg-fill"
+                              d="M316.8 72C178.1 72 72 177.3 72 316C72 426.9 141.8 521.8 241.5 555.2C254.3 557.5 258.8 549.6 258.8 543.1C258.8 536.9 258.5 502.7 258.5 481.7C258.5 481.7 188.5 496.7 173.8 451.9C173.8 451.9 162.4 422.8 146 415.3C146 415.3 123.1 399.6 147.6 399.9C147.6 399.9 172.5 401.9 186.2 425.7C208.1 464.3 244.8 453.2 259.1 446.6C261.4 430.6 267.9 419.5 275.1 412.9C219.2 406.7 162.8 398.6 162.8 302.4C162.8 274.9 170.4 261.1 186.4 243.5C183.8 237 175.3 210.2 189 175.6C209.9 169.1 258 202.6 258 202.6C278 197 299.5 194.1 320.8 194.1C342.1 194.1 363.6 197 383.6 202.6C383.6 202.6 431.7 169 452.6 175.6C466.3 210.3 457.8 237 455.2 243.5C471.2 261.2 481 275 481 302.4C481 398.9 422.1 406.6 366.2 412.9C375.4 420.8 383.2 435.8 383.2 459.3C383.2 493 382.9 534.7 382.9 542.9C382.9 549.4 387.5 557.3 400.2 555C500.2 521.8 568 426.9 568 316C568 177.3 455.5 72 316.8 72z"/>
+                    </svg>
+                </div>
+                Login with GitHub
+            </a>
+        </div>
+    </main>
+    <div class="horizon-line"></div>
+    <footer class="footer-tag">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        Secure login with OAuth 2.1 and OIDC
+    </footer>
+</div>
+
+<script>
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<div class="toast-message">${message}</div>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function handleSSO(provider) {
+        showToast(`Redirecting to ${provider}...`, 'success');
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        const iconSlot = document.getElementById('theme-icon-slot');
+        iconSlot.innerHTML = isDark
+            ? '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>'
+            : '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+    }
+
+    function createMeteors() {
+        const container = document.getElementById('meteor-container');
+        // Clear previous if any
+        container.innerHTML = '';
+        for (let i = 0; i < 20; i++) {
+            const m = document.createElement('div');
+            m.className = 'meteor';
+            m.style.left = Math.random() * 100 + '%';
+            m.style.setProperty('--duration', (Math.random() * 2 + 2) + 's');
+            m.style.animationDelay = (Math.random() * 10) + 's';
+            container.appendChild(m);
+        }
+    }
+
+    window.onload = createMeteors;
+</script>
 </body>
 </html>

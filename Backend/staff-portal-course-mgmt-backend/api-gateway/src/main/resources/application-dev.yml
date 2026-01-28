@@ -1,28 +1,41 @@
 server:
-  port: 8003
+  port: ${SERVER_PORT}
 
 spring:
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8001/oauth2/v1/jwks
-          issuer-uri: http://localhost:8001
+          jwk-set-uri: ${OAUTH2_RESOURCE_SERVER_JWT_JWK_SET_URI}
+          issuer-uri: ${OAUTH2_RESOURCE_SERVER_JWT_ISSUER_URI}
+          clock-skew: ${OAUTH2_RESOURCE_SERVER_JWT_CLOCK_SKEW}
 
 gateway:
   services:
     user-service:
-      url: http://localhost:8004
+      url: ${GATEWAY_SERVICES_USER_SERVICE}
+      audience: ${GATEWAY_SERVICES_USER_SERVICE_AUDIENCE}
       timeout: 30s
+      retry:
+        max-attempts: 3
     scheduling-service:
-      url: http://localhost:8005
+      url: ${GATEWAY_SERVICES_SCHEDULING_SESSION_TIMESHEET_SERVICE}
+      audience: ${GATEWAY_SERVICES_SCHEDULING_SERVICE_AUDIENCE}
       timeout: 30s
+      retry:
+        max-attempts: 3
     academic-service:
-      url: http://localhost:8006
+      url: ${GATEWAY_SERVICES_ACADEMIC_SERVICE}
+      audience: ${GATEWAY_SERVICES_ACADEMIC_SERVICE_AUDIENCE}
       timeout: 30s
+      retry:
+        max-attempts: 3
     auth-service:
-      url: http://localhost:8001
+      url: ${GATEWAY_SERVICES_AUTH_SERVICE}
+      audience: ${GATEWAY_SERVICES_AUTH_SERVICE_AUDIENCE}
       timeout: 10s
+      retry:
+        max-attempts: 3
 
 management:
   endpoints:
@@ -35,9 +48,10 @@ management:
 
 logging:
   level:
-    com.staff_portal.api_gateway: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.cloud.gateway: DEBUG
+    com.staff_portal.api_gateway: TRACE
+    org.springframework.security: TRACE
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.web.servlet.mvc: TRACE
     io.github.resilience4j: DEBUG
   file:
     name: logs/api-gateway-dev.log

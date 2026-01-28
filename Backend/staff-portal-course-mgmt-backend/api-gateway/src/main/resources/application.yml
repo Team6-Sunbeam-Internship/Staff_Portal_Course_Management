@@ -5,17 +5,14 @@ server:
       enabled: false
 
 spring:
+  output:
+    ansi:
+      enabled: always
   application:
     name: api-gateway
     group: team6
   profiles:
-    active: dev
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://auth-service:8001/oauth2/v1/jwks
-          issuer-uri: http://auth-service:8001
+    active: ${PROFILE}
   cache:
     type: caffeine
     caffeine:
@@ -35,31 +32,6 @@ management:
     health:
       show-details: when-authorized
       show-components: always
-
-gateway:
-  services:
-    user-service:
-      url: http://localhost:8004
-      audience: user-service
-      timeout: 30s
-      retry:
-        max-attempts: 3
-    scheduling-service:
-      url: http://localhost:8005
-      audience: scheduling-service
-      timeout: 30s
-      retry:
-        max-attempts: 3
-    academic-service:
-      url: http://localhost:8006
-      audience: academic-service
-      timeout: 30s
-      retry:
-        max-attempts: 3
-    auth-service:
-      url: http://localhost:8001
-      audience: auth-service
-      timeout: 10s
 
 resilience4j:
   circuitbreaker:
@@ -152,8 +124,9 @@ springdoc:
 logging:
   level:
     com.staff_portal.api_gateway: DEBUG
-    org.springframework.security: INFO
-    org.springframework.cloud.gateway: INFO
+    org.springframework.security: TRACE
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.web.servlet.mvc: TRACE
     io.github.resilience4j: INFO
     io.github.resilience4j.spring6.utils.RxJava2OnClasspathCondition: WARN
     io.github.resilience4j.spring6.utils.ReactorOnClasspathCondition: WARN

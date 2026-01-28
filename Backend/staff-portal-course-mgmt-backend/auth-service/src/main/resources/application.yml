@@ -1,4 +1,8 @@
 server:
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: always
   port: ${SERVER_PORT}
   servlet:
     session:
@@ -28,4 +32,9 @@ logging:
     org:
       springframework:
         web: DEBUG
-        security: DEBUG
+        security: TRACE
+    ROOT: INFO
+    org.springframework.security.oauth2.server.authorization: TRACE
+    org.springframework.security.oauth2.server.authorization.oidc.web: TRACE
+    org.springframework.security.oauth2.server.authorization.oidc: TRACE
+    com.team6: DEBUG   # your app package

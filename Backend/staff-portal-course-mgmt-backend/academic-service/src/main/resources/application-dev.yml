@@ -1,9 +1,16 @@
 spring:
   datasource:
-    url: ${DATABASE_URL}
+    url: jdbc:mysql://${DATABASE_HOST}/${DATABASE_NAME}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI}
+          issuer-uri: ${JWT_ISSUER_URI}
+          audiences: ${JWT_AUDIENCE}
+          clock-skew: ${JWT_CLOCK_SKEW}
 
-#logging:
-#  level:
-#    root: debug
+user-service:
+  url: ${USER_SERVICE_URL}
