@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PremiseRequest {
+public class PremiseRequestDTO {
     @NotBlank
     private String title;
 
