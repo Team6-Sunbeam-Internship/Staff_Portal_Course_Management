@@ -11,7 +11,6 @@ import java.util.*;
 
 @Getter
 @Validated
-@ConfigurationProperties(prefix = "bff.oauth2.client")
 public class RegistrationProperties {
 
     private Map<String, Registration> registration = new HashMap<>();

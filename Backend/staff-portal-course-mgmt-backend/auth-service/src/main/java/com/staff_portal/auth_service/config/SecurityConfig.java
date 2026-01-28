@@ -21,7 +21,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 @Configuration
 @EnableWebSecurity
@@ -69,7 +69,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/oauth2-error", "/favicon.ico", "/login", "/v3/api-docs", "/swagger-ui/index.html", "/css/**", "/js/**", "/images/**", "/admin/**", "/error").permitAll()
+                        .requestMatchers("/oauth2-error", "/favicon.ico", "/login", "/v3/api-docs", "/swagger-ui/index.html", "/css/**", "/js/**", "/images/**","/output.css", "/admin/**", "/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -102,7 +102,7 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
-                    Collection<GrantedAuthority> authorities = new ArrayList<>();
+            Collection<GrantedAuthority> authorities = new ArrayList<>();
                     jwtAuthenticationConverter.setPrincipalClaimName("email");
                     // Map 'roles' claim to ROLE_ prefixed authorities
                     jwt.getClaimAsStringList("roles")

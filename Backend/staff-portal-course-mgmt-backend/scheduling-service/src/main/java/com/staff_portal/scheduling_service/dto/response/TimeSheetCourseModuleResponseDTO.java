@@ -1,13 +1,12 @@
 package com.staff_portal.scheduling_service.dto.response;
 
-import java.util.List;
-
-
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
+import java.util.UUID;
 
 @Getter
 @ToString
@@ -15,7 +14,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class TimeSheetCourseModuleResponseDTO {
 
-	private Long id;
+	private UUID id;
     private String courseName;
     private String moduleName;
 

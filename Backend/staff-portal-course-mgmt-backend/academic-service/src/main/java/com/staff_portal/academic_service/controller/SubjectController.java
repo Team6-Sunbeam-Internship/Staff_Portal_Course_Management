@@ -2,14 +2,15 @@ package com.staff_portal.academic_service.controller;
 
 
 import com.staff_portal.academic_service.dto.request.SubjectRequestDTO;
-import com.staff_portal.academic_service.dto.response.SubjectResponseDTO;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.service.interfaces.SubjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/subject")
 @RequiredArgsConstructor
@@ -18,49 +19,23 @@ public class SubjectController {
     private final SubjectService subjectService;
 
     //  Add Subject
-    @PostMapping("/add")
-    public ResponseEntity<?> addSubject(@RequestBody SubjectRequestDTO requestDTO) {
-        SubjectResponseDTO response = subjectService.addSubject(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new CustomResponse<>(false, "Subject Added Successfully!", response));
+    @PostMapping("/create/{moduleId}")
+    public ResponseEntity<ApiResponse<UUID>> createSubject(@PathVariable("moduleId") UUID moduleId, @RequestBody SubjectRequestDTO requestDTO) {
+        ApiResponse<UUID> createSubjectResponse = subjectService.createSubject(moduleId, requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createSubjectResponse);
     }
 
     //  Update Subject
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateSubject(@PathVariable int id, @RequestBody SubjectRequestDTO requestDTO) {
-        SubjectResponseDTO response = subjectService.updateSubject(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Subject Updated Successfully!", response));
+    @PutMapping("/update/{subjectId}")
+    public ResponseEntity<ApiResponse<String>> updateSubject(@PathVariable("subjectId") UUID subjectId, @RequestBody SubjectRequestDTO requestDTO) {
+        ApiResponse<String> updateSubjectResponse = subjectService.updateSubject(subjectId, requestDTO);
+        return ResponseEntity.ok(updateSubjectResponse);
     }
 
     // Delete Subject
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteSubject(@PathVariable int id) {
-        subjectService.deleteSubject(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Subject Deleted Successfully!", null));
-    }
-
-    //  Get All Subjects
-    @GetMapping
-    public ResponseEntity<?> getAllSubjects() {
-        List<SubjectResponseDTO> response = subjectService.getAllSubjects();
-        return ResponseEntity.ok(new CustomResponse<>(false, "All Subjects Fetched", response));
-    }
-
-    //  Get Subject By ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getSubjectById(@PathVariable int id) {
-        SubjectResponseDTO response = subjectService.getSubjectById(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Subject Found", response));
-    }
-
-    @GetMapping("/filter")
-    public ResponseEntity<?> getSubjectsByFilters(
-            @RequestParam Integer batchCycleId,
-            @RequestParam Integer courseTypeId,
-            @RequestParam Integer courseId,
-            @RequestParam Integer moduleId) {
-
-        List<SubjectResponseDTO> response = subjectService.getSubjectsByFilters(batchCycleId, courseTypeId, courseId, moduleId);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Subjects fetched successfully", response));
+    @DeleteMapping("/delete/{subjectId}")
+    public ResponseEntity<?> deleteSubject(@PathVariable("subjectId") UUID subjectId) {
+        subjectService.deleteSubject(subjectId);
+        return ResponseEntity.ok().build();
     }
 }

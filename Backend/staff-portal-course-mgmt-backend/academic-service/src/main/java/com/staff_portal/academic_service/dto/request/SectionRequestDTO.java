@@ -8,8 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SectionRequestDTO {
-    
-    private Integer subjectId;          // dropdown
-    private String sectionName;         // title
-    private SectionStatus status;       // enum
+    private String sectionCode;
+    private String sectionName;
 }

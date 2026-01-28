@@ -1,8 +1,7 @@
 package com.staff_portal.academic_service.dto.response;
 
 
-import com.staff_portal.academic_service.enums.CourseTypeStatus;
-
+import com.staff_portal.academic_service.enums.Status;
 import lombok.*;
 
 import java.util.UUID;
@@ -13,8 +12,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class CourseTypeResponseDTO {
-    private UUID courseTypeId;
+    private UUID id;
     private String title;
     private String description;
-    private CourseTypeStatus status;
+    private Status status;
 }

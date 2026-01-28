@@ -1,19 +1,22 @@
 package com.staff_portal.user_service.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.staff_portal.user_service.enums.Gender;
+import com.staff_portal.user_service.enums.StaffRole;
+import com.staff_portal.user_service.enums.StaffType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.staff_portal.user_service.enums.StaffRole;
-import com.staff_portal.user_service.enums.StaffType;
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "staff")
+@Table(name = "staffs")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
@@ -21,9 +24,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class Staff {
-
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
+	@UuidGenerator
+    @GeneratedValue
 	@Column(name = "staff_id", updatable = false, nullable = false, unique = true)
 	private UUID staffId;
 
@@ -45,23 +48,24 @@ public class Staff {
 	@Column(name = "address", length = 255)
 	private String address;
 
-	@Column(name = "designation", length = 100)
-	private String designation;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 7)
+    private Gender gender;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "staff_type", length = 50)
-	private StaffType staffType;
+	private StaffType staffType;         // IN_HOUSE, VISITING
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", length = 50)
-	private StaffRole staffRole;
+	private StaffRole staffRole;         // ADMIN, COURSE_COORDINATOR, GENERAL_USER
 
 	@Column(name = "course_specialization", length = 255)
-	private String courseSpecialization; // "Multiple" or "SpecificCourseName"(like PGDAC, PGDMC etc.)
+	private String courseSpecialization; // "Multiple" or "SpecificCourseName"(like PG-DAC, PG-DMC etc.)
 
 	@Builder.Default
 	@Column(nullable = false)
-	@JsonProperty("isDeleted")
+	@JsonProperty("is_deleted")
 	private boolean isDeleted = false;
 
 	@CreatedDate

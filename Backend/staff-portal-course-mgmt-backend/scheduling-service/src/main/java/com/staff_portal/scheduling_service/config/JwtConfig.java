@@ -1,6 +1,5 @@
 package com.staff_portal.scheduling_service.config;
 
-import com.staff_portal.academic_service.config.AudienceValidatorConfig;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

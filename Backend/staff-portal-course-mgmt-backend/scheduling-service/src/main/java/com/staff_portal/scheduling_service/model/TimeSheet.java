@@ -1,40 +1,20 @@
 package com.staff_portal.scheduling_service.model;
 
+import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
+import lombok.*;
+import org.hibernate.annotations.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-import org.hibernate.annotations.SQLDelete;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.UUID;
 
 @Builder
 @EntityListeners(AuditingEntityListener.class)
@@ -56,10 +36,11 @@ import lombok.ToString;
 @Table(name = "timesheets")
 public class TimeSheet {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue
+    @UuidGenerator
 	@Column(nullable = false)
-	private Long id;
+	private UUID id;
 
 	@Column(name = "start_time", nullable = false)
 	private LocalTime startTime;
@@ -90,6 +71,7 @@ public class TimeSheet {
 	private TimeSheetCourseModule courseModule;
 
 	@OneToMany(mappedBy = "timeSheet", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Builder.Default
     private List<TimeSheetTopic> timeSheetTopics = new ArrayList<>();
 	
 	@CreatedDate

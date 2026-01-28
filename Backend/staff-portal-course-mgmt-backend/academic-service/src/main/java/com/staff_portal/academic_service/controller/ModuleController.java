@@ -26,16 +26,16 @@ public class ModuleController {
     }
 
     // Update Module
-    @PutMapping("/update/{courseCode}/{moduleId}")
-    public ResponseEntity<ApiResponse<String>> updateModule(@PathVariable("courseCode") String courseCode, @PathVariable("moduleId") UUID moduleId, @RequestBody ModuleRequestDTO requestDTO) {
-        ApiResponse<String> updateModuleResponse = moduleService.updateModule(courseCode, moduleId, requestDTO);
+    @PutMapping("/update/{moduleId}")
+    public ResponseEntity<ApiResponse<String>> updateModule(@PathVariable("moduleId") UUID moduleId, @RequestBody ModuleRequestDTO requestDTO) {
+        ApiResponse<String> updateModuleResponse = moduleService.updateModule(moduleId, requestDTO);
         return ResponseEntity.status(HttpStatus.OK).body(updateModuleResponse);
     }
 
     // Delete Module
-    @DeleteMapping("/delete/{courseCode}/{moduleId}")
-    public ResponseEntity<?> deleteModule(@PathVariable("courseCode") String courseCode, @PathVariable("moduleId") UUID moduleId) {
-        moduleService.deleteModule(courseCode, moduleId);
+    @DeleteMapping("/delete/{moduleId}")
+    public ResponseEntity<?> deleteModule(@PathVariable("moduleId") UUID moduleId) {
+        moduleService.deleteModule(moduleId);
         return ResponseEntity.ok().build();
     }
 }

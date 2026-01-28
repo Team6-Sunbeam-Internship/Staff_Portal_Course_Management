@@ -1,29 +1,15 @@
 package com.staff_portal.academic_service.service.interfaces;
 import com.staff_portal.academic_service.dto.request.SectionRequestDTO;
-import com.staff_portal.academic_service.dto.response.SectionResponseDTO;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 
-import java.util.List;
+import java.util.UUID;
 
 public interface SectionService {
 
-    SectionResponseDTO addSection(SectionRequestDTO requestDTO);
+    ApiResponse<UUID> createSection(UUID subjectId, SectionRequestDTO requestDTO);
 
-    SectionResponseDTO updateSection(int id, SectionRequestDTO requestDTO);
+    ApiResponse<String> updateSection(UUID sectionId, SectionRequestDTO requestDTO);
 
-    void deleteSection(int id);
-
-    List<SectionResponseDTO> getAllSections();
-
-    SectionResponseDTO getSectionById(int id);
-    
-    List<SectionResponseDTO> filterSections(
-            Integer batchCycleId,
-            Integer courseTypeId,
-            Integer courseId,
-            Integer moduleId,
-            Integer subjectId
-    );
-    List<SectionResponseDTO> getSectionsBySubject(Integer subjectId);
-
+    void deleteSection(UUID sectionId);
 }
 

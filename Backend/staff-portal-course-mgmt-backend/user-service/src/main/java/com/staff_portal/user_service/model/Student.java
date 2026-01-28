@@ -55,11 +55,6 @@ public class Student {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String courseName;
 
-	@Column(nullable = false, columnDefinition = "TEXT")
-	private String courseName;
-
-	@Column(nullable = false, columnDefinition = "TEXT")
-	private String batchCycleName;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)

@@ -1,42 +1,25 @@
 package com.staff_portal.academic_service.model;
 
-import java.util.List;
-
 import com.staff_portal.academic_service.enums.CourseGroupStatus;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.UUID;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "courseId", "groupName" }) })
+@Builder
 public class CourseGroup {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int groupId;
-
-	@ManyToOne
-	@JoinColumn(name = "course_id", nullable = false)
-	private Course course;
+	@UuidGenerator
+    @GeneratedValue
+    @Column(name = "course_group_id", nullable = false, updatable = false)
+	private UUID groupId;
 
 	@Column(name = "group_name", nullable = false)
 	private String groupName;
@@ -48,11 +31,15 @@ public class CourseGroup {
 	private Integer capacity;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "coursegroup_status", nullable = false)
+	@Column(name = "course_group_status", nullable = false)
 	private CourseGroupStatus status;
 	
 	@Column(name = "is_deleted", nullable = false)
 	private boolean deleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
 	@ManyToOne
 	@JoinColumn(name = "course_type_id", nullable = false)
@@ -61,5 +48,4 @@ public class CourseGroup {
 	@ManyToOne
 	@JoinColumn(name = "batchcycle_id")
 	private BatchCycle batchCycle;
-
 }

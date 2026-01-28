@@ -17,14 +17,10 @@ public class OAuth2EndpointsConfig {
     private String introspectUri;
     private String revokeUri;
     private String logoutUri;
-
+    private String authorizationUri;
     @PostConstruct
     public void logConfiguration(){
         log.info("OAuth2 Endpoints configured - Issuer: {}", issuer);
-    }
-
-    public String getAuthorizationUri() {
-        return issuer + "/oauth2/v1/authorize";
     }
 
     public String getTokenUri() {

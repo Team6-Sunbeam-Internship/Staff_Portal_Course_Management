@@ -1,124 +1,163 @@
 package com.staff_portal.backend_for_frontend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.staff_portal.backend_for_frontend.config.OAuth2EndpointsConfig;
-import com.staff_portal.backend_for_frontend.dto.UserInfoResponse;
+import com.staff_portal.backend_for_frontend.dto.AuthenticationResponse;
 import com.staff_portal.backend_for_frontend.exception.ProxyException;
-import com.staff_portal.backend_for_frontend.exception.UnauthorizedException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
+import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ProxyService {
     private final RestClient restClient;
-    private final RestClient plainRestClient;
     private final OAuth2EndpointsConfig endpointsConfig;
     private final TokenService tokenService;
 
     @Value("${bff.api-gateway.base-url}")
     private String apiGatewayBaseUrl;
 
-    public ResponseEntity<String> proxyToApiGateway(String path, HttpMethod method,
-                                                    Map<String, String> headers, Object body, Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
+    public ProxyService(@Qualifier("primaryRestClient") RestClient restClient, OAuth2EndpointsConfig endpointsConfig, TokenService tokenService) {
+        this.restClient = restClient;
+        this.endpointsConfig = endpointsConfig;
+        this.tokenService = tokenService;
+    }
+
+//    private static final Set<String> CORS_HEADERS = Set.of(
+//            "access-control-allow-origin",
+//            "access-control-allow-credentials",
+//            "access-control-allow-methods",
+//            "access-control-allow-headers",
+//            "access-control-expose-headers"
+//    );
+//
+//    private void copyResponseHeaders(HttpHeaders source, HttpHeaders target) {
+//        source.forEach((name, values) -> {
+//            if (!CORS_HEADERS.contains(name.toLowerCase())) {
+//                target.addAll(name, values);
+//            }
+//        });
+//    }
+
+    public ResponseEntity<?> proxyToApiGateway(String path,
+                                               HttpMethod method,
+                                               JsonNode body,
+                                               Authentication authentication,
+                                               HttpHeaders headers) {
         try {
-            OAuth2AuthorizedClient client = tokenService.getValidAuthorizedClient(authentication,request, response);
-            if (client == null) {
-                throw new UnauthorizedException("No valid access token available");
+            // Check Authentication Validity
+            if (!checkValidAuthentication(authentication)) {
+                return ResponseEntity.ok(AuthenticationResponse.builder()
+                        .authenticated(false)
+                        .message("Session has been expired")
+                        .build());
             }
-            String url = apiGatewayBaseUrl + path;
-            RestClient.RequestHeadersSpec<?> requestSpec = buildRequest(method, url, headers, body);
-            String apiGatewayResponse = requestSpec
-                    .attributes(clientRegistrationId("staff-portal-client"))
-                    .headers(httpHeaders -> httpHeaders.setBearerAuth(client.getAccessToken().getTokenValue()))
+            String registrationId = null;
+            if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
+                registrationId = oauth2Token.getAuthorizedClientRegistrationId();
+            }
+            log.info("REGISTRATION ID: {}", registrationId);
+            RestClient.RequestBodySpec requestBodySpec = restClient.method(method).uri(apiGatewayBaseUrl + path);
+            if (body != null && (method == POST || method == PUT || method == PATCH)) {
+                requestBodySpec = requestBodySpec.contentType(MediaType.APPLICATION_JSON).body(body);
+            }
+            ResponseEntity<byte[]> apiGatewayResponse = requestBodySpec
+                    .attributes(clientRegistrationId(registrationId))
+                    .headers(header -> header.addAll(sanitizeHeaders(headers)))
                     .retrieve()
-                    .body(String.class);
+                    .toEntity(byte[].class);
             log.debug("Successfully proxied request to API Gateway: {}", path);
-            return ResponseEntity.ok(apiGatewayResponse);
+            return ResponseEntity
+                    .status(apiGatewayResponse.getStatusCode())
+                    .body(apiGatewayResponse.getBody());
         } catch (Exception e) {
             log.error("Error proxying request to API Gateway", e);
             throw new ProxyException("Failed to proxy request", e);
         }
     }
 
-    public ResponseEntity<String> proxyToAuthServer(String path, HttpMethod method,
-                                                    Map<String, String> headers, String body, Authentication authentication,  HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> proxyToAuthServer(String path,
+                                               HttpMethod method,
+                                               Map<String, Object> body,
+                                               Authentication authentication,
+                                               HttpHeaders headers) {
         try {
-            OAuth2AuthorizedClient client = tokenService.getValidAuthorizedClient(authentication, request, response );
-            if (client == null) {
-                throw new UnauthorizedException("No valid tokens available");
+            if (!checkValidAuthentication(authentication)) {
+                return ResponseEntity.ok(AuthenticationResponse.builder()
+                        .authenticated(false)
+                        .message("Session has been expired")
+                        .build());
+            }
+            String registrationId = null;
+            if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
+                registrationId = oauth2Token.getAuthorizedClientRegistrationId();
             }
             String url = endpointsConfig.getIssuer() + path;
-            RestClient.RequestHeadersSpec<?> requestSpec = buildRequest(method, url, headers, body);
-            String authServerResponse = requestSpec
-                    .attributes(clientRegistrationId("staff-portal-client"))
-                    .headers(httpHeaders -> httpHeaders.setBearerAuth(client.getAccessToken().getTokenValue()))
+            RestClient.RequestBodySpec requestBodySpec = restClient.method(method).uri(URI.create(url));
+
+            if (body != null && (method == POST || method == PUT || method == PATCH)) {
+                requestBodySpec = requestBodySpec.contentType(MediaType.APPLICATION_JSON).body(body);
+            }
+
+            ResponseEntity<byte[]> authServerResponse = requestBodySpec
+                    .attributes(clientRegistrationId(registrationId))
                     .retrieve()
-                    .body(String.class);
+                    .toEntity(byte[].class);
             log.debug("Successfully proxied request to Auth Server: {}", path);
-            return ResponseEntity.ok(authServerResponse);
+            return ResponseEntity
+                    .status(authServerResponse.getStatusCode())
+                    .body(authServerResponse.getBody());
         } catch (Exception e) {
             log.error("Error proxying request to Auth Server", e);
             throw new ProxyException("Failed to proxy request", e);
         }
     }
 
-    public UserInfoResponse getUserInfo(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
-        try {
-            OAuth2AuthorizedClient client = tokenService.getValidAuthorizedClient(authentication, request,response );
-            if (client == null) {
-                throw new UnauthorizedException("No valid access token available");
-            }
-            UserInfoResponse userInfoResponse = restClient.get()
-                    .uri(endpointsConfig.getUserInfoUri())
-                    .attributes(clientRegistrationId("auth-server"))
-                    .retrieve()
-                    .body(UserInfoResponse.class);
-            log.debug("Successfully retrieved user info");
-            return userInfoResponse;
-        } catch (Exception e) {
-            log.error("Error retrieving user info", e);
-            throw new ProxyException("Failed to retrieve user info", e);
-        }
+    private boolean checkValidAuthentication(Authentication authentication) {
+        return Optional.ofNullable(authentication)
+                .map(Authentication::isAuthenticated)
+                .orElse(false);
     }
 
-    private RestClient.RequestHeadersSpec<?> buildRequest(HttpMethod method, String url,
-                                                          Map<String, String> headers, Object body) {
-        RestClient.RequestBodySpec requestSpec;
+    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
+            HttpHeaders.HOST.toLowerCase(),
+            HttpHeaders.CONNECTION.toLowerCase(),
+            HttpHeaders.CONTENT_LENGTH.toLowerCase(),
+            HttpHeaders.TRANSFER_ENCODING.toLowerCase(),
+            HttpHeaders.UPGRADE.toLowerCase(),
+            HttpHeaders.ACCEPT_ENCODING.toLowerCase()
+    );
 
-        if (HttpMethod.GET.equals(method)) {
-            requestSpec = (RestClient.RequestBodySpec) restClient.get().uri(url);
-        } else if (HttpMethod.POST.equals(method)) {
-            requestSpec = restClient.post().uri(url);
-        } else if (HttpMethod.PUT.equals(method)) {
-            requestSpec = restClient.put().uri(url);
-        } else if (HttpMethod.DELETE.equals(method)) {
-            requestSpec = (RestClient.RequestBodySpec) restClient.delete().uri(url);
-        } else if (HttpMethod.PATCH.equals(method)) {
-            requestSpec = restClient.patch().uri(url);
-        } else {
-            throw new IllegalArgumentException("Unsupported HTTP method: " + method);
-        }
+    private HttpHeaders sanitizeHeaders(HttpHeaders incoming) {
+        HttpHeaders sanitized = new HttpHeaders();
+        incoming.forEach((name, values) -> {
+            String key = name.toLowerCase(); // Skip these headers
+            // SKIP HOP_BY_HOP_HEADERS
+            if (HOP_BY_HOP_HEADERS.contains(key)) return;
+            // Skip internal-only headers
+            if (key.startsWith("x-internal")) return;
+            // Skip BFF-only cookies/csrf
+            if (key.equals(HttpHeaders.COOKIE.toLowerCase()) || key.equals("x-xsrf-token")) return;
 
-        if (headers != null) {
-            headers.forEach(requestSpec::header);
-        }
-        if (body != null && (HttpMethod.POST.equals(method) || HttpMethod.PUT.equals(method) || HttpMethod.PATCH.equals(method))) {
-            return requestSpec.body(body);
-        }
-        return requestSpec;
+            sanitized.addAll(name, values);
+        });
+        return sanitized;
     }
 }

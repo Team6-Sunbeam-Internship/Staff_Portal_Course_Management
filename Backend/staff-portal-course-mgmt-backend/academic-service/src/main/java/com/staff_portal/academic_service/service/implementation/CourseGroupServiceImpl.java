@@ -1,143 +1,115 @@
 package com.staff_portal.academic_service.service.implementation;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
 import com.staff_portal.academic_service.dto.request.CourseGroupRequest;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.CourseGroupResponse;
-import com.staff_portal.academic_service.enums.CourseGroupStatus;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
-import com.staff_portal.academic_service.model.BatchCycle;
 import com.staff_portal.academic_service.model.Course;
 import com.staff_portal.academic_service.model.CourseGroup;
-import com.staff_portal.academic_service.repository.BatchCycleRepository;
 import com.staff_portal.academic_service.repository.CourseGroupRepository;
 import com.staff_portal.academic_service.repository.CourseRepository;
 import com.staff_portal.academic_service.service.interfaces.CourseGroupService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class CourseGroupServiceImpl implements CourseGroupService {
 
-	private final CourseGroupRepository courseGroupRepository;
-	private final CourseRepository courseRepository;
-	private final BatchCycleRepository batchCycleRepository;
+    private final CourseGroupRepository courseGroupRepository;
+    private final CourseRepository courseRepository;
 
-	@Override
-	public CourseGroupResponse createCourseGroup(CourseGroupRequest request) {
-		Course course = courseRepository.findById(request.getCourseId())
-				.orElseThrow(() -> new ResourceNotFoundException("Course not found with ID: " + request.getCourseId()));
+    @Override
+    public ApiResponse<List<UUID>> createCourseGroup(String courseCode, List<CourseGroupRequest> courseGroupRequests) {
+        Course course = courseRepository.findByCourseCode(courseCode)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Course not found with course code: " + courseCode));
 
-		BatchCycle batchCycle = null;
-		if (request.getBatchCycleId() != null) {
-			batchCycle = batchCycleRepository.findById(request.getBatchCycleId()).orElseThrow(
-					() -> new ResourceNotFoundException("Batch cycle not found with ID: " + request.getBatchCycleId()));
-		}
+        List<CourseGroup> courseGroups = courseGroupRequests.stream()
+                .map(courseGroupRequest -> CourseGroup.builder()
+                        .groupName(courseGroupRequest.getTitle())
+                        .description(courseGroupRequest.getDescription())
+                        .capacity(courseGroupRequest.getCapacity())
+                        .status(courseGroupRequest.getStatus())
+                        .course(course)
+                        .batchCycle(course.getBatchCycle())
+                        .courseType(course.getCourseType())
+                        .build())
+                .toList();
 
-		if (course.getCourseType() == null) {
-			throw new ResourceNotFoundException("Course type is missing for this course. Please set it.");
-		}
+        courseGroupRepository.saveAll(courseGroups);
 
-		CourseGroup courseGroup = new CourseGroup();
-		courseGroup.setCourse(course);
-		courseGroup.setCourseType(course.getCourseType());
-		courseGroup.setBatchCycle(batchCycle);
-		courseGroup.setGroupName(request.getGroupName());
-		courseGroup.setDescription(request.getDescription());
-		courseGroup.setCapacity(request.getCapacity());
-		courseGroup.setStatus(request.getStatus() != null ? request.getStatus() : CourseGroupStatus.ACTIVE);
+        return ApiResponse.onSuccess(courseGroups.stream().map(CourseGroup::getGroupId).toList());
+    }
 
-		CourseGroup saved = courseGroupRepository.save(courseGroup);
+    @Override
+    public ApiResponse<String> updateCourseGroup(UUID groupId, CourseGroupRequest request) {
+        CourseGroup courseGroup = courseGroupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course group not found with ID: " + groupId));
 
-		return new CourseGroupResponse(saved.getGroupId(), saved.getGroupName(), saved.getDescription(),
-				saved.getCapacity(), saved.getStatus(), saved.getCourse().getCourseId(),
-				saved.getCourse().getCourseName());
-	}
+        courseGroup.setGroupName(
+                request.getTitle().equalsIgnoreCase(courseGroup.getGroupName()) ? courseGroup.getGroupName()
+                        : request.getTitle());
+        courseGroup.setDescription(
+                request.getDescription().equalsIgnoreCase(courseGroup.getDescription()) ? courseGroup.getDescription()
+                        : request.getDescription());
+        courseGroup.setCapacity(request.getCapacity().equals(courseGroup.getCapacity()) ? courseGroup.getCapacity()
+                : request.getCapacity());
+        courseGroup.setStatus(
+                request.getStatus().name().equalsIgnoreCase(courseGroup.getStatus().name()) ? courseGroup.getStatus()
+                        : request.getStatus());
 
-	@Override
-	public CourseGroupResponse updateCourseGroup(int groupId, CourseGroupRequest request) {
-		CourseGroup group = courseGroupRepository.findById(groupId)
-				.orElseThrow(() -> new ResourceNotFoundException("Course group not found with ID: " + groupId));
+        courseGroupRepository.save(courseGroup);
+        return ApiResponse.onSuccess("Course group updated successfully");
+    }
 
-		Course course = courseRepository.findById(request.getCourseId())
-				.orElseThrow(() -> new ResourceNotFoundException("Course not found with ID: " + request.getCourseId()));
+    // deleting course group by id
+    @Override
+    public void deleteCourseGroup(UUID groupId) {
+        CourseGroup group = courseGroupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course group not found with ID: " + groupId));
 
-		group.setCourse(course);
-		group.setGroupName(request.getGroupName());
-		group.setDescription(request.getDescription());
-		group.setCapacity(request.getCapacity());
-		group.setStatus(request.getStatus() != null ? request.getStatus() : group.getStatus());
+        group.setDeleted(true);
+        courseGroupRepository.save(group);
+    }
 
-		CourseGroup updated = courseGroupRepository.save(group);
+    // getting all course-group
 
-		return new CourseGroupResponse(updated.getGroupId(), updated.getGroupName(), updated.getDescription(),
-				updated.getCapacity(), updated.getStatus(), updated.getCourse().getCourseId(),
-				updated.getCourse().getCourseName());
+    @Override
+    public ApiResponse<List<CourseGroupResponse>> getAllCourseGroups(String courseCode) {
 
-	}
+        if (courseCode != null) {
+            // find course
+            Course course = courseRepository.findByCourseCode(courseCode).orElseThrow(() -> new ResourceNotFoundException("Course not found with course code: " + courseCode));
+            // find course-groups for course
+            Optional<List<CourseGroup>> courseGroups = courseGroupRepository.findByCourse(course);
+            return courseGroups.map(groups -> ApiResponse.onSuccess(groups.stream().map(
+                    this::mapToDto).toList()
+            )).orElseGet(() -> ApiResponse.onSuccess(List.of()));
+        }
 
-// deleting course group by id 
-	@Override
-	public void deleteCourseGroup(int groupId) {
-		CourseGroup group = courseGroupRepository.findById(groupId)
-				.orElseThrow(() -> new ResourceNotFoundException("Course group not found with ID: " + groupId));
+        List<CourseGroup> courseGroups = courseGroupRepository.findAllAndDeletedFalse();
 
-		group.setDeleted(true);
-		courseGroupRepository.save(group);
+        return ApiResponse.onSuccess(courseGroups
+                .stream()
+                .map(this::mapToDto)
+                .toList());
+    }
 
-	}
-
-	// getting all course-group
-
-	@Override
-	public List<CourseGroupResponse> getAllCourseGroups() {
-		List<CourseGroup> courseGroups = courseGroupRepository.findAll().stream().filter(cg -> !cg.isDeleted()) // ignore
-																												// deleted
-				.toList();
-
-		return courseGroups.stream()
-				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
-						cg.getCapacity(), cg.getStatus(), cg.getCourse().getCourseId(), cg.getCourse().getCourseName()))
-				.toList();
-	}
-
-	@Override
-	public List<CourseGroupResponse> getGroupsByBatchCycle(Long batchCycleId) {
-		List<CourseGroup> groups = courseGroupRepository.findByBatchCycle_BatchCycleId(batchCycleId).stream()
-				.filter(g -> !g.isDeleted()).toList();
-
-		return groups.stream()
-				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
-						cg.getCapacity(), cg.getStatus(), cg.getCourse().getCourseId(), cg.getCourse().getCourseName()))
-				.toList();
-	}
-
-	@Override
-	public List<CourseGroupResponse> getGroupsByCourse(Long courseId) {
-		List<CourseGroup> groups = courseGroupRepository.findByCourse_CourseId(courseId).stream()
-				.filter(g -> !g.isDeleted()).toList();
-
-		return groups.stream()
-				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
-						cg.getCapacity(), cg.getStatus(), cg.getCourse().getCourseId(), cg.getCourse().getCourseName()))
-				.toList();
-	}
-
-	@Override
-	public List<CourseGroupResponse> getGroupsByStatus(String status) {
-		CourseGroupStatus groupStatus = CourseGroupStatus.valueOf(status.toUpperCase());
-
-		List<CourseGroup> groups = courseGroupRepository.findByStatus(groupStatus).stream().filter(g -> !g.isDeleted())
-				.toList();
-
-		return groups.stream()
-				.map(cg -> new CourseGroupResponse(cg.getGroupId(), cg.getGroupName(), cg.getDescription(),
-						cg.getCapacity(), cg.getStatus(), cg.getCourse().getCourseId(), cg.getCourse().getCourseName()))
-				.toList();
-	}
-
+    private CourseGroupResponse mapToDto(CourseGroup courseGroup) {
+        return CourseGroupResponse.builder()
+                .id(courseGroup.getGroupId())
+                .title(courseGroup.getGroupName())
+                .description(courseGroup.getDescription())
+                .capacity(courseGroup.getCapacity())
+                .status(courseGroup.getStatus())
+                .courseCode(courseGroup.getCourse().getCourseCode())
+                .batchCycleId(courseGroup.getBatchCycle().getBatchCycleId())
+                .courseTypeId(courseGroup.getCourseType().getCourseTypeId())
+                .build();
+    }
 }

@@ -26,21 +26,25 @@ public class Token {
     @Column(name = "expires_at")
     private Instant expiresAt;
 
-    @OneToOne(mappedBy = "authorizationCode")
-    private OAuth2AuthorizationCodeEntity oauth2AuthorizationCode;
+//    @OneToOne(mappedBy = "authorizationCode")
+//    private OAuth2AuthorizationCodeEntity oauth2AuthorizationCode;
+//
+//    @OneToOne(mappedBy = "accessToken")
+//    private OAuth2AccessTokenEntity oauth2AccessToken;
+//
+//    @OneToOne(mappedBy = "refreshToken")
+//    private OAuth2RefreshTokenEntity oauth2RefreshToken;
+//
+//    @OneToOne(mappedBy = "oidcIdToken")
+//    private OidcIdTokenEntity oidcIdToken;
+//
+//    @OneToOne(mappedBy = "deviceCode")
+//    private OAuth2DeviceCodeEntity oauth2DeviceCode;
+//
+//    @OneToOne(mappedBy = "userCode")
+//    private OAuth2UserCodeEntity oauth2UserCodeEntity;
 
-    @OneToOne(mappedBy = "accessToken")
-    private OAuth2AccessTokenEntity oauth2AccessToken;
-
-    @OneToOne(mappedBy = "refreshToken")
-    private OAuth2RefreshTokenEntity oauth2RefreshToken;
-
-    @OneToOne(mappedBy = "oidcIdToken")
-    private OidcIdTokenEntity oidcIdToken;
-
-    @OneToOne(mappedBy = "deviceCode")
-    private OAuth2DeviceCodeEntity oauth2DeviceCode;
-
-    @OneToOne(mappedBy = "userCode")
-    private OAuth2UserCodeEntity oauth2UserCodeEntity;
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

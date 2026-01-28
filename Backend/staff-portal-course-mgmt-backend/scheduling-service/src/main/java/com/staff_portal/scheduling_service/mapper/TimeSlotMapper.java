@@ -1,67 +1,63 @@
 package com.staff_portal.scheduling_service.mapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.staff_portal.scheduling_service.dto.request.TimeSlotRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.ScheduleSimpleDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSlotResponseDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSlotSimpleDTO;
-import com.staff_portal.scheduling_service.model.Schedule;
 import com.staff_portal.scheduling_service.model.TimeSlot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TimeSlotMapper {
 
-	public static TimeSlotResponseDTO toTimeSlotResponseDTO(TimeSlot timeSlot) {
-		if (timeSlot == null) {
-			return null;
-		}
+    public static TimeSlotResponseDTO toTimeSlotResponseDTO(TimeSlot timeSlot) {
+        if (timeSlot == null) {
+            return null;
+        }
 
-		TimeSlotResponseDTO dto = new TimeSlotResponseDTO();
-		dto.setId(timeSlot.getId());
-		dto.setStartTime(timeSlot.getStartTime());
-		dto.setEndTime(timeSlot.getEndTime());
-		dto.setSlotName(timeSlot.getSlotName());
+        TimeSlotResponseDTO dto = new TimeSlotResponseDTO();
+//		dto.setId(timeSlot.getId());
+//		dto.setStartTime(timeSlot.getStartTime());
+//		dto.setEndTime(timeSlot.getEndTime());
+//		dto.setSlotName(timeSlot.getSlotName());
 
-		List<ScheduleSimpleDTO> simpleSchedules = new ArrayList<>();
+        List<ScheduleSimpleDTO> simpleSchedules = new ArrayList<>();
 
-		if (timeSlot.getSchedules() != null) {
-			for (Schedule schedule : timeSlot.getSchedules()) {
-				ScheduleSimpleDTO simpleDTO = ScheduleMapper.toScheduleSimpleDTO(schedule);
-				if (simpleDTO != null) {
-					simpleSchedules.add(simpleDTO);
-				}
-			}
-		}
+//		if (timeSlot.getSchedules() != null) {
+//			for (Schedule schedule : timeSlot.getSchedules()) {
+//				ScheduleSimpleDTO simpleDTO = ScheduleMapper.toScheduleSimpleDTO(schedule);
+//				if (simpleDTO != null) {
+//					simpleSchedules.add(simpleDTO);
+//				}
+//			}
+//		}
 
-		dto.setSchedules(simpleSchedules);
-		return dto;
-	}
+        dto.setSchedules(simpleSchedules);
+        return dto;
+    }
 
-	public static TimeSlot fromTimeSlotRequestDTO(TimeSlotRequestDTO dto) {
-		if (dto == null) {
-			return null;
-		}
+    public static TimeSlot fromTimeSlotRequestDTO(TimeSlotRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
 
-		TimeSlot timeSlot = new TimeSlot();
-		timeSlot.setStartTime(dto.getStartTime());
-		timeSlot.setEndTime(dto.getEndTime());
-		timeSlot.setSlotName(dto.getSlotName());
+        return TimeSlot.builder()
+                .startTime(dto.getStartTime())
+                .endTime(dto.getEndTime())
+                .build();
+    }
 
-		return timeSlot;
-	}
+    public static TimeSlotSimpleDTO toTimeSlotSimpleDTO(TimeSlot timeSlot) {
+        if (timeSlot == null) {
+            return null;
+        }
+        //		dto.setId(timeSlot.getId());
+//		dto.setStartTime(timeSlot.getStartTime());
+//		dto.setEndTime(timeSlot.getEndTime());
+//		dto.setSlotName(timeSlot.getSlotName());
 
-	public static TimeSlotSimpleDTO toTimeSlotSimpleDTO(TimeSlot timeSlot) {
-		if (timeSlot == null) {
-			return null;
-		}
-		TimeSlotSimpleDTO dto = new TimeSlotSimpleDTO();
-		dto.setId(timeSlot.getId());
-		dto.setStartTime(timeSlot.getStartTime());
-		dto.setEndTime(timeSlot.getEndTime());
-		dto.setSlotName(timeSlot.getSlotName());
-
-		return dto;
-	}
+        return new TimeSlotSimpleDTO();
+    }
 
 }

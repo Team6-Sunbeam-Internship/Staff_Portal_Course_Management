@@ -1,20 +1,19 @@
 package com.staff_portal.academic_service.service.implementation;
 
-import java.util.List;
-import java.util.UUID;
-
-import com.staff_portal.academic_service.dto.response.ApiResponse;
-import com.staff_portal.academic_service.model.Premise;
-import com.staff_portal.academic_service.repository.PremiseRepository;
-import org.springframework.stereotype.Service;
 import com.staff_portal.academic_service.dto.request.InfrastructureRequest;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.InfrastructureResponse;
 import com.staff_portal.academic_service.exception.ResourceNotFoundException;
 import com.staff_portal.academic_service.model.Infrastructure;
+import com.staff_portal.academic_service.model.Premise;
 import com.staff_portal.academic_service.repository.InfrastructureRepository;
+import com.staff_portal.academic_service.repository.PremiseRepository;
 import com.staff_portal.academic_service.service.interfaces.InfrastructureService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +24,7 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 
     @Override
     public ApiResponse<UUID> createInfrastructure(InfrastructureRequest request) {
-        UUID premiseId = UUID.fromString(request.getPremiseId());
-        Premise premise = premiseRepository.findById(premiseId).orElseThrow(
+        Premise premise = premiseRepository.findById(request.getPremiseId()).orElseThrow(
                 () -> new ResourceNotFoundException("Premises not found with id: " + request.getPremiseId()));
 
         Infrastructure infrastructure = Infrastructure.builder()
@@ -47,8 +45,8 @@ public class InfrastructureServiceImpl implements InfrastructureService {
 
         Infrastructure infra = infrastructureRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Infrastructure not found with id: " + id));
-        UUID premiseId = UUID.fromString(request.getPremiseId());
-        Premise premise = premiseRepository.findById(premiseId).orElseThrow(
+
+        Premise premise = premiseRepository.findById(request.getPremiseId()).orElseThrow(
                 () -> new ResourceNotFoundException("Premises not found with id: " + request.getPremiseId()));
 
         infra.setRoomName(request.getTitle());
@@ -82,7 +80,7 @@ public class InfrastructureServiceImpl implements InfrastructureService {
                         .type(filteredInfrastructure.getType())
                         .description(filteredInfrastructure.getDescription())
                         .premisesId(filteredInfrastructure.getPremise().getPremiseId())
-                        .premisesTitle(filteredInfrastructure.getPremise().getName())
+                        .premisesTitle(filteredInfrastructure.getPremise().getPremiseName())
                         .capacity(filteredInfrastructure.getCapacity())
                         .build()).toList();
         return ApiResponse.onSuccess(listOfPremises);

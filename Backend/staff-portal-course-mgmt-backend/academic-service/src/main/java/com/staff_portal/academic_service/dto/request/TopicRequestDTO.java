@@ -9,10 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class TopicRequestDTO {
-    private Integer sectionId;       // dropdown (select section)
-    private String topicName;        // title
-    private TopicStatus status;      // enum
+    private String topicCode;
+    private String topicName;
 }

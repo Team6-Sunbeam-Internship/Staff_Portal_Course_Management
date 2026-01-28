@@ -1,5 +1,6 @@
 package com.staff_portal.academic_service.dto.response;
 
+import com.staff_portal.academic_service.dto.request.AddressDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,9 +13,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class PremiseResponse {
-	private UUID premisesId;
+	private UUID id;
 	private String title;
 	private String type;
-	private String address;
+	private AddressDTO address;
     private String description;
 }

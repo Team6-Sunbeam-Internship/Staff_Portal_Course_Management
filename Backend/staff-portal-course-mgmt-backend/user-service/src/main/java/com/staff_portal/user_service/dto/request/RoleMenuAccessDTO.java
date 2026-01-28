@@ -6,14 +6,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
 public class RoleMenuAccessDTO {
-	
-	private Long accessId;
-	private String roleName;
-    private Long menuItemId;
-    private String menuItemTitle;
+    private UUID id;
+    private String roleName;
+    private UUID menuItemId;
+    private String title;    // Menu Item Title
     private AccessStatus status;
+    private boolean parent;
 }

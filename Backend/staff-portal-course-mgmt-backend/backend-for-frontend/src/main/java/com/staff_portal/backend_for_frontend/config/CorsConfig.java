@@ -26,7 +26,7 @@ public class CorsConfig {
         corsConfiguration.setAllowedHeaders(List.of("*"));
 
         // Allowed methods
-        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
         // Expose headers (if needed by frontend)
         corsConfiguration.setExposedHeaders(List.of("Authorization", "Content-Type"));

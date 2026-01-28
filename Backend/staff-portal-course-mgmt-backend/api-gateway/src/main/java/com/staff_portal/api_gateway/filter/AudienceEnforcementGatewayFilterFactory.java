@@ -30,42 +30,49 @@ public class AudienceEnforcementGatewayFilterFactory {
         return (request, next) -> {
             try {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                if (authentication instanceof JwtAuthenticationToken jwtAuth) {
-                    Jwt jwt = jwtAuth.getToken();
 
-                    // Use the detailed validation method
-                    AudienceValidationService.ValidationResult result =
-                            audienceValidationService.validateAudienceWithDetails(jwt, request.path());
-
-                    if (!result.isValid()) {
-                        log.error("Audience validation failed: {} - Required: {}, Found: {}",
-                                result.getMessage(), result.getRequiredAudience(), result.getFoundAudiences());
-
-                        return ServerResponse.status(HttpStatus.FORBIDDEN)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body("{\"error\":\"invalid_audience\"," +
-                                        "\"message\":\"" + result.getMessage() + "\"," +
-                                        "\"required_audience\":\"" + result.getRequiredAudience() + "\"," +
-                                        "\"found_audiences\":" + (result.getFoundAudiences() != null ?
-                                        result.getFoundAudiences().toString() : "null") + "}");
-                    }
-
-                    log.debug("Audience validation successful: {}", result.getMessage());
+                if (authentication == null) {
+                    log.warn("No authentication found in SecurityContext for path: {}", request.path());
+                    return ServerResponse.status(HttpStatus.UNAUTHORIZED)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body("{\"error\":\"unauthorized\",\"message\":\"Authentication required\"}");
                 }
-                return next.handle(request);
-            } catch (Exception e) {
-                log.error("Unexpected error during audience validation", e);
 
-                String errorBody = """
-                        {
-                          "error": "server_error",
-                          "message": "Unexpected error during audience validation"
-                        }
-                        """;
+                if (!(authentication instanceof JwtAuthenticationToken jwtAuth)) {
+                    log.warn("Authentication is not JWT-based for path: {}", request.path());
+                    return ServerResponse.status(HttpStatus.UNAUTHORIZED)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body("{\"error\":\"unauthorized\",\"message\":\"JWT authentication required\"}");
+                }
+
+                Jwt jwt = jwtAuth.getToken();
+
+                // Validate audience using the service
+                AudienceValidationService.ValidationResult result =
+                        audienceValidationService.validateAudienceWithDetails(jwt, request.path());
+
+                if (!result.isValid()) {
+                    log.error("Audience validation failed for path {}: {} - Required: {}, Found: {}",
+                            request.path(), result.getMessage(),
+                            result.getRequiredAudience(), result.getFoundAudiences());
+
+                    return ServerResponse.status(HttpStatus.FORBIDDEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(result.toJsonError());
+                }
+
+                log.debug("Audience validation successful for path {}: {}",
+                        request.path(), result.getMessage());
+
+                return next.handle(request);
+
+            } catch (Exception e) {
+                log.error("Unexpected error during audience validation for path {}: {}",
+                        request.path(), e.getMessage(), e);
 
                 return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(errorBody);
+                        .body("{\"error\":\"server_error\",\"message\":\"Unexpected error during audience validation\"}");
             }
         };
     }

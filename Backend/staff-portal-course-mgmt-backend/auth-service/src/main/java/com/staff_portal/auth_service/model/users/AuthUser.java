@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -26,7 +27,8 @@ import java.util.stream.Collectors;
 public class AuthUser {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue
+    @UuidGenerator
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
     
@@ -69,7 +71,10 @@ public class AuthUser {
     )
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
-    
+
+    @Column(name = "is_deleted")
+    private boolean deleted;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

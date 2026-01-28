@@ -1,11 +1,5 @@
 package com.staff_portal.scheduling_service.service.implementation;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.staff_portal.scheduling_service.dto.request.TimeSheetTopicRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSheetTopicResponseDTO;
 import com.staff_portal.scheduling_service.exception.ResourceNotFoundException;
@@ -13,8 +7,13 @@ import com.staff_portal.scheduling_service.mapper.TimeSheetTopicMapper;
 import com.staff_portal.scheduling_service.model.TimeSheetTopic;
 import com.staff_portal.scheduling_service.repository.TimeSheetTopicRepository;
 import com.staff_portal.scheduling_service.service.interfaces.ITimeSheetTopicService;
-
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -45,14 +44,14 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
     }
 
     @Override
-    public TimeSheetTopicResponseDTO getTimeSheetTopicById(Long id) {
+    public TimeSheetTopicResponseDTO getTimeSheetTopicById(UUID id) {
         TimeSheetTopic topic = topicRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TimeSheet topic not found with ID: " + id));
         return TimeSheetTopicMapper.toDto(topic);
     }
 
     @Override
-    public TimeSheetTopicResponseDTO updateTimeSheetTopic(Long id, TimeSheetTopicRequestDTO dto) {
+    public TimeSheetTopicResponseDTO updateTimeSheetTopic(UUID id, TimeSheetTopicRequestDTO dto) {
         if (dto == null) {
             throw new IllegalArgumentException("TimeSheet topic request cannot be null");
         }
@@ -67,7 +66,7 @@ public class TimeSheetTopicServiceImpl implements ITimeSheetTopicService {
     }
 
     @Override
-    public void deleteTimeSheetTopic(Long id) {
+    public void deleteTimeSheetTopic(UUID id) {
         if (!topicRepository.existsById(id)) {
             throw new ResourceNotFoundException("TimeSheet topic not found with ID: " + id);
         }

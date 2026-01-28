@@ -1,26 +1,21 @@
 package com.staff_portal.user_service.controller;
 
+import com.staff_portal.user_service.dto.request.StaffMenuAccessCreateRequestDTO;
+import com.staff_portal.user_service.dto.request.StaffMenuAccessDTO;
+import com.staff_portal.user_service.dto.response.ApiResponse;
+import com.staff_portal.user_service.exception.ResourceNotFoundException;
+import com.staff_portal.user_service.service.interfaces.IStaffMenuAccessService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import com.staff_portal.user_service.dto.request.StaffMenuAccessDTO;
-import com.staff_portal.user_service.exception.ResourceNotFoundException;
-import com.staff_portal.user_service.service.interfaces.IStaffMenuAccessService;
-
 @RestController
-@RequestMapping("/api/staff-menu-access")
+@RequestMapping("/staff-menu-access")
 @CrossOrigin
 public class StaffMenuAccessController {
 
@@ -33,14 +28,14 @@ public class StaffMenuAccessController {
 	}
 
 	@GetMapping("/getAll")
-	public ResponseEntity<List<StaffMenuAccessDTO>> getAll() {
+	public ResponseEntity<ApiResponse<List<StaffMenuAccessDTO>>> getAll() {
 		return ResponseEntity.ok(staffMenuAccessService.getAllAccess());
 	}
 	
-//	@GetMapping("/getStaff/{staffId}")
-//	public ResponseEntity<List<StaffMenuAccessDTO>> getByStaffId(@PathVariable UUID staffId) {
-//	    return ResponseEntity.ok(staffMenuAccessService.getAccessByStaffId(staffId));
-//	}
+    @PostMapping("/create_update_exceptions")
+    public ResponseEntity<ApiResponse<String>> createOrUpdateExceptions(@Valid @RequestBody StaffMenuAccessCreateRequestDTO request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(staffMenuAccessService.createOrUpdateExceptions(request));
+    }
 
 	@GetMapping("/getStaff/{staffId}")
 	public ResponseEntity<List<StaffMenuAccessDTO>> getByStaffId(@PathVariable String staffId) {

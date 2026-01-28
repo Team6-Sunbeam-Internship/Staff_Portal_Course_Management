@@ -1,6 +1,8 @@
 package com.staff_portal.academic_service.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Setter
@@ -14,8 +16,9 @@ public class PremiseRequestDTO {
 
     private String type;
 
-    @NotBlank
-    private String address;
+    @NotNull
+    @Valid
+    private AddressDTO address;
 
     private String description;
 }

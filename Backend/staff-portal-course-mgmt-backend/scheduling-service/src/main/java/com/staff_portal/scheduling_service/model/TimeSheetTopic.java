@@ -1,23 +1,14 @@
 package com.staff_portal.scheduling_service.model;
 
 
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.UuidGenerator;
+
+import java.util.UUID;
 
 @Getter
 @ToString
@@ -28,9 +19,10 @@ import lombok.ToString;
 public class TimeSheetTopic {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
+    @UuidGenerator
     @Column(nullable = false)
-    private Long id;
+    private UUID id;
 
     @Column(name = "topic_name", nullable = false)
     private String topicName;
@@ -38,5 +30,5 @@ public class TimeSheetTopic {
     @ManyToOne
     @JoinColumn(name = "timesheet_id", nullable = false)
     private TimeSheet timeSheet;
-    
+
 }

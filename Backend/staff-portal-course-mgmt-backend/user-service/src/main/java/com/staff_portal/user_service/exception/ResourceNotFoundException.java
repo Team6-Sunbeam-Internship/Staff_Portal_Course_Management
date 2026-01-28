@@ -1,9 +1,16 @@
 package com.staff_portal.user_service.exception;
 
-public class ResourceNotFoundException extends RuntimeException{
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.http.HttpStatus;
 
-	public ResourceNotFoundException(String message)
+@Getter
+@Setter
+public class ResourceNotFoundException extends RuntimeException{
+    private HttpStatus status;
+	public ResourceNotFoundException(String message, HttpStatus status)
 	{
 		super(message);
-	}
+	    this.status = status;
+    }
 }

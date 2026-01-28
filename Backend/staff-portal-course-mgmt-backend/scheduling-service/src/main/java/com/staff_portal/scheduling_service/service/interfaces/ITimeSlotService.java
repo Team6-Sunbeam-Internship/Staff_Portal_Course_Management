@@ -1,24 +1,24 @@
 package com.staff_portal.scheduling_service.service.interfaces;
 
-import java.util.List;
-
 import com.staff_portal.scheduling_service.dto.request.TimeSlotRequestDTO;
 import com.staff_portal.scheduling_service.dto.response.TimeSlotResponseDTO;
-
 import jakarta.validation.Valid;
 
-public interface ITimeSlotService  {
+import java.util.List;
+import java.util.UUID;
 
-	
-	List<TimeSlotResponseDTO> getAllTimeSlots();
-	
-	TimeSlotResponseDTO getTimeSlotById(Long id);
-	
-	TimeSlotResponseDTO createTimeSlot(@Valid TimeSlotRequestDTO dto);
+public interface ITimeSlotService {
 
-	TimeSlotResponseDTO updateTimeSlot(Long id, @Valid TimeSlotRequestDTO dto);
-	
-	void deleteTimeSlot(Long id);
+
+    List<TimeSlotResponseDTO> getAllTimeSlots();
+
+    TimeSlotResponseDTO getTimeSlotById(UUID id);
+
+    TimeSlotResponseDTO createTimeSlot(@Valid TimeSlotRequestDTO dto);
+
+    TimeSlotResponseDTO updateTimeSlot(UUID id, @Valid TimeSlotRequestDTO dto);
+
+    void deleteTimeSlot(UUID id);
 }
 
 	

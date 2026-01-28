@@ -1,7 +1,7 @@
 package com.staff_portal.scheduling_service.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.staff_portal.academic_service.dto.response.ApiResponse;
+import com.staff_portal.scheduling_service.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;

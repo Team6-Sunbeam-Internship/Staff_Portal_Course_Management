@@ -1,6 +1,5 @@
 package com.staff_portal.scheduling_service.config;
 
-import com.staff_portal.academic_service.config.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
         description = "Backend-for-Frontend service providing OAuth2 authentication and API proxy capabilities"
     ),
     servers = {
-        @Server(url = "http://localhost:8002", description = "Development server"),
+        @Server(url = "http://localhost:8001", description = "Development server"),
         @Server(url = "https://bff.enterprise.com", description = "Production server")
     }
 )
@@ -27,8 +27,8 @@ import org.springframework.context.annotation.Configuration;
     type = SecuritySchemeType.OAUTH2,
     flows = @OAuthFlows(
         authorizationCode = @OAuthFlow(
-            authorizationUrl = "http://localhost:8001/oauth2/v1/authorize",
-            tokenUrl = "http://localhost:8001/oauth2/v1/token",
+            authorizationUrl = "http://localhost:8000/oauth2/v1/authorize",
+            tokenUrl = "http://auth-service:8000/oauth2/v1/token",
             scopes = {
                 @OAuthScope(name = "openid", description = "OpenID Connect scope"),
                 @OAuthScope(name = "profile", description = "Profile information access"),

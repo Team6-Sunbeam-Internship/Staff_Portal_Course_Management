@@ -35,6 +35,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.onError(null, e.getMessage()));
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleResourceAlreadyExists(ResourceNotFoundException e) {
+        log.error(e.getMessage(), e.getClass().getName());
+        return ResponseEntity.status(e.getStatus())
+                .body(ApiResponse.onError(null, e.getMessage()));
+    }
+
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<String>> handleResourceAlreadyExists(ResourceAlreadyExistsException e) {
         log.error(e.getMessage(), e.getClass().getName());

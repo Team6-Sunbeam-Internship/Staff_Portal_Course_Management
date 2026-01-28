@@ -5,7 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.staff_portal.scheduling_service.model.TimeSheetTopic;
 
+import java.util.UUID;
+
 @Repository
-public interface TimeSheetTopicRepository extends JpaRepository<TimeSheetTopic, Long> {
+public interface TimeSheetTopicRepository extends JpaRepository<TimeSheetTopic, UUID> {
 
 }

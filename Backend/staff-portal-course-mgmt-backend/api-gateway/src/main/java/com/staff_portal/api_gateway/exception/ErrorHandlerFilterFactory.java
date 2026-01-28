@@ -23,6 +23,12 @@ import java.util.Map;
 @Component
 @Slf4j
 public class ErrorHandlerFilterFactory {
+
+    private final ObjectMapper OBJECT_MAPPER;
+
+    public ErrorHandlerFilterFactory(ObjectMapper objectMapper) {
+        this.OBJECT_MAPPER = objectMapper;
+    }
     @Data
     public static class Config {
         private boolean includeStackTrace = false;
@@ -79,16 +85,20 @@ public class ErrorHandlerFilterFactory {
         errorResponse.put("message", message);
         errorResponse.put("timestamp", Instant.now().toString());
         if (includeStackTrace && e != null) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            errorResponse.put("stackTrace", sw.toString());
+            errorResponse.put("stackTrace", getStackTraceAsString(e));
         }
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(errorResponse);
+            return OBJECT_MAPPER.writeValueAsString(errorResponse);
         } catch (Exception jsonException) {
+            log.error("Failed to serialize error response", jsonException);
             return "{\"error\":\"json_serialization_failed\",\"message\":\"Failed to serialize error response\"}";
         }
+    }
+
+    private String getStackTraceAsString(Exception e){
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 }

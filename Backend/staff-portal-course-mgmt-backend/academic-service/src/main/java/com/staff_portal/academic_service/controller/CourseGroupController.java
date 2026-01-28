@@ -1,23 +1,16 @@
 package com.staff_portal.academic_service.controller;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import com.staff_portal.academic_service.dto.request.CourseGroupRequest;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.CourseGroupResponse;
 import com.staff_portal.academic_service.service.interfaces.CourseGroupService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 
 @RestController
@@ -28,49 +21,31 @@ public class CourseGroupController {
 	private final CourseGroupService courseGroupService;
 
 	// Create Course Group
-	@PostMapping
-	public ResponseEntity<CourseGroupResponse> createCourseGroup(@RequestBody CourseGroupRequest request) {
-		CourseGroupResponse response = courseGroupService.createCourseGroup(request);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	@PostMapping("/create/{courseCode}")
+	public ResponseEntity<ApiResponse<List<UUID>>> createCourseGroup(@PathVariable("courseCode")String courseCode,@RequestBody List<CourseGroupRequest> courseGroupRequests) {
+        ApiResponse<List<UUID>> createCourseGroupResponse = courseGroupService.createCourseGroup(courseCode, courseGroupRequests);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createCourseGroupResponse);
 	}
 
 	// update course group
-	@PutMapping("/{groupId}")
-	public ResponseEntity<CourseGroupResponse> updateCourseGroup(@PathVariable int groupId,
+	@PutMapping("/update/{id}")
+	public ResponseEntity<ApiResponse<String>> updateCourseGroup(@PathVariable UUID id,
 			@RequestBody CourseGroupRequest request) {
-		return ResponseEntity.ok(courseGroupService.updateCourseGroup(groupId, request));
+        ApiResponse<String> updateCourseGroupResponse = courseGroupService.updateCourseGroup(id, request);
+		return ResponseEntity.ok(updateCourseGroupResponse);
 	}
 
 	// deleting course group
-	@DeleteMapping("/{groupId}")
-	public ResponseEntity<String> deleteCourseGroup(@PathVariable int groupId) {
+	@DeleteMapping("/delete/{groupId}")
+	public ResponseEntity<ApiResponse<String>> deleteCourseGroup(@PathVariable UUID groupId) {
 		courseGroupService.deleteCourseGroup(groupId);
-		return ResponseEntity.ok("Course group deleted successfully");
+		return ResponseEntity.ok(ApiResponse.onSuccess("Course group deleted successfully"));
 	}
 
 	// for getting all course groups
-	@GetMapping
-	public ResponseEntity<List<CourseGroupResponse>> getAllCourseGroups() {
-		List<CourseGroupResponse> responses = courseGroupService.getAllCourseGroups();
-		return ResponseEntity.ok(responses);
+	@GetMapping("/getAll")
+	public ResponseEntity<ApiResponse<List<CourseGroupResponse>>> getAllCourseGroups(@RequestParam(required = false, name = "courseCode") String courseCode) {
+		ApiResponse<List<CourseGroupResponse>> getCourseGroupResponse = courseGroupService.getAllCourseGroups(courseCode);
+		return ResponseEntity.ok(getCourseGroupResponse);
 	}
-
-	// Get groups by BatchCycle
-	@GetMapping("/by-batch/{batchCycleId}")
-	public ResponseEntity<List<CourseGroupResponse>> getGroupsByBatch(@PathVariable Long batchCycleId) {
-		return ResponseEntity.ok(courseGroupService.getGroupsByBatchCycle(batchCycleId));
-	}
-
-	// Get groups by Course
-	@GetMapping("/by-course/{courseId}")
-	public ResponseEntity<List<CourseGroupResponse>> getGroupsByCourse(@PathVariable Long courseId) {
-		return ResponseEntity.ok(courseGroupService.getGroupsByCourse(courseId));
-	}
-
-	// Get groups by Status
-	@GetMapping("/by-status/{status}")
-	public ResponseEntity<List<CourseGroupResponse>> getGroupsByStatus(@PathVariable String status) {
-		return ResponseEntity.ok(courseGroupService.getGroupsByStatus(status));
-	}
-
 }

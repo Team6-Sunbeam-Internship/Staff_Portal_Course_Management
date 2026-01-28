@@ -19,12 +19,19 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
     );
     @Override
     public OAuth2TokenValidatorResult validate(Jwt jwt) {
-        List<String> audiences = jwt.getAudience();
-        if (audiences == null || audiences.isEmpty()) {
-            log.warn("JWT token has no audience claim");
-            return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
-        }
-        log.debug("JWT audiences: {}", audiences);
-        return OAuth2TokenValidatorResult.success();
+       if(jwt == null){
+           log.warn("JWT token is null during audience validation");
+           return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
+       }
+
+       List<String> audiences = jwt.getAudience();
+
+       if(audiences == null || audiences.isEmpty()){
+           log.warn("JWT token has no audience claim. Subject: {}, Issuer: {}", jwt.getSubject(), jwt.getIssuer());
+           return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
+       }
+
+       log.debug("JWT audiences found: {} for subject: {}", audiences, jwt.getSubject());
+       return OAuth2TokenValidatorResult.success();
     }
 }

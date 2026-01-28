@@ -1,5 +1,8 @@
 package com.staff_portal.scheduling_service.exception;
 
+import com.staff_portal.scheduling_service.dto.response.ApiResponse;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +13,13 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(NotInRangeException.class)
+    public ResponseEntity<ErrorResponse> handleNotInARangeException(NotInRangeException ex){
+        ErrorResponse error = new ErrorResponse(ex.getClass().getSimpleName(), ex.getMessage());
+        return ResponseEntity.status(ex.getStatus())
+                .body(error);
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
@@ -55,5 +65,12 @@ public class GlobalExceptionHandler {
             return "TIME_SLOT_NOT_FOUND";
         }
         return "RESOURCE_NOT_FOUND";
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class ErrorResponse {
+        private String error;
+        private String message;
     }
 }

@@ -19,9 +19,9 @@ public class OAuth2DeviceCodeEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @OneToOne
-    @JoinColumn(name = "authorization_id", referencedColumnName = "id")
-    private OAuth2AuthorizationEntity authorization;
+//    @OneToOne
+//    @JoinColumn(name = "authorization_id", referencedColumnName = "id")
+//    private OAuth2AuthorizationEntity authorization;
 
     @OneToOne
     @JoinColumn(name = "device_code_id", referencedColumnName = "id")
@@ -30,4 +30,8 @@ public class OAuth2DeviceCodeEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name= "metadata", columnDefinition = "json")
     private Map<String, Object> metadata;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

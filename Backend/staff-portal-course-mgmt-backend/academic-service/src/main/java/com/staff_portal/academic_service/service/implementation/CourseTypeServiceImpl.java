@@ -24,7 +24,7 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     @Override
     public ApiResponse<UUID> createCourseType(CourseTypeRequestDTO requestDTO) {
         CourseType courseType = CourseType.builder()
-                .typeName(requestDTO.getTitle())
+                .courseTypeName(requestDTO.getTitle())
                 .description(requestDTO.getDescription())
                 .status(requestDTO.getStatus())
                 .build();
@@ -36,7 +36,7 @@ public class CourseTypeServiceImpl implements CourseTypeService {
     public ApiResponse<String> updateCourseType(UUID id, CourseTypeRequestDTO requestDTO) {
         CourseType courseType = courseTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Course type with id: %s not found", id)));
-        courseType.setTypeName(requestDTO.getTitle());
+        courseType.setCourseTypeName(requestDTO.getTitle());
         courseType.setDescription(requestDTO.getDescription());
         courseType.setStatus(requestDTO.getStatus());
         courseTypeRepository.save(courseType);
@@ -60,8 +60,8 @@ public class CourseTypeServiceImpl implements CourseTypeService {
                 .findByDeletedFalse()
                 .stream()
                 .map(courseType -> CourseTypeResponseDTO.builder()
-                        .courseTypeId(courseType.getCourseTypeId())
-                        .title(courseType.getTypeName())
+                        .id(courseType.getCourseTypeId())
+                        .title(courseType.getCourseTypeName())
                         .description(courseType.getDescription())
                         .status(courseType.getStatus())
                         .build())

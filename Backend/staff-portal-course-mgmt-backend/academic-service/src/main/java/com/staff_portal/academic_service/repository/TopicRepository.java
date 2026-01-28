@@ -1,56 +1,17 @@
 package com.staff_portal.academic_service.repository;
 
-import java.util.List;
-import java.util.UUID;
-
 import com.staff_portal.academic_service.dto.response.TopicResponseDTO;
+import com.staff_portal.academic_service.model.Topic;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.staff_portal.academic_service.model.Topic;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface TopicRepository extends JpaRepository<Topic, UUID> {
-    boolean existsByTopicNameAndSection_SectionId(String topicName, Integer sectionId);
-
-    // Get all topics by SectionId
-    List<Topic> findBySection_SectionId(Integer sectionId);
-
-
-    // Find all topics in a given section
-    List<Topic> findBySection_SectionId(int sectionId);
-
-    // Check if a topic exists in a section (only active)
-    boolean existsByTopicNameAndSection_SectionIdAndDeletedFalse(String topicName, Integer sectionId);
-
-    // Get all topics of a section (excluding soft-deleted)
-    List<Topic> findBySection_SectionIdAndDeletedFalse(Integer sectionId);
-
-    // Global filter for fetching only active topics
-    List<Topic> findByDeletedFalse();
-
-    // Fetch by all filters (only active)
-    @Query("""
-            SELECT t FROM Topic t
-            WHERE t.section.sectionId = :sectionId
-              AND t.section.subject.subjectId = :subjectId
-              AND t.section.subject.module.moduleId = :moduleId
-              AND t.section.subject.module.course.courseId = :courseId
-              AND t.section.subject.module.course.courseType.courseTypeId = :courseTypeId
-              AND t.section.subject.module.course.batchCycle.batchCycleId = :batchCycleId
-              AND t.deleted = false
-            """)
-    List<Topic> findTopicsByAllFilters(
-            @Param("batchCycleId") Integer batchCycleId,
-            @Param("courseTypeId") Integer courseTypeId,
-            @Param("courseId") Integer courseId,
-            @Param("moduleId") Integer moduleId,
-            @Param("subjectId") Integer subjectId,
-            @Param("sectionId") Integer sectionId
-    );
-
     @Query("""
                 SELECT new com.staff_portal.academic_service.dto.response.TopicResponseDTO(
                     t.topicId,
@@ -59,7 +20,9 @@ public interface TopicRepository extends JpaRepository<Topic, UUID> {
                 )
                 FROM Topic t
                 WHERE t.section.sectionId IN :sectionIds
+                AND t.deleted = false
             """)
     List<TopicResponseDTO> getAllTopicsForSections(@Param("sectionIds") List<UUID> sectionIds);
 
+    boolean existsByTopicCode(String topicCode);
 }

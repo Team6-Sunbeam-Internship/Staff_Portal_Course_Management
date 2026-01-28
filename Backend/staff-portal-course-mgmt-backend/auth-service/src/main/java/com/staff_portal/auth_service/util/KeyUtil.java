@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
@@ -98,13 +99,25 @@ public class KeyUtil {
 
     private void savePrivateKey(PrivateKey privateKey) throws IOException {
         String privateKeyPEM = convertToPEM(privateKey, "PRIVATE KEY");
-        Files.write(Paths.get(keyDirectory, "private-key.pem"), privateKeyPEM.getBytes());
+        Files.write(
+                Paths.get(keyDirectory, "private-key.pem"),
+                privateKeyPEM.getBytes(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE
+        );
         setFilePermissions(Paths.get(keyDirectory, "private-key.pem"));
     }
 
     private void savePublicKey(PublicKey publicKey) throws IOException {
         String publicKeyPEM = convertToPEM(publicKey, "PUBLIC KEY");
-        Files.write(Paths.get(keyDirectory, "public-key.pem"), publicKeyPEM.getBytes());
+        Files.write(
+                Paths.get(keyDirectory, "public-key.pem"),
+                publicKeyPEM.getBytes(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE
+        );
     }
 
     private PrivateKey loadPrivateKey() throws Exception {

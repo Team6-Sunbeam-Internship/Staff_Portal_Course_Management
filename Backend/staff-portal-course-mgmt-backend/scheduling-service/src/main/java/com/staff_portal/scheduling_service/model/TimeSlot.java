@@ -1,39 +1,31 @@
 package com.staff_portal.scheduling_service.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
+import java.util.UUID;
 import java.time.LocalTime;
-import java.util.List;
 
 
 @Getter
 @ToString
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "time_slots")
-
+@Builder
 public class TimeSlot {
-	  @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	  @Column(name = "time_slot_id", nullable = false)
-	    private Long id;
+    @Id
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "time_slot_id", nullable = false)
+    private UUID id;
 
-	    @Column(name = "start_time", nullable = false)
-	    private LocalTime startTime;
+    @Column(name = "start_time", nullable = false)
+    private LocalTime startTime;
 
-	    @Column(name = "end_time", nullable = false)
-	    private LocalTime endTime;
-
-	    @Column(name = "slot_name", nullable = false)
-	    private String slotName;
-	    
-	    @OneToMany(mappedBy = "timeSlot", cascade = CascadeType.ALL, orphanRemoval = true)
-	    private List<Schedule> schedules;
-
-
+    @Column(name = "end_time", nullable = false)
+    private LocalTime endTime;
 }

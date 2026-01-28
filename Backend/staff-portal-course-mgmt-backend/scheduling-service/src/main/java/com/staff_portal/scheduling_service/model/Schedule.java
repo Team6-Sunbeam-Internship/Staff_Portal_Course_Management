@@ -1,24 +1,17 @@
 package com.staff_portal.scheduling_service.model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.ParamDef;
+import jakarta.persistence.*;
+import jakarta.persistence.Table;
+import lombok.*;
+import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Builder
 @EntityListeners(AuditingEntityListener.class)
@@ -39,11 +32,11 @@ import lombok.ToString;
 @Entity
 @Table(name = "schedules_table")
 public class Schedule {
-	@Id 
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue
+    @UuidGenerator
 	@Column(name = "schedule_id", nullable = false) 
-	private Long id;
-
+	private UUID id;
 
 	@Column(name = "schedule_date", nullable = false)
 	private LocalDate scheduleDate;
@@ -56,8 +49,8 @@ public class Schedule {
 			name = "schedule_staffnames",
 			joinColumns = @JoinColumn(name = "schedule_id")
 			)
-	@Column(name = "staff_name",nullable = false)
-	private List<String> staffNames;
+	@Column(name = "staff_id",nullable = false)
+	private List<UUID> staffs;
 
 
 	@ElementCollection
@@ -65,25 +58,22 @@ public class Schedule {
 			name = "schedule_studentgroups",
 			joinColumns = @JoinColumn(name = "schedule_id")
 			)
-	@Column(name = "student_group",nullable = false)
-	private List<String> studentGroups;
+	@Column(name = "student_groups_id",nullable = false)
+	private List<UUID> studentsGroups;
 
 
-	@Column(name = "course_name", nullable = false)
-	private String courseName;
+	@Column(name = "course_code", nullable = false)
+	private String courseCode;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "timeslot_id", nullable = false)
 	private TimeSlot timeSlot;
 
-	@Column(name = "module_name", nullable = false)
-	private String moduleName;
+	@Column(name = "module_id", nullable = false)
+	private UUID module;
 
-	@Column(name = "infrastructure_name", nullable = false)
-	private String infrastructureName;
-
-	@Column(name = "batch_cycle_name", nullable = false)
-	private String batchCycleName;
+	@Column(name = "infrastructure_id", nullable = false)
+	private UUID venue;
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false, nullable = false)
@@ -97,4 +87,6 @@ public class Schedule {
 	@Column(nullable = false)
 	private Boolean isDeleted = false;
 
+    @Column(name = "created_by", nullable = false)
+    private UUID createdBy;
 }

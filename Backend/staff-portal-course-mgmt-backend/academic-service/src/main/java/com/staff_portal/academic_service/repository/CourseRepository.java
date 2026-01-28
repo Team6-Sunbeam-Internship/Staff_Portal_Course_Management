@@ -1,11 +1,8 @@
 package com.staff_portal.academic_service.repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import com.staff_portal.academic_service.dto.response.CourseResponseDTO;
 import com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO;
+import com.staff_portal.academic_service.model.Course;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,37 +10,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.staff_portal.academic_service.model.Course;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, UUID> {
-
-
     Optional<Boolean> existsByCourseCode(String courseCode);
-
-    List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeId(
-            Integer batchCycleId,
-            Integer courseTypeId
-    );
-
-    List<Course> findByDeletedFalse();
-
-    Course findByCourseIdAndDeletedFalse(int courseId);
-
-    List<Course> findByCourseType_CourseTypeIdAndDeletedFalse(Integer courseTypeId);
-
-    List<Course> findByBatchCycle_BatchCycleIdAndCourseType_CourseTypeIdAndDeletedFalse(
-            Integer batchCycleId,
-            Integer courseTypeId
-    );
 
     @Query(value = """
             SELECT new com.staff_portal.academic_service.dto.response.PaginatedCourseResponseDTO(
-                c.courseId, c.courseCode, c.courseName, 
-                c.courseType.courseTypeId, c.courseType.typeName, 
-                c.premise.premiseId, c.premise.name, 
-                c.batchCycle.batchCycleId, c.batchCycle.cycleName, 
-                c.studentCount, c.courseGroupCount, c.status
+                c.courseId, c.courseCode, c.courseName,
+                c.courseType.courseTypeId, c.courseType.courseTypeName,
+                c.premise.premiseId, c.premise.premiseName,
+                c.batchCycle.batchCycleId, c.batchCycle.batchCycleName,
+                c.studentCount, c.courseGroupCount, c.status, c.startDate, c.endDate
             )
             FROM Course c
             WHERE c.deleted = false
@@ -51,7 +32,6 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
                 AND (:batchCycleId IS NULL OR c.batchCycle.batchCycleId = :batchCycleId)
                 AND (:premiseId IS NULL OR c.premise.premiseId = :premiseId)
                 AND (:searchTerm IS NULL OR c.courseName LIKE %:searchTerm% OR c.courseCode LIKE %:searchTerm%)
-            ORDER BY c.startDate DESC
             """,
             countQuery = """
                     SELECT COUNT(c) FROM Course c
@@ -74,12 +54,12 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
             c.courseCode,
             c.courseName,
             b.batchCycleId,
-            b.cycleName,
+            b.batchCycleName,
             ct.courseTypeId,
-            ct.typeName,
+            ct.courseTypeName,
             c.courseGroupCount,
             p.premiseId,
-            p.name
+            p.premiseName
         )
         FROM Course c
         JOIN c.batchCycle b

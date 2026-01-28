@@ -1,7 +1,5 @@
 package com.staff_portal.academic_service.dto.response;
 
-import com.staff_portal.academic_service.enums.TopicStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

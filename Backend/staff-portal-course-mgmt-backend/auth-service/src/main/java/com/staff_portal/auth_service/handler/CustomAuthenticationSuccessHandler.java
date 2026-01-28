@@ -12,7 +12,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -46,20 +45,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         // check is user login first time
         boolean firstTimeLogin = Boolean.TRUE.equals(savedUser.getIsFirstTimeLogin());
         if (firstTimeLogin) {
-            // force user to change password
             log.info("User logged in first time!");
-            // Preserve the original authorize request if present
-            SavedRequest saved = requestCache.getRequest(request, response);
-            if (saved != null) {
-                String originalRedirectUrl = saved.getRedirectUrl();
-                if (originalRedirectUrl != null) {
-                    request.getSession().setAttribute(ORIGINAL_AUTHORIZE_QUERY, originalRedirectUrl);
-                }
-            } else {
-                String queryParams = request.getQueryString();
-                if (queryParams != null) request.getSession().setAttribute(ORIGINAL_AUTHORIZE_QUERY, queryParams);
-            }
-
             log.info("redirecting to: {}", "/force-change-password");
             response.sendRedirect("/force-change-password");
             return;

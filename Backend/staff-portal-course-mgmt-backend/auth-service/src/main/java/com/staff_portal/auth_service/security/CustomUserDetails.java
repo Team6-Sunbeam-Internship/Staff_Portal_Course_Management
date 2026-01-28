@@ -91,8 +91,7 @@ public class CustomUserDetails implements UserDetails {
     
     @Override
     public boolean isCredentialsNonExpired() {
-        // Credentials expire if password change is required
-        return passwordChangeRequired == null || !passwordChangeRequired;
+        return true;
     }
     
     @Override

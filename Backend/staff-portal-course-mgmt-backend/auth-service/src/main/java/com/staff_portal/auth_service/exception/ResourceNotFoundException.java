@@ -2,15 +2,15 @@ package com.staff_portal.auth_service.exception;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @Setter
 public class ResourceNotFoundException extends RuntimeException {
-    private final HttpStatusCode statusCode;
+    private final HttpStatus status;
 
-    public ResourceNotFoundException(String message, HttpStatusCode statusCode) {
+    public ResourceNotFoundException(String message, HttpStatus status) {
         super(message);
-        this.statusCode = statusCode;
+        this.status=status;
     }
 }

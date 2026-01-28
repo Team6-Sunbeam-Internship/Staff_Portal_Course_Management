@@ -1,14 +1,14 @@
 package com.staff_portal.scheduling_service.dto.response;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 import com.staff_portal.scheduling_service.model.TimeSheetStatus;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.UUID;
 
 @Getter
 @ToString
@@ -16,7 +16,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class SimpleTimeSheetResponseDTO {
 
-	private Long id;
+    private UUID id;
     private LocalTime startTime;
     private LocalTime endTime;
     private String staffName;

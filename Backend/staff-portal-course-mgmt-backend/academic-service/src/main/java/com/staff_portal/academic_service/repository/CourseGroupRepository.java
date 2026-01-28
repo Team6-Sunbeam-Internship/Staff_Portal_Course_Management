@@ -1,19 +1,24 @@
 package com.staff_portal.academic_service.repository;
 
-import java.util.List;
-
+import com.staff_portal.academic_service.model.Course;
+import com.staff_portal.academic_service.model.CourseGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.staff_portal.academic_service.enums.CourseGroupStatus;
-import com.staff_portal.academic_service.model.CourseGroup;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface CourseGroupRepository extends JpaRepository<CourseGroup, Integer> {
-	List<CourseGroup> findByBatchCycle_BatchCycleId(Long batchCycleId);
+public interface CourseGroupRepository extends JpaRepository<CourseGroup, UUID> {
+    // write the query to find all course groups
+    @Query("""
+                SELECT cg
+                FROM CourseGroup cg
+                WHERE cg.deleted = false
+            """)
+    List<CourseGroup> findAllAndDeletedFalse();
 
-	List<CourseGroup> findByCourse_CourseId(Long courseId);
-
-	List<CourseGroup> findByStatus(CourseGroupStatus status);
-
+    Optional<List<CourseGroup>> findByCourse(Course course);
 }

@@ -1,11 +1,11 @@
 package com.staff_portal.academic_service.dto.request;
 
-import java.time.LocalDate;
-
-import com.staff_portal.academic_service.enums.BatchStatus;
+import com.staff_portal.academic_service.enums.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -26,5 +26,5 @@ public class BatchCycleRequest {
 	private LocalDate endDate;
 
 	@NotNull(message = "Status is required")
-	private BatchStatus status;
+	private Status status;
 }

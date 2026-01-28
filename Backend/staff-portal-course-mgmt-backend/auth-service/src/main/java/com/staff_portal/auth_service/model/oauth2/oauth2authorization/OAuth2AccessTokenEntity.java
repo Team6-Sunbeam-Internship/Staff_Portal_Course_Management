@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,9 +21,9 @@ public class OAuth2AccessTokenEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @OneToOne
-    @JoinColumn(name = "authorization_id", referencedColumnName = "id")
-    private OAuth2AuthorizationEntity authorization;
+//    @OneToOne
+//    @JoinColumn(name = "authorization_id", referencedColumnName = "id")
+//    private OAuth2AuthorizationEntity authorization;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "access_token_id", referencedColumnName = "id")
@@ -34,9 +35,14 @@ public class OAuth2AccessTokenEntity {
 
     @Column(name = "scopes", columnDefinition = "json")
     @JdbcTypeCode(SqlTypes.JSON)
-    private Set<String> scopes;
+    @Builder.Default
+    private Set<String> scopes = new HashSet<>();
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name= "metadata", columnDefinition = "json")
     private Map<String, Object> metadata;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

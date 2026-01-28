@@ -2,6 +2,7 @@ package com.staff_portal.academic_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -12,7 +13,7 @@ public class InfrastructureRequest {
 	@NotBlank
 	private String title;
 	private String type;
-	private int capacity;
+	private Integer capacity;
 	private String description;
-	private String premiseId;
+	private UUID premiseId;
 }

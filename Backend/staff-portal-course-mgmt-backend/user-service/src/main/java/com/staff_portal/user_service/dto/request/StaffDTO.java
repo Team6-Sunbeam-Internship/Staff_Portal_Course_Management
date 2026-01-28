@@ -1,5 +1,6 @@
 package com.staff_portal.user_service.dto.request;
 
+import com.staff_portal.user_service.enums.Gender;
 import com.staff_portal.user_service.enums.StaffRole;
 import com.staff_portal.user_service.enums.StaffType;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,10 +26,10 @@ public class StaffDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private String phone;
+    private String phoneNumber;
     private String address;
-    private String designation;
     private StaffType staffType;
-    private StaffRole staffRole;
+    private Gender gender;
+    private StaffRole role;
     private String courseSpecialization;
 }

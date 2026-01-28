@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.staff_portal.auth_service.dto.response.ApiResponse;
 import com.staff_portal.auth_service.dto.response.StaffProfileResponseDTO;
 import com.staff_portal.auth_service.handler.CustomAuthorizeFlowFailureHandler;
 import com.staff_portal.auth_service.scheduler.KeyRotationScheduler;
@@ -12,9 +13,11 @@ import com.staff_portal.auth_service.service.interfaces.IOAuth2AuthorizationCons
 import com.staff_portal.auth_service.service.interfaces.IOAuth2AuthorizationService;
 import com.staff_portal.auth_service.service.interfaces.IRegisteredClientService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,7 +42,6 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.client.RestClient;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
@@ -50,6 +52,8 @@ public class AuthorizationServerConfig {
 
     private final KeyRotationScheduler keyRotationScheduler;
     private final RestClient userServiceRestClient;
+    @Value("${spring.security.oauth2.authorizationserver.issuer}")
+    private String issuer;
 
     public AuthorizationServerConfig(KeyRotationScheduler keyRotationScheduler, @Qualifier("userServiceRestClient") RestClient userServiceClient) {
         this.keyRotationScheduler = keyRotationScheduler;
@@ -69,8 +73,8 @@ public class AuthorizationServerConfig {
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .with(authorizationServerConfigurer, (authorizationServer) ->
                         authorizationServer
-                                .authorizationEndpoint(authEnpoints ->
-                                        authEnpoints
+                                .authorizationEndpoint(authEndpoints ->
+                                        authEndpoints
                                                 .errorResponseHandler(authorizeFlowFailureHandler)
                                                 .consentPage("/oauth2/consent")
 
@@ -109,24 +113,30 @@ public class AuthorizationServerConfig {
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication.getPrincipal();
         String authorization = "Bearer " + jwtAuthenticationToken.getToken().getTokenValue();
         // call user service to fetch extended staff profile
-        StaffProfileResponseDTO staffProfile = userServiceRestClient
+        ApiResponse<StaffProfileResponseDTO> staffProfile = userServiceRestClient
                 .get()
+                .uri("/staff/profile")
                 .header(HttpHeaders.AUTHORIZATION, authorization)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .body(StaffProfileResponseDTO.class);
+                .body(new ParameterizedTypeReference<ApiResponse<StaffProfileResponseDTO>>() {
+                });
 
         // Build OIDC userinfo response
         assert staffProfile != null;
+        StaffProfileResponseDTO staffProfileResponseDTO = staffProfile.getApiResponse();
         return OidcUserInfo.builder()
                 .subject(jwtAuthenticationToken.getToken().getSubject())
-                .name(staffProfile.firstName() + " " + staffProfile.lastName())
+                .name(staffProfileResponseDTO.firstName() + " " + staffProfileResponseDTO.lastName())
                 .email(jwtAuthenticationToken.getToken().getClaims().get("email").toString())
                 .emailVerified(true)
-                .phoneNumber(staffProfile.phoneNumber())
+                .phoneNumber(staffProfileResponseDTO.phoneNumber())
                 .phoneNumberVerified(true)
-                .address(Map.of("formatted", staffProfile.address()).toString())
-                .claim("staff_type", staffProfile.staffType())
+                .address(staffProfileResponseDTO.address())
+                .claim("gender", staffProfileResponseDTO.gender())
+                .claim("staff_id", staffProfileResponseDTO.staffId())
+                .claim("staff_type", staffProfileResponseDTO.staffType())
+                .claim("course_specialization", staffProfileResponseDTO.courseSpecialization())
                 .build();
     }
 
@@ -136,7 +146,7 @@ public class AuthorizationServerConfig {
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder()
-                .issuer("http://localhost:8001")
+                .issuer(issuer)
                 .authorizationEndpoint("/oauth2/v1/authorize")
                 .pushedAuthorizationRequestEndpoint("/oauth2/v1/par")
                 .deviceAuthorizationEndpoint("/oauth2/v1/device_authorization")
@@ -216,12 +226,6 @@ public class AuthorizationServerConfig {
                 context.getClaims().claim("email", principal.getUsername());
                 context.getClaims().claim("roles", roles);
                 context.getClaims().claim("scopes", scopes);
-
-                // Add IST version of timestamps for display purpose
-                context.getClaims().claim("iat_ist", now.atZone(ist).toString());
-                Duration ttl = context.getRegisteredClient().getTokenSettings().getAccessTokenTimeToLive();
-                Instant expiresAt = now.plus(ttl);
-                context.getClaims().claim("exp_ist", expiresAt.atZone(ist).toString());
             } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
                 // Customize headers/claims for id_token
                 context.getClaims().claim("aud", context.getRegisteredClient().getClientId());
@@ -230,12 +234,6 @@ public class AuthorizationServerConfig {
                 context.getClaims().claim("email", principal.getUsername());
                 context.getClaims().claim("email_verified", true);
                 context.getClaims().claim("roles", roles);
-
-                // Add IST version of timestamps for display purpose
-                context.getClaims().claim("iat_ist", now.atZone(ist).toString());
-                Duration ttl = context.getRegisteredClient().getTokenSettings().getAccessTokenTimeToLive();
-                Instant expiresAt = now.plus(ttl);
-                context.getClaims().claim("exp_ist", expiresAt.atZone(ist).toString());
             }
         };
     }
@@ -250,7 +248,7 @@ public class AuthorizationServerConfig {
                 audiences.add("academic-service");
             }
             if (scope.contains("SCHEDULE_") || scope.contains("SESSION_") || scope.contains("TIMESHEET_") || scope.contains("VIDEO_")) {
-                audiences.add("schedule-service");
+                audiences.add("scheduling-service");
             }
             if (scope.contains("INFRASTRUCTURE_") || scope.contains("PREMISE_") || scope.contains("BATCHCYCLE_")) {
                 audiences.add("academic-service");

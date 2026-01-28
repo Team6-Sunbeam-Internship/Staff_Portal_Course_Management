@@ -1,13 +1,17 @@
 package com.staff_portal.auth_service.model.users;
 
+import lombok.Getter;
+
 import java.util.EnumSet;
 import java.util.Set;
 
+@Getter
 public enum RoleScopeMapping {
     ADMIN(EnumSet.allOf(ScopeType.class)),
 
     COURSE_COORDINATOR(EnumSet.of(
             // Full read/write access
+            ScopeType.STAFF_READ, ScopeType.STAFF_WRITE,
             ScopeType.MODULE_READ, ScopeType.MODULE_WRITE,
             ScopeType.COURSE_GROUP_READ, ScopeType.COURSE_GROUP_WRITE,
             ScopeType.SCHEDULE_READ, ScopeType.SCHEDULE_WRITE,
@@ -20,7 +24,6 @@ public enum RoleScopeMapping {
             ScopeType.CERTIFICATE_READ, ScopeType.CERTIFICATE_WRITE,
 
             // Rest of scopes: read-only
-            ScopeType.STAFF_READ,
             ScopeType.MENUITEM_READ,
             ScopeType.PREMISE_READ,
             ScopeType.BATCHCYCLE_READ,
@@ -32,6 +35,7 @@ public enum RoleScopeMapping {
     )),
 
     GENERAL_USER(EnumSet.of(
+            ScopeType.STAFF_READ, ScopeType.STAFF_WRITE,
             ScopeType.SESSION_READ, ScopeType.SESSION_WRITE,
             ScopeType.VIDEO_READ, ScopeType.VIDEO_WRITE,
             ScopeType.TIMESHEET_READ, ScopeType.TIMESHEET_WRITE,
@@ -45,7 +49,4 @@ public enum RoleScopeMapping {
         this.scopes = scopes;
     }
 
-    public Set<ScopeType> getScopes() {
-        return scopes;
-    }
 }

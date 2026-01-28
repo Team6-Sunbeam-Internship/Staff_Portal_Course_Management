@@ -1,10 +1,8 @@
 package com.staff_portal.backend_for_frontend.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.util.Set;
+import java.util.UUID;
 
 @Builder
 @Getter
@@ -13,11 +11,15 @@ public class SessionResponse {
     private boolean authenticated;
     private String name;
     private String email;
-    private Set<String> roles;
+    private String emailVerified;
+    private String role;
+    private String gender;
+    private UUID staffId;
     private String address;
     private String phoneNumber;
     private String phoneNumberVerified;
     private String staffType;
+    private String specialization;
     private String message;
 
     public static SessionResponse unauthenticated() {

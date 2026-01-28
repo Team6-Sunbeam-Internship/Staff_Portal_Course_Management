@@ -1,20 +1,20 @@
 package com.staff_portal.scheduling_service.dto.response;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
 @ToString
 public class ScheduleSimpleDTO {
 
-	private Long id;
+	private UUID id;
 
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate scheduleDate;

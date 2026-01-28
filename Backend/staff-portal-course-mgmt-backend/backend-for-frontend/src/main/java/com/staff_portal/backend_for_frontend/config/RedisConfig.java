@@ -1,9 +1,5 @@
 package com.staff_portal.backend_for_frontend.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +12,12 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Configures Redis for session management and OAuth2 client data storage.
@@ -24,7 +25,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
  */
 
 @Configuration
-@EnableRedisHttpSession(maxInactiveIntervalInSeconds = 1800)
+// @EnableRedisHttpSession(maxInactiveIntervalInSeconds = 1800)
 @RequiredArgsConstructor
 @Slf4j
 public class RedisConfig {
@@ -45,10 +46,9 @@ public class RedisConfig {
 
     /**
      * @Bean (Primary) Provides ObjectMapper with Spring Security modules
-     * for serializing security-related objects.
+     *       for serializing security-related objects.
      */
     @Bean("securityObjectMapper")
-    @Primary
     public ObjectMapper securityObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModules(SecurityJackson2Modules.getModules(getClass().getClassLoader()));
@@ -59,22 +59,25 @@ public class RedisConfig {
      * @Bean Provides ObjectMapper with JavaTime support for general usage.
      */
     @Bean("defaultObjectMapper")
+    @Primary
     public ObjectMapper defaultObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.deactivateDefaultTyping();
         return objectMapper;
     }
 
-
     @Bean
     public RedisTemplate<String, OAuth2AuthorizationRequest> authorizationRequestRedisTemplate(
-            LettuceConnectionFactory connectionFactory, @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper) {
+            LettuceConnectionFactory connectionFactory,
+            @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper) {
         return buildRedisTemplate(connectionFactory, securityObjectMapper, OAuth2AuthorizationRequest.class);
     }
 
     @Bean
     public RedisTemplate<String, OAuth2AuthorizedClient> authorizedClientRedisTemplate(
-            LettuceConnectionFactory connectionFactory, @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper) {
+            LettuceConnectionFactory connectionFactory,
+            @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper) {
         return buildRedisTemplate(connectionFactory, securityObjectMapper, OAuth2AuthorizedClient.class);
     }
 
@@ -92,7 +95,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory connectionFactory, @Qualifier("defaultObjectMapper") ObjectMapper defaultObjectMapper) {
+    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory connectionFactory,
+            @Qualifier("defaultObjectMapper") ObjectMapper defaultObjectMapper) {
         return buildRedisTemplate(connectionFactory, defaultObjectMapper, Object.class);
     }
 

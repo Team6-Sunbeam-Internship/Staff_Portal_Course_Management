@@ -1,21 +1,10 @@
 package com.staff_portal.scheduling_service.service.implementation;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import org.springframework.stereotype.Service;
-
 import com.staff_portal.scheduling_service.dto.request.ScheduleRequestDTO;
 import com.staff_portal.scheduling_service.dto.request.TimeSlotRequestDTO;
+import com.staff_portal.scheduling_service.dto.response.ApiResponse;
 import com.staff_portal.scheduling_service.dto.response.ScheduleResponseDTO;
+import com.staff_portal.scheduling_service.exception.NotInRangeException;
 import com.staff_portal.scheduling_service.exception.ResourceNotFoundException;
 import com.staff_portal.scheduling_service.exception.ScheduleConflictException;
 import com.staff_portal.scheduling_service.mapper.ScheduleMapper;
@@ -25,9 +14,16 @@ import com.staff_portal.scheduling_service.model.TimeSlot;
 import com.staff_portal.scheduling_service.repository.ScheduleRepository;
 import com.staff_portal.scheduling_service.repository.TimeSlotRepository;
 import com.staff_portal.scheduling_service.service.interfaces.IScheduleService;
-
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -38,40 +34,26 @@ public class ScheduleServiceImpl implements IScheduleService {
 
     @Autowired
     private TimeSlotRepository timeSlotRepository;
-    
-    @Autowired
-    private EntityManager entityManager;
-    
-    private void enableDeletedFilter() {
-        Session session = entityManager.unwrap(Session.class);
-        session.enableFilter("deletedFilter").setParameter("isDeleted", false); // exclude deleted
-    }
 
     @Override
-    public List<ScheduleResponseDTO> getAllSchedules() {
-    	
-    	enableDeletedFilter();
-        List<Schedule> schedules = scheduleRepository.findAll();
+    public ApiResponse<List<ScheduleResponseDTO>> getAllSchedules(Authentication authentication, String courseCode, LocalDate startDate, LocalDate endDate) {
+
+        if (authentication == null) {
+            throw new IllegalArgumentException("Authentication is required");
+        }
+        String sub = authentication.getName();
+        UUID staffId = UUID.fromString(sub);
+        List<Schedule> schedules = scheduleRepository.findSchedulesForCoordinator(staffId, courseCode, startDate, endDate);
         List<ScheduleResponseDTO> dtoList = new ArrayList<>();
         for (Schedule schedule : schedules) {
             dtoList.add(ScheduleMapper.toScheduleResponseDTO(schedule));
         }
 
-        return dtoList;
-    }
-    
-
-    @Override
-    public ScheduleResponseDTO getScheduleById(Long id) {
-    	
-    	enableDeletedFilter();
-        Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found with ID: " + id));
-        return ScheduleMapper.toScheduleResponseDTO(schedule);
+        return ApiResponse.onSuccess(dtoList);
     }
 
     @Override
-    public ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto) {
+    public ApiResponse<UUID> createSchedule(ScheduleRequestDTO dto) {
         if (dto == null) {
             throw new IllegalArgumentException("Schedule request cannot be null");
         }
@@ -80,10 +62,13 @@ public class ScheduleServiceImpl implements IScheduleService {
         if (timeSlotRequest == null) {
             throw new IllegalArgumentException("TimeSlot data is required");
         }
+        if (!timeSlotRequest.isValidRange()) {
+            throw new NotInRangeException(HttpStatus.BAD_REQUEST, "TimeSlot data is not valid");
+        }
 
         // Conflict check
         List<Schedule> conflicts = scheduleRepository.findConflictingSchedules(
-                dto.getInfrastructureName(),
+                dto.getInfrastructure(),
                 dto.getScheduleDate(),
                 timeSlotRequest.getStartTime(),
                 timeSlotRequest.getEndTime()
@@ -95,102 +80,86 @@ public class ScheduleServiceImpl implements IScheduleService {
                     .toList();
 
             throw new ScheduleConflictException(
-                    "Conflict: schedules already exist for infrastructure " + dto.getInfrastructureName() +
-                            " on " + dto.getScheduleDate() +  "between" + timeSlotRequest.getStartTime()  + "-" +  timeSlotRequest.getEndTime(),
+                    "Conflict: schedules already exist for infrastructure " + dto.getInfrastructure() +
+                            " on " + dto.getScheduleDate() + "between" + timeSlotRequest.getStartTime() + "-" + timeSlotRequest.getEndTime(),
                     conflictDTOs
             );
         }
 
         TimeSlot timeSlot = TimeSlotMapper.fromTimeSlotRequestDTO(timeSlotRequest);
         Schedule schedule = ScheduleMapper.fromScheduleRequestDTO(dto, timeSlot);
-
-        timeSlotRepository.save(timeSlot);
         Schedule saved = scheduleRepository.save(schedule);
-
-        return ScheduleMapper.toScheduleResponseDTO(saved);
-    }
-    
-
-@Override
-public ScheduleResponseDTO updateSchedule(Long id, ScheduleRequestDTO dto) {
-    if (dto == null) {
-        throw new IllegalArgumentException("Schedule request cannot be null");
+        return ApiResponse.onSuccess(saved.getId());
     }
 
-    Schedule schedule = scheduleRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Schedule not found with ID: " + id));
 
-    TimeSlotRequestDTO timeSlotDto = dto.getTimeSlot();
-    if (timeSlotDto == null) {
-        throw new IllegalArgumentException("TimeSlot data is required");
-    }
+    @Override
+    public ApiResponse<String> updateSchedule(UUID id, ScheduleRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Schedule request cannot be null");
+        }
 
-    // 🔍 Conflict check (exclude current schedule)
-    List<Schedule> conflicts = scheduleRepository.findConflictingSchedules(
-            dto.getInfrastructureName(),
-            dto.getScheduleDate(),
-            timeSlotDto.getStartTime(),
-            timeSlotDto.getEndTime()
-    ).stream()
-            .filter(conflict -> !conflict.getId().equals(id))
-            .toList();
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found with ID: " + id));
 
-    if (!conflicts.isEmpty()) {
-        List<ScheduleResponseDTO> conflictDTOs = conflicts.stream()
-                .map(ScheduleMapper::toScheduleResponseDTO)
+        TimeSlotRequestDTO timeSlotDto = dto.getTimeSlot();
+        if (timeSlotDto == null) {
+            throw new IllegalArgumentException("TimeSlot data is required");
+        }
+
+        // Conflict check (exclude current schedule)
+        List<Schedule> conflicts = scheduleRepository.findConflictingSchedules(
+                        dto.getInfrastructure(),
+                        dto.getScheduleDate(),
+                        timeSlotDto.getStartTime(),
+                        timeSlotDto.getEndTime()
+                ).stream()
+                .filter(conflict -> !conflict.getId().equals(id))
                 .toList();
 
-        throw new ScheduleConflictException(
-                "Conflict: schedules already exist for infrastructure " + dto.getInfrastructureName() +
-                        " on " + dto.getScheduleDate()    +  "between" + timeSlotDto.getStartTime()  + "-" +  timeSlotDto.getEndTime(),
-                conflictDTOs
-        );
-    }
+        if (!conflicts.isEmpty()) {
+            List<ScheduleResponseDTO> conflictDTOs = conflicts.stream()
+                    .map(ScheduleMapper::toScheduleResponseDTO)
+                    .toList();
 
-    //  Update fields
-    schedule.setScheduleDate(dto.getScheduleDate());
-    schedule.setActivity(dto.getActivity());
-    schedule.setCourseName(dto.getCourseName());
-    schedule.setStaffNames(dto.getStaffNames());
-    schedule.setModuleName(dto.getModuleName());
-    schedule.setInfrastructureName(dto.getInfrastructureName());
-    schedule.setBatchCycleName(dto.getBatchCycleName());
-    schedule.setStudentGroups(dto.getStudentGroups());
-
-    TimeSlot timeSlot = schedule.getTimeSlot();
-    timeSlot.setStartTime(timeSlotDto.getStartTime());
-    timeSlot.setEndTime(timeSlotDto.getEndTime());
-    timeSlot.setSlotName(timeSlotDto.getSlotName());
-
-    Schedule updated = scheduleRepository.save(schedule);
-    return ScheduleMapper.toScheduleResponseDTO(updated);
-}
-
-    @Override
-    public void deleteSchedule(Long id) {
-        if (!scheduleRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Schedule not found with ID: " + id);
+            throw new ScheduleConflictException(
+                    "Conflict: schedules already exist for infrastructure " + dto.getInfrastructure() +
+                            " on " + dto.getScheduleDate() + "between" + timeSlotDto.getStartTime() + "-" + timeSlotDto.getEndTime(),
+                    conflictDTOs
+            );
         }
-        scheduleRepository.deleteById(id);
+
+        //  Update fields
+        if(dto.getScheduleDate()!=null && !dto.getScheduleDate().isBefore(LocalDate.now()) && !dto.getScheduleDate().isBefore(schedule.getScheduleDate())){
+            schedule.setScheduleDate(dto.getScheduleDate());
+        }
+        if(dto.getActivity() != null &&  !schedule.getActivity().equals(dto.getActivity())){
+            schedule.setActivity(dto.getActivity());
+        }
+        if(dto.getCourseCode() != null){
+            schedule.setCourseCode(dto.getCourseCode());
+        }
+        if(dto.getModule() != null){
+            schedule.setModule(dto.getModule());
+        }
+        if(dto.getInfrastructure() != null){
+            schedule.setVenue(dto.getInfrastructure());
+        }
+        if(!dto.getFacultyIds().isEmpty()){
+            schedule.setStaffs(dto.getFacultyIds());
+        }
+        if(!dto.getGroupIds().isEmpty()){
+            schedule.setStudentsGroups(dto.getGroupIds());
+        }
+        schedule.setTimeSlot(TimeSlotMapper.fromTimeSlotRequestDTO(timeSlotDto));
+
+        return ApiResponse.onSuccess("Schedule id[%s] updated");
     }
 
     @Override
-    public Page<ScheduleResponseDTO> getSchedulesByBatchCycleCourseAndDateRange(
-            String batchCycleName,
-            String courseName,
-            LocalDate startDate,
-            LocalDate endDate,
-            int page,
-            int size) 
-    {
-
-        enableDeletedFilter(); //ensures only active records
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Schedule> schedules = scheduleRepository.findByBatchCycleCourseAndDateRange(
-                batchCycleName, courseName, startDate, endDate, pageable
-        );
-
-        return schedules.map(ScheduleMapper::toScheduleResponseDTO);
+    public void deleteSchedule(UUID id) {
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found with ID: " + id));
+        schedule.setIsDeleted(true);
     }
 }

@@ -1,14 +1,14 @@
 package com.staff_portal.academic_service.model;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import com.staff_portal.academic_service.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 
 @Setter
@@ -26,11 +26,11 @@ public class Course {
     @Column(name = "course_id", unique = true, nullable = false)
     private UUID courseId;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "batch_cycle_id", nullable = false)
     private BatchCycle batchCycle;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_type_id", nullable = false)
     private CourseType courseType;
 
@@ -63,11 +63,11 @@ public class Course {
     @Column(nullable = false)
     private boolean deleted = false;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Module> modules = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<CourseGroup> courseGroups = new ArrayList<>();
 }

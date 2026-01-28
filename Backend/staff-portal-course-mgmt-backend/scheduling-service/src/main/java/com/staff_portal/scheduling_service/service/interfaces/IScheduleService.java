@@ -1,27 +1,21 @@
 package com.staff_portal.scheduling_service.service.interfaces;
 
+import com.staff_portal.scheduling_service.dto.request.ScheduleRequestDTO;
+import com.staff_portal.scheduling_service.dto.response.ApiResponse;
+import com.staff_portal.scheduling_service.dto.response.ScheduleResponseDTO;
+import org.springframework.security.core.Authentication;
+
 import java.time.LocalDate;
 import java.util.List;
-
-import org.springframework.data.domain.Page;
-
-import com.staff_portal.scheduling_service.dto.request.ScheduleRequestDTO;
-import com.staff_portal.scheduling_service.dto.response.ScheduleResponseDTO;
+import java.util.UUID;
 
 public interface IScheduleService {
 
-	List<ScheduleResponseDTO> getAllSchedules();
+    ApiResponse<List<ScheduleResponseDTO>> getAllSchedules(Authentication authentication, String courseCode, LocalDate startTime, LocalDate endTime);
 
-	ScheduleResponseDTO getScheduleById(Long id);
-	
-	ScheduleResponseDTO createSchedule(ScheduleRequestDTO dto);
+    ApiResponse<UUID> createSchedule(ScheduleRequestDTO dto);
 
-	ScheduleResponseDTO updateSchedule(Long id, ScheduleRequestDTO dto);
-	
-	void deleteSchedule(Long id);
+    ApiResponse<String> updateSchedule(UUID id, ScheduleRequestDTO dto);
 
-	
-	Page<ScheduleResponseDTO> getSchedulesByBatchCycleCourseAndDateRange(String batchCycleName, String courseName,
-			LocalDate startDate, LocalDate endDate, int page, int size);
-	
+    void deleteSchedule(UUID id);
 }

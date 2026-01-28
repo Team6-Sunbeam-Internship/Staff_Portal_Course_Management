@@ -2,5 +2,7 @@ package com.staff_portal.academic_service.enums;
 
 public enum Status {
     ACTIVE,
-    INACTIVE
+    INACTIVE,
+    ASSIGNED,
+    UNASSIGNED
 }

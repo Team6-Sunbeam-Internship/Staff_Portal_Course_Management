@@ -21,14 +21,14 @@ public class CourseTypeController {
     private final CourseTypeService courseTypeService;
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<UUID>> addCourseType(@RequestBody CourseTypeRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<UUID>> createCourseType(@RequestBody CourseTypeRequestDTO requestDTO) {
         ApiResponse<UUID> courseTypeResponse = courseTypeService.createCourseType(requestDTO);
         return ResponseEntity.ok(courseTypeResponse);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCourseType(@PathVariable String id, @RequestBody CourseTypeRequestDTO requestDTO) {
-        ApiResponse<String> udpateApiResponse = courseTypeService.updateCourseType(UUID.fromString(id), requestDTO);
+    public ResponseEntity<?> updateCourseType(@PathVariable UUID id, @RequestBody CourseTypeRequestDTO requestDTO) {
+        ApiResponse<String> udpateApiResponse = courseTypeService.updateCourseType(id, requestDTO);
         return ResponseEntity.ok(udpateApiResponse);
     }
 

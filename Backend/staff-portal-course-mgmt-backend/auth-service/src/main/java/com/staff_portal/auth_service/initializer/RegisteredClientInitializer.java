@@ -3,6 +3,7 @@ package com.staff_portal.auth_service.initializer;
 import com.staff_portal.auth_service.service.interfaces.IRegisteredClientService;
 import com.staff_portal.auth_service.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -27,7 +28,10 @@ public class RegisteredClientInitializer implements ApplicationRunner {
 
     private final IRegisteredClientService registeredClientService;
     private final PasswordUtil passwordUtil;
-
+    @Value("${spring.security.oauth2.authorizationserver.client.oidc-client.registration.redirect-uris}")
+    private String redirectUri;
+    @Value("${spring.security.oauth2.authorizationserver.client.oidc-client.registration.post-logout-redirect-uris}")
+    private String postLogoutRedirectUri;
     public RegisteredClientInitializer(IRegisteredClientService registeredClientService, PasswordUtil passwordUtil) {
         this.registeredClientService = registeredClientService;
         this.passwordUtil = passwordUtil;
@@ -62,13 +66,13 @@ public class RegisteredClientInitializer implements ApplicationRunner {
                                 scopes.add(OidcScopes.ADDRESS);
                             }
                     )
-                    .redirectUri("http://localhost:8002/login/oauth2/code/auth-service")
-                    .postLogoutRedirectUri("http://localhost:8002/logout-callback")
+                    .redirectUri(redirectUri)
+                    .postLogoutRedirectUri(postLogoutRedirectUri)
                     .clientSettings(ClientSettings.builder()
                             .requireProofKey(true)
                             .requireAuthorizationConsent(true)
                             .tokenEndpointAuthenticationSigningAlgorithm(SignatureAlgorithm.RS256)
-                            .jwkSetUrl("http://localhost:8001/oauth/v1/jwks")
+                            .jwkSetUrl("http://localhost:8000/oauth/v1/jwks")
                             .build()
                     )
                     .tokenSettings(TokenSettings.builder()

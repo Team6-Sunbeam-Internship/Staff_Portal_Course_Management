@@ -1,14 +1,15 @@
 package com.staff_portal.academic_service.controller;
 
 import com.staff_portal.academic_service.dto.request.SectionRequestDTO;
-import com.staff_portal.academic_service.dto.response.SectionResponseDTO;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.service.interfaces.SectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/section")
 @RequiredArgsConstructor
@@ -17,59 +18,23 @@ public class SectionController {
     private final SectionService sectionService;
 
     //  Add Section
-    @PostMapping("/add")
-    public ResponseEntity<?> addSection(@RequestBody SectionRequestDTO requestDTO) {
-        SectionResponseDTO response = sectionService.addSection(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new CustomResponse<>(false, "Section Added Successfully!", response));
+    @PostMapping("/create/{subjectId}")
+    public ResponseEntity<ApiResponse<UUID>> createSection(@PathVariable("subjectId") UUID subjectId, @RequestBody SectionRequestDTO requestDTO) {
+        ApiResponse<UUID> createSectionResponse = sectionService.createSection(subjectId, requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createSectionResponse);
     }
 
     //  Update Section
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateSection(@PathVariable int id, @RequestBody SectionRequestDTO requestDTO) {
-        SectionResponseDTO response = sectionService.updateSection(id, requestDTO);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Section Updated Successfully!", response));
+    @PutMapping("/update/{sectionId}")
+    public ResponseEntity<ApiResponse<String>> updateSection(@PathVariable("sectionId") UUID sectionId, @RequestBody SectionRequestDTO requestDTO) {
+        ApiResponse<String> updateSectionResponse = sectionService.updateSection(sectionId, requestDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(updateSectionResponse);
     }
 
     //  Delete Section
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteSection(@PathVariable int id) {
-        sectionService.deleteSection(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Section Deleted Successfully!", null));
+    @DeleteMapping("/delete/{sectionId}")
+    public ResponseEntity<?> deleteSection( @PathVariable("sectionId") UUID sectionId) {
+        sectionService.deleteSection(sectionId);
+        return ResponseEntity.status(HttpStatus.OK).body("Section deleted successfully");
     }
-
-    // Get All Sections
-    @GetMapping
-    public ResponseEntity<?> getAllSections() {
-        List<SectionResponseDTO> response = sectionService.getAllSections();
-        return ResponseEntity.ok(new CustomResponse<>(false, "All Sections Fetched", response));
-    }
-
-    // Get Section By ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getSectionById(@PathVariable int id) {
-        SectionResponseDTO response = sectionService.getSectionById(id);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Section Found", response));
-    }
-    
-    @GetMapping("/filter")
-    public ResponseEntity<?> filterSections(
-            @RequestParam Integer batchCycleId,
-            @RequestParam Integer courseTypeId,
-            @RequestParam Integer courseId,
-            @RequestParam Integer moduleId,
-            @RequestParam Integer subjectId
-    ) {
-        List<SectionResponseDTO> response = sectionService.filterSections(
-                batchCycleId, courseTypeId, courseId, moduleId, subjectId
-        );
-        return ResponseEntity.ok(new CustomResponse<>(false, "Filtered Sections", response));
-    }
-    @GetMapping("/by-subject/{subjectId}")
-    public ResponseEntity<?> getSectionsBySubject(@PathVariable Integer subjectId) {
-        List<SectionResponseDTO> response = sectionService.getSectionsBySubject(subjectId);
-        return ResponseEntity.ok(new CustomResponse<>(false, "Sections fetched successfully", response));
-    }
-    
-    
 }

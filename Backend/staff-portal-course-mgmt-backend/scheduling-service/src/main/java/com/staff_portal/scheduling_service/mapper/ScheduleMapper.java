@@ -8,64 +8,62 @@ import com.staff_portal.scheduling_service.model.TimeSlot;
 
 public class ScheduleMapper {
 
-	public static ScheduleResponseDTO toScheduleResponseDTO(Schedule schedule) {
-		if (schedule == null) {
-			return null;
-		}
+    public static ScheduleResponseDTO toScheduleResponseDTO(Schedule schedule) {
+        if (schedule == null) {
+            return null;
+        }
 
-		ScheduleResponseDTO dto = new ScheduleResponseDTO();
-		dto.setId(schedule.getId());
-		dto.setScheduleDate(schedule.getScheduleDate());
-		dto.setActivity(schedule.getActivity());
-		dto.setInfrastructureName(schedule.getInfrastructureName());
-		dto.setStaffNames(schedule.getStaffNames());
-		dto.setModuleName(schedule.getModuleName());
-		dto.setCourseName(schedule.getCourseName());
-		dto.setTimeSlot(TimeSlotMapper.toTimeSlotSimpleDTO(schedule.getTimeSlot()));
-        dto.setBatchCycleName(schedule.getBatchCycleName());
-        dto.setStudentGroups(schedule.getStudentGroups());
-		return dto;
-	}
+        ScheduleResponseDTO dto = new ScheduleResponseDTO();
+        dto.setId(schedule.getId());
+        dto.setScheduleDate(schedule.getScheduleDate());
+        dto.setActivity(schedule.getActivity());
+        dto.setInfrastructureId(schedule.getVenue());
+        dto.setStaffIds(schedule.getStaffs());
+        dto.setModuleId(schedule.getModule());
+        dto.setCourseCode(schedule.getCourseCode());
+        dto.setTimeSlot(TimeSlotMapper.toTimeSlotSimpleDTO(schedule.getTimeSlot()));
+        dto.setStudentGroups(schedule.getStudentsGroups());
+        return dto;
+    }
 
-	public static Schedule fromScheduleRequestDTO(ScheduleRequestDTO dto, TimeSlot timeSlot) {
-		if (dto == null) {
-			return null;
-		}
+    public static Schedule fromScheduleRequestDTO(ScheduleRequestDTO dto, TimeSlot timeSlot) {
+        if (dto == null) {
+            return null;
+        }
+        return Schedule.builder()
+                .scheduleDate(dto.getScheduleDate())
+                .activity(dto.getActivity())
+                .courseCode(dto.getCourseCode())
+                .staffs(dto.getFacultyIds())
+                .studentsGroups(dto.getGroupIds())
+                .timeSlot(timeSlot)
+                .module(dto.getModule())
+                .venue(dto.getInfrastructure())
+                .build();
 
-		Schedule schedule = new Schedule();
-		schedule.setActivity(dto.getActivity());
-		schedule.setScheduleDate(dto.getScheduleDate());
-		schedule.setInfrastructureName(dto.getInfrastructureName());
-		schedule.setStaffNames(dto.getStaffNames());
-		schedule.setModuleName(dto.getModuleName());
-		schedule.setCourseName(dto.getCourseName());
-		schedule.setTimeSlot(timeSlot);
-	    schedule.setBatchCycleName(dto.getBatchCycleName());
-	    schedule.setStudentGroups(dto.getStudentGroups());
-		return schedule;
-	}
+    }
 
-	
-	public static ScheduleSimpleDTO toScheduleSimpleDTO(Schedule schedule) {
-		if (schedule == null) {
-			return null;
-		}
 
-		ScheduleSimpleDTO dto = new ScheduleSimpleDTO();
-		dto.setId(schedule.getId());
-		dto.setScheduleDate(schedule.getScheduleDate());
-		dto.setActivity(schedule.getActivity());
-		dto.setInfrastructureName(schedule.getInfrastructureName());
-		dto.setStaffNames(schedule.getStaffNames());
-		dto.setModuleName(schedule.getModuleName());
-		dto.setCourseName(schedule.getCourseName());
-		dto.setBatchCycleName(schedule.getBatchCycleName());
-        dto.setStudentGroups(schedule.getStudentGroups());
-        
-		return dto;
+    public static ScheduleSimpleDTO toScheduleSimpleDTO(Schedule schedule) {
+        if (schedule == null) {
+            return null;
+        }
 
-		
-	}
+        ScheduleSimpleDTO dto = new ScheduleSimpleDTO();
+//        dto.setId(schedule.getId());
+//        dto.setScheduleDate(schedule.getScheduleDate());
+//        dto.setActivity(schedule.getActivity());
+//        dto.setInfrastructureName(schedule.getInfrastructureName());
+//        dto.setStaffNames(schedule.getStaffNames());
+//        dto.setModuleName(schedule.getModuleName());
+//        dto.setCourseName(schedule.getCourseName());
+//        dto.setBatchCycleName(schedule.getBatchCycleName());
+//        dto.setStudentGroups(schedule.getStudentGroups());
+
+        return dto;
+
+
+    }
 }
 
 

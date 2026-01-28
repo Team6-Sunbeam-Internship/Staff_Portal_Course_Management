@@ -1,7 +1,6 @@
 package com.staff_portal.backend_for_frontend.security;
 
 import com.staff_portal.backend_for_frontend.util.CookieUtil;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +17,10 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @RequiredArgsConstructor
 public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
-    private final CookieUtil cookieUtil;
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-                                        AuthenticationException exception) throws IOException, ServletException {
+                                        AuthenticationException exception) throws IOException {
         log.error("OAuth2 login failed", exception);
-        cookieUtil.clearBffSessionCookie(response);
         String errorMessage = encodeErrorMessage(exception.getMessage());
         response.sendRedirect("/login?error=" + errorMessage);
     }

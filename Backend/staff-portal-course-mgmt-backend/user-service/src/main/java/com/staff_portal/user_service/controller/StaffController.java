@@ -1,91 +1,93 @@
 package com.staff_portal.user_service.controller;
 
+import com.staff_portal.user_service.dto.request.StaffDTO;
+import com.staff_portal.user_service.dto.response.ApiResponse;
+import com.staff_portal.user_service.dto.response.EligibleStaffResponseDTO;
+import com.staff_portal.user_service.dto.response.StaffProfileResponseDTO;
+import com.staff_portal.user_service.service.interfaces.IStaffService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.staff_portal.user_service.dto.request.StaffDTO;
-import com.staff_portal.user_service.service.interfaces.IStaffService;
-
-import lombok.RequiredArgsConstructor;
-
 @RestController
-@RequestMapping("/api/staff")
+@RequestMapping("/staff")
 @RequiredArgsConstructor
-@CrossOrigin
 public class StaffController {
 
     private final IStaffService staffService;
+    @Value("${bootstrap.key}")
+    private String bootstrapKey;
+    private final Environment environment;
 
-    @PostMapping("/createStaff")
-    public ResponseEntity<StaffDTO> createStaff(@RequestBody StaffDTO staffDTO) {
-        return ResponseEntity.ok(staffService.createStaff(staffDTO));
-    }
-
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/getAll")
-    public ResponseEntity<List<StaffDTO>> getAllStaff() {
+    public ResponseEntity<ApiResponse<List<StaffDTO>>> getAllStaff() {
         return ResponseEntity.ok(staffService.getAllStaff());
     }
 
-    @GetMapping("/getStaffById/{id}")
-    public ResponseEntity<StaffDTO> getStaffById(@PathVariable String id) {
-        UUID uuid = parseUUID(id);
-        return ResponseEntity.ok(staffService.getStaffById(uuid));
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<UUID>> createStaff(@RequestBody StaffDTO staffDTO) {
+        return ResponseEntity.ok(staffService.createStaff(staffDTO));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteStaff(@PathVariable String id) {
-        UUID uuid = parseUUID(id);
-        String message = staffService.deleteStaff(uuid);
-        return ResponseEntity.ok(message);
-    }
-
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<StaffDTO> updateStaff(@PathVariable String id, @RequestBody StaffDTO staffDTO) {
-        UUID uuid = parseUUID(id);
-        return ResponseEntity.ok(staffService.updateStaff(uuid, staffDTO));
-    }
-    
-    @GetMapping("/search")
-    public ResponseEntity<?> searchStaffByName(@RequestParam String name) {
-        try {
-            List<StaffDTO> results = staffService.searchStaffByName(name);
-            if (results.isEmpty()) {
-                return ResponseEntity.status(404).body("No staff record found for name: " + name);
-            }
-            return ResponseEntity.ok(results);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.internalServerError().body("Failed to search staff");
+    @PostMapping("/bootstrap")
+    public ResponseEntity<Void> createDefaultAdmin(@RequestBody StaffDTO staffDTO, @RequestHeader("X-INTERNAL-KEY") String key) {
+        if (!key.equals(bootstrapKey)) {
+            throw new AccessDeniedException("Invalid bootstrap key");
         }
+        if (!environment.acceptsProfiles(Profiles.of("dev"))) {
+            throw new AccessDeniedException("Bootstrap is not allowed in this environment");
+        }
+        staffService.createStaff(staffDTO);
+        return ResponseEntity.ok().build();
     }
 
-    private UUID parseUUID(String id) {
-        if (id.startsWith("0x") || id.startsWith("0X")) {
-            String hex = id.substring(2).toLowerCase();
-            if (hex.length() == 32) {
-                String formatted = String.format("%s-%s-%s-%s-%s",
-                        hex.substring(0, 8),
-                        hex.substring(8, 12),
-                        hex.substring(12, 16),
-                        hex.substring(16, 20),
-                        hex.substring(20, 32));
-                return UUID.fromString(formatted);
-            }
-        }
-        return UUID.fromString(id);
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/delete/self")
+    public ResponseEntity<ApiResponse<String>> deleteStaffSelf(Authentication authentication) {
+        return ResponseEntity.ok(staffService.deleteStaffSelf(authentication));
     }
-    
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/delete/byAdmin/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteStaffByAdmin(@PathVariable UUID userId) {
+        return ResponseEntity.ok(staffService.deleteByAdmin(userId));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/update")
+    public ResponseEntity<ApiResponse<String>> updateStaff(@RequestBody StaffDTO staffDTO) {
+        return ResponseEntity.ok(staffService.updateStaff(staffDTO));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<StaffProfileResponseDTO>> getStaffProfile(Authentication authentication) {
+        return ResponseEntity.ok(staffService.getStaffProfile(authentication));
+    }
+
+    // Get Eligible Staff
+    // Eligible Staff ==> param = uniqueCourseNames + multiple
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/eligibleStaff")
+    public ResponseEntity<ApiResponse<List<EligibleStaffResponseDTO>>> getEligibleStaff(
+            @RequestParam(required = false) List<String> courseNames, @RequestParam(required = false) boolean multiple) {
+        return ResponseEntity.ok(staffService.getEligibleStaff(courseNames, multiple));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/getStaffId")
+    public ResponseEntity<ApiResponse<UUID>> getStaffId(Authentication authentication) {
+        return ResponseEntity.ok(staffService.getStaffId(authentication));
+    }
 }

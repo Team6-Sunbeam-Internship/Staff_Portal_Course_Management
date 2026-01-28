@@ -1,10 +1,11 @@
 package com.staff_portal.backend_for_frontend.config;
 
-import com.staff_portal.backend_for_frontend.repository.CustomOidcUserService;
+import com.staff_portal.backend_for_frontend.repository.IRedisClientRegistrationRepository;
+import com.staff_portal.backend_for_frontend.security.CustomAuthenticationEntryPoint;
 import com.staff_portal.backend_for_frontend.security.CustomLogoutSuccessHandler;
 import com.staff_portal.backend_for_frontend.security.OAuth2LoginFailureHandler;
 import com.staff_portal.backend_for_frontend.security.OAuth2LoginSuccessHandler;
-import com.staff_portal.backend_for_frontend.service.StatePreservationService;
+import com.staff_portal.backend_for_frontend.service.ICustomOidcUserService;
 import com.staff_portal.backend_for_frontend.service.TokenService;
 import com.staff_portal.backend_for_frontend.util.CookieUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.endpoint.DefaultOAuth2TokenRequestHeadersConverter;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -23,7 +23,9 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.*;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
@@ -39,12 +41,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository, CustomLogoutSuccessHandler customLogoutSuccessHandler, StatePreservationService statePreservationService, CustomOidcUserService customOidcUserService, OAuth2AuthorizedClientRepository redisOAuth2AuthorizedClientRepository, CookieUtil cookieUtil) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   IRedisClientRegistrationRepository clientRegistrationRepository,
+                                                   AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository,
+                                                   CustomLogoutSuccessHandler customLogoutSuccessHandler,
+                                                   CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+                                                   ICustomOidcUserService customOidcUserService,
+                                                   CookieUtil cookieUtil) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/login", "/error/**","/v3/api-docs","/swagger-ui/index.html", "/spin", "/static/**", "/webjars/**", "/bff/proxy/**").permitAll()
+                        .requestMatchers("/bff/session", "/logout", "/logout-callback", "/login", "/error/**", "/v3/api-docs", "/swagger-ui/index.html", "/spin", "/static/**", "/webjars/**", "/output.css", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -60,32 +68,28 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(customOidcUserService)
                         )
-                        .successHandler(oauth2LoginSuccessHandler(statePreservationService, customOidcUserService, cookieUtil))
-                        .failureHandler(oauth2LoginFailureHandler(cookieUtil))
-                )
-                .oauth2Client(oauth2 -> oauth2
-                        .authorizedClientRepository(redisOAuth2AuthorizedClientRepository)
-                        .authorizationCodeGrant(codeGrant -> codeGrant
-                                .authorizationRequestRepository(authorizationRequestRepository)
-                                .accessTokenResponseClient(authorizationCodeTokenResponseClient())
-                        )
+                        .successHandler(oauth2LoginSuccessHandler( customOidcUserService, cookieUtil))
+                        .failureHandler(oauth2LoginFailureHandler())
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessHandler(customLogoutSuccessHandler)
                         .invalidateHttpSession(true)
-                        .deleteCookies("BFF_SESSION", "JSESSIONID")
+                        .deleteCookies("__Host-bff-session", "JSESSIONID")
                 )
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/bff/proxy/**")
+                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/login", "/login/oauth2/code/*", "/oauth2/authorization")
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                )
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+//                        .maximumSessions(1)
+//                        .maxSessionsPreventsLogin(false)
+//                )
                 .headers(Customizer.withDefaults())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
+                .addFilterBefore(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
         ;
 
         return http.build();
@@ -119,7 +123,7 @@ public class SecurityConfig {
 
     @Bean
     public OAuth2AuthorizedClientManager auth2AuthorizedClientManager(
-            ClientRegistrationRepository clientRegistrationRepository,
+            IRedisClientRegistrationRepository clientRegistrationRepository,
             OAuth2AuthorizedClientService authorizedClientService) {
 
         OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
@@ -130,24 +134,24 @@ public class SecurityConfig {
 
         AuthorizedClientServiceOAuth2AuthorizedClientManager auth2AuthorizedClientManager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientService);
         auth2AuthorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-        auth2AuthorizedClientManager.setAuthorizationSuccessHandler(oauth2AuthorizationSuccessHandler());
+        auth2AuthorizedClientManager.setAuthorizationSuccessHandler(oauth2AuthorizationSuccessHandler(authorizedClientService));
         auth2AuthorizedClientManager.setAuthorizationFailureHandler(oauth2AuthorizationFailureHandler());
         return auth2AuthorizedClientManager;
     }
 
     @Bean
-    public OAuth2LoginSuccessHandler oauth2LoginSuccessHandler(StatePreservationService statePreservationService, CustomOidcUserService oidcUserService, CookieUtil cookieUtil) {
-        return new OAuth2LoginSuccessHandler(statePreservationService, oidcUserService, cookieUtil);
+    public OAuth2LoginSuccessHandler oauth2LoginSuccessHandler(ICustomOidcUserService oidcUserService, CookieUtil cookieUtil) {
+        return new OAuth2LoginSuccessHandler(oidcUserService, cookieUtil);
     }
 
     @Bean
-    public OAuth2LoginFailureHandler oauth2LoginFailureHandler(CookieUtil cookieUtil) {
-        return new OAuth2LoginFailureHandler(cookieUtil);
+    public OAuth2LoginFailureHandler oauth2LoginFailureHandler() {
+        return new OAuth2LoginFailureHandler();
     }
 
     @Bean
-    public OAuth2AuthorizationSuccessHandler oauth2AuthorizationSuccessHandler() {
-        return new com.staff_portal.backend_for_frontend.security.OAuth2AuthorizationSuccessHandler();
+    public OAuth2AuthorizationSuccessHandler oauth2AuthorizationSuccessHandler(OAuth2AuthorizedClientService authorizedClientService) {
+        return new com.staff_portal.backend_for_frontend.security.OAuth2AuthorizationSuccessHandler(authorizedClientService);
     }
 
     @Bean
@@ -156,7 +160,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CustomLogoutSuccessHandler customLogoutSuccessHandler(OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository, TokenService tokenService) {
-        return new CustomLogoutSuccessHandler(oAuth2AuthorizedClientRepository, tokenService, oAuth2EndpointsConfig);
+    public CustomLogoutSuccessHandler customLogoutSuccessHandler(OAuth2AuthorizedClientService oAuth2AuthorizedClientService, TokenService tokenService, IRedisClientRegistrationRepository iRedisClientRegistrationRepository) {
+        return new CustomLogoutSuccessHandler(iRedisClientRegistrationRepository, oAuth2AuthorizedClientService, tokenService);
     }
 }

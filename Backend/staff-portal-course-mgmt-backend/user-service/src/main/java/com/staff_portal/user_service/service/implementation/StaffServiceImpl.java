@@ -1,108 +1,136 @@
 package com.staff_portal.user_service.service.implementation;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
 import com.staff_portal.user_service.dto.request.StaffDTO;
+import com.staff_portal.user_service.dto.response.ApiResponse;
+import com.staff_portal.user_service.dto.response.EligibleStaffResponseDTO;
+import com.staff_portal.user_service.dto.response.StaffProfileResponseDTO;
+import com.staff_portal.user_service.exception.ResourceAlreadyExistException;
 import com.staff_portal.user_service.exception.ResourceNotFoundException;
 import com.staff_portal.user_service.model.Staff;
 import com.staff_portal.user_service.repository.StaffRepository;
 import com.staff_portal.user_service.service.interfaces.IStaffService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class StaffServiceImpl implements IStaffService {
 
     private final StaffRepository staffRepository;
 
     @Override
-    public StaffDTO createStaff(StaffDTO staffDTO) {
+    public ApiResponse<UUID> createStaff(StaffDTO staffDTO) {
+
+        if (staffRepository.existsById(staffDTO.getAuthUserId())) {
+            throw new ResourceAlreadyExistException(HttpStatus.CONFLICT, String.format(
+                    "Staff [%s %s] already exist in the system", staffDTO.getFirstName(), staffDTO.getLastName()));
+        }
+
         Staff staff = Staff.builder()
                 .authUserId(staffDTO.getAuthUserId())
                 .firstName(staffDTO.getFirstName())
                 .lastName(staffDTO.getLastName())
                 .email(staffDTO.getEmail())
-                .phone(staffDTO.getPhone())
+                .staffRole(staffDTO.getRole())
+                .phone(staffDTO.getPhoneNumber())
                 .address(staffDTO.getAddress())
-                .designation(staffDTO.getDesignation())
+                .gender(staffDTO.getGender())
                 .staffType(staffDTO.getStaffType())
-                .staffRole(staffDTO.getStaffRole())
                 .courseSpecialization(staffDTO.getCourseSpecialization())
                 .build();
 
-        return mapToDTO(staffRepository.save(staff));
+        Staff savedStaff = staffRepository.save(staff);
+        return ApiResponse.onSuccess(savedStaff.getStaffId());
     }
 
     @Override
-    public StaffDTO getStaffById(UUID staffId) {
-        Staff staff = staffRepository.findByStaffIdAndIsDeletedFalse(staffId)
-                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + staffId));
-        return mapToDTO(staff);
+    public ApiResponse<StaffProfileResponseDTO> getStaffProfile(Authentication authentication) {
+        String subject = authentication.getName();
+
+        UUID authUserId = UUID.fromString(subject);
+        Staff staff = staffRepository.findByAuthUserIdAndIsDeletedFalse(authUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Your data is not present in the system",
+                        HttpStatus.NOT_FOUND));
+
+        return ApiResponse.onSuccess(StaffProfileResponseDTO.builder()
+                .firstName(staff.getFirstName())
+                .lastName(staff.getLastName())
+                .phoneNumber(staff.getPhone())
+                .address(staff.getAddress())
+                .staffId(staff.getStaffId())
+                .staffType(staff.getStaffType().name())
+                .gender(staff.getGender().name())
+                .courseSpecialization(staff.getCourseSpecialization())
+                .build());
     }
 
     @Override
-    public List<StaffDTO> getAllStaff() {
-        return staffRepository.findAllByIsDeletedFalse()
+    public ApiResponse<List<StaffDTO>> getAllStaff() {
+        return ApiResponse.onSuccess(staffRepository.findAllByIsDeletedFalse()
                 .stream()
                 .map(this::mapToDTO)
-                .toList();
+                .toList());
     }
 
     @Override
-    public StaffDTO updateStaff(UUID staffId, StaffDTO staffDTO) {
-        Staff staff = staffRepository.findByStaffIdAndIsDeletedFalse(staffId)
-                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + staffId));
+    public ApiResponse<String> updateStaff(StaffDTO staffDTO) {
+        UUID authUserId = staffDTO.getAuthUserId();
+        Staff staff = staffRepository.findByAuthUserIdAndIsDeletedFalse(authUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + staffDTO.getAuthUserId(),
+                        HttpStatus.NOT_FOUND));
 
         // Only update fields that are not null
-        if (staffDTO.getFirstName() != null) staff.setFirstName(staffDTO.getFirstName());
-        if (staffDTO.getLastName() != null) staff.setLastName(staffDTO.getLastName());
-        if (staffDTO.getEmail() != null) staff.setEmail(staffDTO.getEmail());
-        if (staffDTO.getPhone() != null) staff.setPhone(staffDTO.getPhone());
-        if (staffDTO.getAddress() != null) staff.setAddress(staffDTO.getAddress());
-        if (staffDTO.getDesignation() != null) staff.setDesignation(staffDTO.getDesignation());
-        if (staffDTO.getStaffType() != null) staff.setStaffType(staffDTO.getStaffType());
-        if (staffDTO.getStaffRole() != null) staff.setStaffRole(staffDTO.getStaffRole());
-        if (staffDTO.getCourseSpecialization() != null) staff.setCourseSpecialization(staffDTO.getCourseSpecialization());
+        if (staffDTO.getFirstName() != null)
+            staff.setFirstName(staffDTO.getFirstName());
+        if (staffDTO.getLastName() != null)
+            staff.setLastName(staffDTO.getLastName());
+        if (staffDTO.getEmail() != null)
+            staff.setEmail(staffDTO.getEmail());
+        if (staffDTO.getPhoneNumber() != null)
+            staff.setPhone(staffDTO.getPhoneNumber());
+        if (staffDTO.getAddress() != null)
+            staff.setAddress(staffDTO.getAddress());
+        if (staffDTO.getStaffType() != null)
+            staff.setStaffType(staffDTO.getStaffType());
+        if (staffDTO.getRole() != null)
+            staff.setStaffRole(staffDTO.getRole());
+        if (staffDTO.getCourseSpecialization() != null)
+            staff.setCourseSpecialization(staffDTO.getCourseSpecialization());
 
-        return mapToDTO(staffRepository.save(staff));
-    }
-
-    @Override
-    public String deleteStaff(UUID id) {
-        Staff staff = staffRepository.findByStaffIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + id));
-
-        staff.setDeleted(true);
         staffRepository.save(staff);
-
-        return "Staff record deleted successfully";
+        return ApiResponse.onSuccess("Staff updated successfully");
     }
-    
+
     @Override
-    public List<StaffDTO> searchStaffByName(String name) {
-        try {
-            if (name == null || name.trim().isEmpty()) {
-                throw new IllegalArgumentException("Name cannot be null or empty");
-            }
-            
-            String trimmedName = name.trim();
-            // Replace multiple spaces with single space and handle special characters
-            String cleanedName = trimmedName.replaceAll("\\s+", " ");
-            
-            List<Staff> staffList = staffRepository.searchByStaffName(cleanedName);
-            return staffList.stream()
-                    .map(this::mapToDTO)
-                    .toList();
-        } catch (IllegalArgumentException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            // Log the actual error for debugging
-            System.err.println("Error in searchStaffByName: " + ex.getMessage());
-            ex.printStackTrace();
-            throw new RuntimeException("Failed to search staff by name: " + ex.getMessage(), ex);
-        }
+    public ApiResponse<String> deleteStaffSelf(Authentication authentication) {
+        UUID authUserId = UUID.fromString(authentication.getName());
+        Optional<Staff> staffOpt = staffRepository.findByAuthUserIdAndIsDeletedFalse(authUserId);
+
+        if (staffOpt.isEmpty()) return ApiResponse.onSuccess("Staff already deleted");
+
+        Staff staff = staffOpt.get();
+        staff.setDeleted(true);
+        return ApiResponse.onSuccess("Staff deleted successfully");
+    }
+
+    @Override
+    public ApiResponse<String> deleteByAdmin(UUID staffId) {
+        Optional<Staff> staffOpt = staffRepository.findByStaffIdAndIsDeletedFalse(staffId);
+
+        if (staffOpt.isEmpty()) return ApiResponse.onSuccess("Staff already deleted");
+
+        Staff staff = staffOpt.get();
+        staff.setDeleted(true);
+        return ApiResponse.onSuccess("Staff deleted successfully");
     }
 
     private StaffDTO mapToDTO(Staff staff) {
@@ -112,12 +140,38 @@ public class StaffServiceImpl implements IStaffService {
                 .firstName(staff.getFirstName())
                 .lastName(staff.getLastName())
                 .email(staff.getEmail())
-                .phone(staff.getPhone())
+                .phoneNumber(staff.getPhone())
                 .address(staff.getAddress())
-                .designation(staff.getDesignation())
                 .staffType(staff.getStaffType())
-                .staffRole(staff.getStaffRole())
+                .gender(staff.getGender())
+                .role(staff.getStaffRole())
                 .courseSpecialization(staff.getCourseSpecialization())
                 .build();
+    }
+
+    @Override
+    public ApiResponse<List<EligibleStaffResponseDTO>> getEligibleStaff(List<String> courseSpecialization,
+                                                                        boolean multiple) {
+        List<String> filters = new ArrayList<>(courseSpecialization);
+        if (multiple) {
+            filters.add("multiple");
+        }
+        return ApiResponse.onSuccess(
+                staffRepository.findByCourseSpecializationIn(filters)
+                        .stream()
+                        .map(
+                                staff -> EligibleStaffResponseDTO.builder()
+                                        .staffId(staff.getStaffId())
+                                        .name(staff.getFirstName() + " " + staff.getLastName())
+                                        .courseSpecialization(staff.getCourseSpecialization())
+                                        .build())
+                        .toList());
+    }
+
+    @Override
+    public ApiResponse<UUID> getStaffId(Authentication authentication) {
+        UUID authUserId = UUID.fromString(authentication.getName());
+        Optional<Staff> staffOpt = staffRepository.findByAuthUserIdAndIsDeletedFalse(authUserId);
+        return staffOpt.map(staff -> ApiResponse.onSuccess(staff.getStaffId())).orElseGet(() -> ApiResponse.onSuccess(null));
     }
 }

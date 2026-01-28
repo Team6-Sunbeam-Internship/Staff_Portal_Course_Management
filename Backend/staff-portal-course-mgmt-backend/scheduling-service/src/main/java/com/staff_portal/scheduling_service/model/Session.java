@@ -1,21 +1,18 @@
 package com.staff_portal.scheduling_service.model;
 
 
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-import org.hibernate.annotations.SQLDelete;
+import jakarta.persistence.*;
+import jakarta.persistence.Table;
+import lombok.*;
+import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.UUID;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 
 @EntityListeners(AuditingEntityListener.class)
@@ -36,12 +33,11 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Session {
-
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
+    @UuidGenerator
     @Column(name = "session_id", nullable = false)
-    private Long id;
+    private UUID id;
 
     @Column(nullable = false, length = 50)
     private String title;
@@ -69,6 +65,7 @@ public class Session {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private SessionStatus status = SessionStatus.SCHEDULED;
     
     

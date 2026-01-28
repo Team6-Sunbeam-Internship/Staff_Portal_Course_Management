@@ -1,23 +1,23 @@
 package com.staff_portal.backend_for_frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.staff_portal.backend_for_frontend.repository.IRedisClientRegistrationRepository;
 import com.staff_portal.backend_for_frontend.repository.RedisAuthorizationRequestRepository;
 import com.staff_portal.backend_for_frontend.repository.RedisClientRegistrationRepository;
-import com.staff_portal.backend_for_frontend.repository.RedisOAuth2AuthorizedClientRepository;
 import com.staff_portal.backend_for_frontend.repository.RedisOAuth2AuthorizedClientService;
-import com.staff_portal.backend_for_frontend.util.CookieUtil;
 import com.staff_portal.backend_for_frontend.util.RedisKeyUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthenticationMethod;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -37,16 +37,43 @@ import java.util.Set;
  */
 
 @Configuration
-@EnableConfigurationProperties(RegistrationProperties.class)
+@Slf4j
 public class OAuth2ClientConfig {
+
+    // Create the properties bean directly in this config
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "bff.oauth2.client")
+    public RegistrationProperties registrationProperties() {
+        log.info("Creating RegistrationProperties bean with ConfigurationProperties");
+        return new RegistrationProperties();
+    }
+
 
     //----ClientRegistrationRepository Bean----
     @Bean
-    public ClientRegistrationRepository clientRegistrationRepository(RegistrationProperties properties, RedisTemplate<String, String> redisTemplate, RedisKeyUtil redisKeyUtil,@Qualifier("defaultObjectMapper") ObjectMapper objectMapper) {
+    @Primary
+    @DependsOn({"registrationProperties"})
+    public IRedisClientRegistrationRepository clientRegistrationRepository(RegistrationProperties properties, RedisTemplate<String, String> redisTemplate, RedisKeyUtil redisKeyUtil, @Qualifier("defaultObjectMapper") ObjectMapper objectMapper) {
+
+        log.info("OAuth2ClientConfig: Creating client registration repository");
+        log.debug("Registration properties: {}", properties.getRegistration().keySet());
+        log.debug("Provider properties: {}", properties.getProvider().keySet());
 
         List<ClientRegistration> registrations = properties.getRegistration().entrySet().stream()
                 .map(entry -> buildClientRegistration(entry.getKey(), entry.getValue(), properties))
                 .toList();
+
+        log.info("Creating RedisClientRegistrationRepository with {} registrations: {}",
+                registrations.size(),
+                registrations.stream().map(ClientRegistration::getRegistrationId).toList());
+
+        if (registrations.isEmpty()) {
+            log.error("No OAuth2 client registrations found in configuration!");
+            log.error("Available registration keys: {}", properties.getRegistration().keySet());
+            log.error("Available provider keys: {}", properties.getProvider().keySet());
+            throw new IllegalStateException("At least one OAuth2 client registration must be configured");
+        }
 
         return new RedisClientRegistrationRepository(registrations, redisTemplate, redisKeyUtil,  objectMapper);
     }
@@ -104,8 +131,8 @@ public class OAuth2ClientConfig {
     }
 
     //----OAuth2AuthorizedClientRepository Bean----
-    @Bean
-    public OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository(OAuth2AuthorizedClientService oAuth2AuthorizedClientService, RedisTemplate<String, OAuth2AuthorizedClient> redisTemplate, RedisKeyUtil redisKeyUtil, CookieUtil cookieUtil) {
-        return new RedisOAuth2AuthorizedClientRepository(oAuth2AuthorizedClientService, redisTemplate, redisKeyUtil, cookieUtil);
-    }
+//    @Bean
+//    public OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository(OAuth2AuthorizedClientService oAuth2AuthorizedClientService, RedisTemplate<String, OAuth2AuthorizedClient> redisTemplate, RedisKeyUtil redisKeyUtil, CookieUtil cookieUtil) {
+//        return new RedisOAuth2AuthorizedClientRepository(oAuth2AuthorizedClientService, redisTemplate, redisKeyUtil, cookieUtil);
+//    }
 }

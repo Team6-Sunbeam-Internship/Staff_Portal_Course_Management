@@ -1,7 +1,5 @@
 package com.staff_portal.academic_service.dto.response;
 
-import com.staff_portal.academic_service.enums.ModuleStatus;
-
 import lombok.*;
 
 import java.util.UUID;
@@ -10,10 +8,11 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
+@Builder
 public class ModuleResponseDTO {
     private UUID id;
     private String title;
     private int theoryHours;
     private int practicalHours;
+    private UUID moduleRouterId;
 }

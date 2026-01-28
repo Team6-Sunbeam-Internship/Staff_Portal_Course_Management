@@ -18,9 +18,13 @@ public class UserServiceStaffDTO extends BaseStaffDTO {
         return UserServiceStaffDTO.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .email(request.getEmail())
+                .role(request.getRole())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
+                .gender(request.getGender())
                 .staffType(request.getStaffType())
+                .courseSpecialization(request.getCourseSpecialization())
                 .authUserId(request.getAuthUserId())
                 .build();
     }

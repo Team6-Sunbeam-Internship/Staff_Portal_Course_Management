@@ -1,22 +1,12 @@
 package com.staff_portal.academic_service.model;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import com.staff_portal.academic_service.enums.BatchStatus;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import com.staff_portal.academic_service.enums.Status;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+
+import java.time.LocalDate;
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -32,8 +22,8 @@ public class BatchCycle {
     @Column(name = "batch_cycle_id", nullable = false, updatable = false)
     private UUID batchCycleId;
 
-    @Column(nullable = false, unique = true, name = "cycle_name")
-	private String cycleName;
+    @Column(nullable = false, unique = true, name = "batch_cycle_name")
+	private String batchCycleName;
 
 	@Column(length = 500, name = "description") 
 	private String description;
@@ -47,12 +37,8 @@ public class BatchCycle {
 	@Column(name = "is_deleted", nullable = false)
 	private boolean deleted = false;
 
-
-	@OneToMany(mappedBy = "batchCycle", cascade = CascadeType.ALL)
-	private List<CourseType> courseTypes;
-
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, name = "batchcycle_status",length=20)
-	private BatchStatus status;
+	private Status status;
 
 }

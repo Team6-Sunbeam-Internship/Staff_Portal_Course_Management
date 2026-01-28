@@ -4,47 +4,48 @@ package com.staff_portal.academic_service.repository;
 import com.staff_portal.academic_service.dto.response.ModuleResponseDTO;
 import com.staff_portal.academic_service.model.Course;
 import com.staff_portal.academic_service.model.Module;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
 @Repository
 public interface ModuleRepository extends JpaRepository<Module, UUID> {
 
 
-    Optional<Boolean> existsByCourseAndModuleCode(Course course, String moduleCode);
-
-    // Fetch all modules of a course
-    List<Module> findByCourse_CourseId(Integer courseId);
-
-    // Fetch modules by batchCycleId, courseTypeId, and courseId
-    List<Module> findByCourse_BatchCycle_BatchCycleIdAndCourse_CourseType_CourseTypeIdAndCourse_CourseId(
-            Integer batchCycleId, Integer courseTypeId, Integer courseId
-    );
-
-    List<Module> findByCourse_CourseIdAndDeletedFalse(Integer courseId);
-
-    List<Module> findByDeletedFalse();
-
-
-    List<Module> findByCourse_BatchCycle_BatchCycleIdAndCourse_CourseType_CourseTypeIdAndCourse_CourseIdAndDeletedFalse(
-            Integer batchCycleId, Integer courseTypeId, Integer courseId);
+    boolean existsByCourseAndModuleCode(Course course, String moduleCode);
 
     @Query("""
                 SELECT new com.staff_portal.academic_service.dto.response.ModuleResponseDTO(
                 m.moduleId,
                 m.moduleName,
                 m.theoryHours,
-                m.practicalHours
+                m.practicalHours,
+                m.moduleRouterId
                 )
                 FROM Module m
-                WHERE m.course.courseCode = :courseCode
+                WHERE m.course.courseCode = :courseCode 
+                AND m.deleted = false
             """)
     List<ModuleResponseDTO> getAllModulesForCourse(@Param("courseCode") String courseCode);
+
+    @EntityGraph(attributePaths = {
+            "subjects",
+            "subjects.sections",
+            "subjects.sections.topics",
+            "course"
+    })
+    @Query("""
+        SELECT m FROM Module m
+        JOIN m.course c
+        WHERE m.moduleRouterId = :staffId
+          AND :currentDate BETWEEN c.startDate AND c.endDate
+    """)
+    List<Module> getModulesForModuleRouter(@Param("staffId") UUID staffId,
+                                           @Param("currentDate") LocalDate currentDate);
 }

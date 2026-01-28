@@ -44,25 +44,29 @@ public class OAuth2AuthorizationEntity {
 
     // One-to-One Relationships with Tokens
     // AuthorizationCode
-    @OneToOne(mappedBy = "authorization", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne( cascade = CascadeType.ALL, orphanRemoval = true)
     private OAuth2AuthorizationCodeEntity oauth2AuthorizationCode;
     // Access Token
-    @OneToOne(mappedBy = "authorization", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne( cascade = CascadeType.ALL, orphanRemoval = true)
     private OAuth2AccessTokenEntity oauth2AccessToken;
     // Refresh Token
-    @OneToOne(mappedBy = "authorization", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private OAuth2RefreshTokenEntity oauth2RefreshToken;
     // OIDC ID Token
-    @OneToOne(mappedBy = "authorization", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne( cascade = CascadeType.ALL, orphanRemoval = true)
     private OidcIdTokenEntity oidcIdToken;
     // Device Code
-    @OneToOne(mappedBy = "authorization", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private OAuth2DeviceCodeEntity deviceCode;
     // User Code
-    @OneToOne(mappedBy = "authorization", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private OAuth2UserCodeEntity userCode;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "attributes", columnDefinition = "json")
     private Map<String, Object> attributes;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

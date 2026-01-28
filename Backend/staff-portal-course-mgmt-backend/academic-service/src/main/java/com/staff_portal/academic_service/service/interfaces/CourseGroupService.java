@@ -1,25 +1,19 @@
 package com.staff_portal.academic_service.service.interfaces;
 
-import java.util.List;
-
 import com.staff_portal.academic_service.dto.request.CourseGroupRequest;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
 import com.staff_portal.academic_service.dto.response.CourseGroupResponse;
-import com.staff_portal.academic_service.enums.CourseGroupStatus;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface CourseGroupService {
 
-	CourseGroupResponse createCourseGroup(CourseGroupRequest request);
+	ApiResponse<List<UUID>> createCourseGroup(String courseCode, List<CourseGroupRequest> courseGroupRequests);
 
-	CourseGroupResponse updateCourseGroup(int groupId, CourseGroupRequest request);
+	ApiResponse<String> updateCourseGroup(UUID groupId, CourseGroupRequest request);
 
-	void deleteCourseGroup(int groupId);
+	void deleteCourseGroup(UUID groupId);
 
-	List<CourseGroupResponse> getAllCourseGroups();
-
-	List<CourseGroupResponse> getGroupsByBatchCycle(Long batchCycleId);
-
-	List<CourseGroupResponse> getGroupsByCourse(Long courseId);
-
-	List<CourseGroupResponse> getGroupsByStatus(String status);
-
+    ApiResponse<List<CourseGroupResponse>> getAllCourseGroups(String courseCode);
 }

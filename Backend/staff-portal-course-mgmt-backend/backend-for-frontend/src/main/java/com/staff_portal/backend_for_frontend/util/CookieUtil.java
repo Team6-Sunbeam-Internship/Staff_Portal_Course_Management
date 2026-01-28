@@ -13,51 +13,14 @@ import org.springframework.stereotype.Component;
 public class CookieUtil {
     @Value("${bff.cookie.secure:true}")
     private boolean secure;
+
     @Value("${bff.cookie.http-only:true}")
     private boolean httpOnly;
+
     @Value("${bff.cookie.same-site:Strict}")
     private String sameSite;
-    private static final String BFF_SESSION_COOKIE_NAME = "__Host-bff-session";
 
-    public ResponseCookie createSecureBffSessionCookie(String value, int maxAge) {
-        ResponseCookie cookie = ResponseCookie.from(BFF_SESSION_COOKIE_NAME, value)
-                .maxAge(maxAge)
-                .httpOnly(httpOnly)
-                .secure(secure)
-                .sameSite(sameSite)
-                .path("/")
-                .build();
-        log.debug("Created secure BFF session cookie with maxAge: {}", maxAge);
-        return cookie;
-    }
-
-    public void clearBffSessionCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(BFF_SESSION_COOKIE_NAME, "")
-                .maxAge(0)
-                .path("/")
-                .httpOnly(httpOnly)
-                .secure(secure)
-                .sameSite(sameSite)
-                .build();
-        response.addHeader("Set-Cookie", cookie.toString());
-        log.debug("Cleared BFF session cookie");
-    }
-
-    public void clearCookie(HttpServletResponse response, String cookieName) {
-        ResponseCookie cookie = ResponseCookie.from(BFF_SESSION_COOKIE_NAME, "")
-                .maxAge(0)
-                .path("/")
-                .httpOnly(httpOnly)
-                .secure(secure)
-                .sameSite(sameSite)
-                .build();
-        response.addHeader("Set-Cookie", cookie.toString());
-        log.debug("Cleared cookie: {}", cookieName);
-    }
-
-    public String getBffSessionId(HttpServletRequest request) {
-        return getCookieValue(request, BFF_SESSION_COOKIE_NAME);
-    }
+    private static final String LAST_ROUTE_COOKIE = "__BFF_LAST_ROUTE";
 
     public String getCookieValue(HttpServletRequest request, String cookieName) {
         if (request.getCookies() != null) {
@@ -69,4 +32,36 @@ public class CookieUtil {
         }
         return null;
     }
+
+    public void clearCookie(HttpServletResponse response, String cookieName) {
+        ResponseCookie cookie = ResponseCookie.from(cookieName, "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(httpOnly)
+                .secure(secure)
+                .sameSite(sameSite)
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+        log.debug("Cleared cookie: {}", cookieName);
+    }
+
+    public ResponseCookie createLastRouteCookie(String referrer, int maxAgeSeconds) {
+        return ResponseCookie.from(LAST_ROUTE_COOKIE, referrer)
+                .path("/")                     // available across SPA
+                .maxAge(maxAgeSeconds)          // short-lived (e.g. 300s)
+                .httpOnly(httpOnly)                 // JS should not read it
+                .secure(secure)                   // required in prod (HTTPS)
+                .sameSite(sameSite)                // allows redirect navigation
+                .build();
+    }
+
+    public String getLastRoute(HttpServletRequest request) {
+        return getCookieValue(request, LAST_ROUTE_COOKIE);
+    }
+
+    public void clearLastRoute(HttpServletResponse response) {
+        clearCookie(response, LAST_ROUTE_COOKIE);
+    }
+
 }

@@ -1,13 +1,16 @@
 package com.staff_portal.user_service.service.interfaces;
 
-import java.util.List;
-
 import com.staff_portal.user_service.dto.request.RoleMenuAccessDTO;
+import com.staff_portal.user_service.dto.request.RoleMenuAccessUpdateReqDTO;
+import com.staff_portal.user_service.dto.response.ApiResponse;
+import com.staff_portal.user_service.dto.response.RoleMenuAccessUpdateStatusResponseDTO;
+
+import java.util.List;
 
 public interface IRoleMenuAccessService {
 
-	RoleMenuAccessDTO createRoleMenuAccess(RoleMenuAccessDTO request);
-	RoleMenuAccessDTO updateRoleMenuAccessStatus(Long accessId, String newStatus);
-	String deleteRoleMenuAccess(Long accessId);
-	List<RoleMenuAccessDTO> getAllRoleMenuAccessData();
-	List<RoleMenuAccessDTO> getAccessByRole(String roleName);}
+    ApiResponse<RoleMenuAccessUpdateStatusResponseDTO> updateRoleMenuAccessStatus(RoleMenuAccessUpdateReqDTO updateReq);
+
+    ApiResponse<List<RoleMenuAccessDTO>> getAllRoleMenuAccessData();
+//	List<RoleMenuAccessDTO> getAccessByRole(String roleName);
+}

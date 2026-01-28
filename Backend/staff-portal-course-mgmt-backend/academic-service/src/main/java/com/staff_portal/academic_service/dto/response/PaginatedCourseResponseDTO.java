@@ -3,6 +3,7 @@ package com.staff_portal.academic_service.dto.response;
 import com.staff_portal.academic_service.enums.Status;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Builder
@@ -10,11 +11,10 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class PaginatedCourseResponseDTO {
     private UUID id;
     private String courseCode;
-    private String courseName;
+    private String title;
     private UUID courseTypeId;
     private String courseTypeName;
     private UUID premiseId;
@@ -24,4 +24,6 @@ public class PaginatedCourseResponseDTO {
     private int studentCount;
     private int courseGroupCount;
     private Status courseStatus;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

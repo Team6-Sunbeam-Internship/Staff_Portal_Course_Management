@@ -1,17 +1,20 @@
 package com.staff_portal.auth_service.initializer;
 
-import com.staff_portal.auth_service.exception.ResourceNotFoundException;
+import com.staff_portal.auth_service.dto.request.AuthUserRequestDTO;
+import com.staff_portal.auth_service.dto.request.UserServiceStaffDTO;
 import com.staff_portal.auth_service.model.users.*;
 import com.staff_portal.auth_service.repository.AuthUserRepository;
 import com.staff_portal.auth_service.repository.RoleRepository;
 import com.staff_portal.auth_service.repository.ScopeRepository;
+import com.staff_portal.auth_service.service.interfaces.IAuthService;
 import com.staff_portal.auth_service.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,21 +29,34 @@ public class AuthUserInitializer implements ApplicationRunner {
     private final RoleRepository roleRepository;
     private final ScopeRepository scopeRepository;
     private final PasswordUtil passwordUtil;
+    private final IAuthService authService;
+    private final RestClient userServiceClient;
 
-    public AuthUserInitializer(AuthUserRepository authUserRepository, RoleRepository roleRepository, ScopeRepository scopeRepository, PasswordUtil passwordUtil) {
+    @Value("${bootstrap.admin.enabled}")
+    private boolean bootstrapAdminEnabled;
+    @Value("${bootstrap.admin.email}")
+    private String defaultAdminEmail;
+    @Value("${bootstrap.admin.password}")
+    private String defaultAdminPassword;
+    @Value("${bootstrap.key}")
+    private String bootstrapKey;
+
+    public AuthUserInitializer(AuthUserRepository authUserRepository, RoleRepository roleRepository, ScopeRepository scopeRepository, PasswordUtil passwordUtil, IAuthService authService, RestClient userServiceClient) {
         this.authUserRepository = authUserRepository;
         this.roleRepository = roleRepository;
         this.scopeRepository = scopeRepository;
         this.passwordUtil = passwordUtil;
+        this.authService = authService;
+        this.userServiceClient = userServiceClient;
     }
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
-        initializeDatabse();
+        initializeDatabase();
     }
 
-    public void initializeDatabse() {
+    public void initializeDatabase() {
         // Step 1: Initialize Scopes
         initializeScopes();
 
@@ -134,28 +150,45 @@ public class AuthUserInitializer implements ApplicationRunner {
     }
 
     private void createAdminUser() {
-        String adminEmail = "admin@staff_portal";
-        if (!authUserRepository.existsByEmail(adminEmail)) {
-            Role adminRole = roleRepository
-                    .findByNameAndActiveTrue(RoleType.ADMIN)
-                    .orElseThrow(() -> new ResourceNotFoundException("Role Not Found", HttpStatus.NOT_FOUND));
-
-            AuthUser adminUser = AuthUser.builder()
-                    .firstName("Abhinav")
-                    .email(adminEmail)
-                    .password(passwordUtil.encode("admin"))
-                    .active(true)
-                    .roles(Set.of(adminRole))
-                    .emailVerified(true)
-                    .build();
-            AuthUser savedUser = authUserRepository.save(adminUser);
-            log.info("""
-                    
-                    Default Admin User Created Successfully!
-                    id : {},
-                    name: {},
-                    email: {},
-                    """, savedUser.getId(), savedUser.getFirstName(), savedUser.getEmail());
+        if (!bootstrapAdminEnabled) {
+            log.info("Admin bootstrap disabled");
+            return;
         }
+
+        if (authUserRepository.existsByEmail(defaultAdminEmail)) {
+            log.info("Admin already exists, skipping bootstrap");
+            return;
+        }
+
+        // build AuthUserRequestDTO
+        AuthUserRequestDTO authUserRequestDTO = AuthUserRequestDTO.builder()
+                .firstName("Abhinav")
+                .lastName("Mishra")
+                .email(defaultAdminEmail)
+                .phoneNumber("1234567890")
+                .role(RoleType.ADMIN)
+                .staffType("IN_HOUSE")
+                .gender("MALE")
+                .address("1600 Pennsylvania Avenue NW, Washington, DC 20500")
+                .courseSpecialization("MULTIPLE")
+                .build();
+
+        AuthUser defaultAdmin = authService.createAuthUser(authUserRequestDTO);
+        UserServiceStaffDTO staffDTO = UserServiceStaffDTO.fromAuthUserRequest(authUserRequestDTO);
+        staffDTO.setAuthUserId(defaultAdmin.getId());
+        userServiceClient
+                .post()
+                .uri("/staff/bootstrap")
+                .header("X-INTERNAL-KEY", bootstrapKey)
+                .body(staffDTO)
+                .retrieve()
+                .toBodilessEntity();
+        log.info("""
+                
+                Default Admin User Created Successfully!
+                id : {},
+                name: {},
+                email: {},
+                """, defaultAdmin.getId(), "Abhinav Mishra", defaultAdminEmail);
     }
 }

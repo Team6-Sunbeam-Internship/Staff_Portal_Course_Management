@@ -13,7 +13,7 @@ public class InfrastructureResponse {
 	private UUID id;
     private String title;
     private String type;
-    private int capacity;
+    private Integer capacity;
     private String description;
     private UUID premisesId;
     private String premisesTitle;

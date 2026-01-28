@@ -1,21 +1,20 @@
 package com.staff_portal.academic_service.service.implementation;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.staff_portal.academic_service.dto.request.TopicRequestDTO;
-import com.staff_portal.academic_service.dto.response.TopicResponseDTO;
-import com.staff_portal.academic_service.enums.TopicStatus;
+import com.staff_portal.academic_service.dto.response.ApiResponse;
+import com.staff_portal.academic_service.exception.ResourceNotFoundException;
+import com.staff_portal.academic_service.exception.ResourseAlreadyExistException;
 import com.staff_portal.academic_service.model.Section;
 import com.staff_portal.academic_service.model.Topic;
 import com.staff_portal.academic_service.repository.SectionRepository;
 import com.staff_portal.academic_service.repository.TopicRepository;
 import com.staff_portal.academic_service.service.interfaces.TopicService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,115 +24,42 @@ public class TopicServiceImpl implements TopicService {
     private final SectionRepository sectionRepository;
 
     @Override
-    public TopicResponseDTO addTopic(TopicRequestDTO requestDTO) {
-        Section section = sectionRepository.findById(requestDTO.getSectionId())
-                .orElseThrow(() -> new RuntimeException("Section not found"));
+    public ApiResponse<UUID> createTopic(UUID sectionId, TopicRequestDTO requestDTO) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("No section found with id %s", sectionId)));
 
-        if (topicRepository.existsByTopicNameAndSection_SectionIdAndDeletedFalse(
-                requestDTO.getTopicName(), requestDTO.getSectionId())) {
-            throw new RuntimeException("Topic already exists in this section");
+        if (topicRepository.existsByTopicCode(requestDTO.getTopicCode())) {
+            throw new ResourseAlreadyExistException(String.format("Topic already exists with code: %s", requestDTO.getTopicCode()), HttpStatus.BAD_REQUEST);
         }
 
-        Topic topic = new Topic();
-        topic.setSection(section);
-        topic.setTopicName(requestDTO.getTopicName());
-        topic.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : TopicStatus.ACTIVE);
-        topic.setDeleted(false);
+        Topic topic = Topic.builder()
+                .topicCode(requestDTO.getTopicCode())
+                .topicName(requestDTO.getTopicName())
+                .section(section)
+                .build();
+        Topic savedTopic = topicRepository.save(topic);
 
-        Topic saved = topicRepository.save(topic);
-        return mapToResponse(saved);
+        return ApiResponse.onSuccess(savedTopic.getTopicId());
     }
 
     @Override
-    public TopicResponseDTO updateTopic(int id, TopicRequestDTO requestDTO) {
-        Topic topic = topicRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Topic not found"));
+    public ApiResponse<String> updateTopic(UUID topicId, TopicRequestDTO requestDTO) {
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("No topic found with id %s", topicId)));
 
-        Section section = sectionRepository.findById(requestDTO.getSectionId())
-                .orElseThrow(() -> new RuntimeException("Section not found"));
-
-        topic.setSection(section);
+        topic.setTopicCode(requestDTO.getTopicCode());
         topic.setTopicName(requestDTO.getTopicName());
-        topic.setStatus(requestDTO.getStatus());
 
-        Topic updated = topicRepository.save(topic);
-        return mapToResponse(updated);
+        return ApiResponse.onSuccess(String.format("Updated topic with code: %s", topic.getTopicCode()));
     }
 
     @Override
     @Transactional
-    public void deleteTopic(int id) {
-        Topic topic = topicRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Topic not found"));
+    public void deleteTopic(UUID topicId) {
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("No topic found with id %s", topicId)));
 
         // Soft delete
         topic.setDeleted(true);
-        topic.setStatus(TopicStatus.INACTIVE);
-    }
-
-    @Override
-    public List<TopicResponseDTO> getAllTopics() {
-        return topicRepository.findByDeletedFalse()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public TopicResponseDTO getTopicById(int id) {
-        Topic topic = topicRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Topic not found"));
-        return mapToResponse(topic);
-    }
-
-    @Override
-    public List<TopicResponseDTO> getTopicsByFilters(
-            Integer batchCycleId,
-            Integer courseTypeId,
-            Integer courseId,
-            Integer moduleId,
-            Integer subjectId,
-            Integer sectionId
-    ) {
-        List<Topic> topics = topicRepository.findTopicsByAllFilters(
-                batchCycleId, courseTypeId, courseId, moduleId, subjectId, sectionId
-        );
-        return topics.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<TopicResponseDTO> getTopicsBySection(int sectionId) {
-        List<Topic> topics = topicRepository.findBySection_SectionIdAndDeletedFalse(sectionId);
-        return topics.stream()
-                     .map(this::mapToResponse)
-                     .collect(Collectors.toList());
-    }
-
-    private TopicResponseDTO mapToResponse(Topic topic) {
-        TopicResponseDTO response = new TopicResponseDTO();
-        response.setTopicId(topic.getTopicId());
-        response.setTopicName(topic.getTopicName());
-        response.setStatus(topic.getStatus());
-        response.setDeleted(topic.isDeleted());
-
-        if (topic.getSection() != null) {
-            response.setSectionName(topic.getSection().getSectionName());
-
-            if (topic.getSection().getSubject() != null) {
-                response.setSubjectName(topic.getSection().getSubject().getSubjectName());
-
-                if (topic.getSection().getSubject().getModule() != null) {
-                    response.setModuleName(topic.getSection().getSubject().getModule().getModuleName());
-
-                    if (topic.getSection().getSubject().getModule().getCourse() != null) {
-                        response.setCourseName(topic.getSection().getSubject().getModule().getCourse().getCourseName());
-                    }
-                }
-            }
-        }
-
-        return response;
     }
 }
